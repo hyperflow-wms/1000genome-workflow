@@ -42,7 +42,7 @@ def sifting(inputfile, c):
 
     siftfile = 'SIFT.chr{}.vcf'.format(c)
     with open(siftfile, 'w') as f:
-        subprocess.run(["grep -n \"deleterious\|tolerated\" {}".format(inputfile)], shell=True, stdout=f)
+        subprocess.run([r"grep -n \"deleterious\|tolerated\" {}".format(inputfile)], shell=True, stdout=f)
 
     data_temp = readfile(siftfile)
 

@@ -6,5 +6,5 @@ RUN apk add --no-cache python3 py3-pip && \
 WORKDIR /1000genome-workflow
 COPY . .
 
-ENV PATH /1000genome-workflow:$PATH
+ENV PATH=/1000genome-workflow:$PATH
 ENV PYTHONPATH=/1000genome-workflow

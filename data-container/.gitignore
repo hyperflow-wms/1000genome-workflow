@@ -1,0 +1,3 @@
+# Annotation files are too large for git (~1.2GB)
+# Use the Docker image or download script instead
+data/20130502/*.annotation.vcf.gz

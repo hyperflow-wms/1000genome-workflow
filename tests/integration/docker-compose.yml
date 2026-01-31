@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Redis server for HyperFlow job queue
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - hyperflow-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  # HyperFlow workflow engine
+  hyperflow:
+    image: hyperflowwms/hyperflow:latest
+    container_name: hyperflow-engine
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - hyperflow-net
+    environment:
+      # Redis connection
+      - REDIS_URL=redis://redis:6379
+
+      # HyperFlow configuration
+      - HF_VAR_WORKER_CONTAINER=hyperflowwms/1000genome-worker:1.0-je1.3.4
+      - HF_VAR_WORK_DIR=${WORKFLOW_DIR}
+      - HF_VAR_HFLOW_IN_CONTAINER=true
+      - HF_VAR_function=redisCommand
+      - HF_VAR_REDIS_CMD_MAX_PARALLELISM=${MAX_PARALLELISM:-20}
+
+      # Run workers as current user to avoid root-owned files
+      - USER_ID=${USER_ID}
+      - USER_GID=${USER_GID}
+
+    volumes:
+      # Mount Docker socket to spawn worker containers
+      - /var/run/docker.sock:/var/run/docker.sock
+
+      # Mount workflow directory
+      - ${WORKFLOW_DIR:-./workflow}:/workflow
+
+    working_dir: /workflow
+
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      echo 'Installing Docker client...' &&
+      apk add --no-cache docker-cli &&
+      echo 'Waiting for Redis...' &&
+      sleep 2 &&
+      echo 'Listing workflow directory:' &&
+      ls -la /workflow &&
+      echo 'Starting HyperFlow...' &&
+      hflow run /workflow/workflow.json
+      "
+
+networks:
+  hyperflow-net:
+    name: hyperflow-net
+    driver: bridge
+
+volumes:
+  redis-data:
