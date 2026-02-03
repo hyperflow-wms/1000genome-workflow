@@ -28,7 +28,7 @@ GENERATOR_PATH = "/1000genome-workflow"
 # Path to skill files
 SKILLS_PATH = Path(__file__).parent / "skills"
 
-# Valid divisors of 250,000 for individuals_per_job parameter
+# Valid divisors of 250,000 for ind_jobs parameter (jobs per chromosome)
 VALID_IND_JOBS = [
     1, 2, 4, 5, 8, 10, 16, 20, 25, 40, 50, 100, 125, 200, 250,
     500, 625, 1000, 1250, 2000, 2500, 5000, 6250, 10000, 12500,
@@ -99,8 +99,8 @@ async def list_tools():
             name="generate_workflow",
             description=(
                 "Generate a 1000genome HyperFlow workflow DAG.\n\n"
-                "⚠️ IMPORTANT: Read skill first with read_resource('1000genome://skill')\n\n"
-                "Key constraint: individuals_per_job must divide 250,000 evenly.\n"
+                "⚠️ IMPORTANT: Read skill first with read_resource('file:///1000genome-workflow/skills/SKILL.md')\n\n"
+                "Key constraint: ind_jobs must divide 250,000 evenly.\n"
                 "Valid values: 1, 2, 4, 5, 10, 20, 25, 50, 100, 125, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 250000..."
             ),
             inputSchema={
@@ -116,9 +116,9 @@ async def list_tools():
                         "description": "Workflow version",
                         "default": "1.0.0"
                     },
-                    "individuals_per_job": {
+                    "ind_jobs": {
                         "type": "integer",
-                        "description": "Rows per parallel task. MUST divide 250,000 evenly. Default: 250. Use 50000 for quick tests.",
+                        "description": "Number of parallel jobs per chromosome. MUST divide 250,000 evenly. Higher = more parallelism. Default: 250 (1000 rows/job). Use 5 for quick tests.",
                         "default": 250
                     }
                 },
@@ -168,9 +168,9 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "individuals_per_job": {
+                    "ind_jobs": {
                         "type": "integer",
-                        "description": "Rows per parallel task (must divide 250,000)",
+                        "description": "Number of parallel jobs per chromosome (must divide 250,000)",
                         "default": 250
                     },
                     "chromosomes": {
@@ -206,20 +206,20 @@ async def generate_workflow(arguments: dict):
     """Generate a 1000genome workflow."""
     name = arguments.get("name", "1000genome")
     version = arguments.get("version", "1.0.0")
-    ind_jobs = arguments.get("individuals_per_job", 250)
+    ind_jobs = arguments.get("ind_jobs", 250)
 
-    # Validate individuals_per_job constraint
+    # Validate ind_jobs constraint
     if 250000 % ind_jobs != 0:
         # Find nearest valid values
         nearest = sorted(VALID_IND_JOBS, key=lambda x: abs(x - ind_jobs))[:5]
         return [TextContent(
             type="text",
             text=(
-                f"❌ Error: individuals_per_job={ind_jobs} is invalid.\n\n"
+                f"❌ Error: ind_jobs={ind_jobs} is invalid.\n\n"
                 f"The value must divide 250,000 evenly (each VCF has 250,000 rows).\n\n"
                 f"Nearest valid values: {nearest}\n\n"
                 f"💡 Tip: Read the skill for more details:\n"
-                f"   read_resource('1000genome://skill')"
+                f"   read_resource('file:///1000genome-workflow/skills/SKILL.md')"
             )
         )]
 
@@ -253,7 +253,8 @@ async def generate_workflow(arguments: dict):
             text=(
                 f"✅ Workflow generated successfully!\n\n"
                 f"Parameters:\n"
-                f"  - individuals_per_job: {ind_jobs}\n"
+                f"  - ind_jobs: {ind_jobs} (jobs/chromosome)\n"
+                f"  - rows_per_job: {250000 // ind_jobs}\n"
                 f"  - Total tasks: {task_count}\n\n"
                 f"{json.dumps(workflow, indent=2)}"
             )
@@ -429,8 +430,9 @@ async def validate_workflow(arguments: dict):
 
 async def estimate_tasks(arguments: dict):
     """Estimate task count for given parameters."""
-    ind_jobs = arguments.get("individuals_per_job", 250)
+    ind_jobs = arguments.get("ind_jobs", 250)
     chromosomes = arguments.get("chromosomes", 10)
+    populations = 7  # AFR, ALL, AMR, EAS, EUR, GBR, SAS
 
     # Validate
     if 250000 % ind_jobs != 0:
@@ -438,36 +440,36 @@ async def estimate_tasks(arguments: dict):
         return [TextContent(
             type="text",
             text=(
-                f"❌ Invalid individuals_per_job={ind_jobs}\n"
+                f"❌ Invalid ind_jobs={ind_jobs}\n"
                 f"Must divide 250,000 evenly.\n"
                 f"Nearest valid: {nearest}"
             )
         )]
 
-    # Calculate
-    tasks_per_chr = 250000 // ind_jobs
-    individuals_tasks = chromosomes * tasks_per_chr
+    # Calculate - ind_jobs is the NUMBER of jobs per chromosome
+    rows_per_job = 250000 // ind_jobs
+    individuals_tasks = chromosomes * ind_jobs
     merge_tasks = chromosomes
     sifting_tasks = chromosomes
-    overlap_tasks = chromosomes
-    frequency_tasks = chromosomes
-    populations_tasks = 1
+    # mutation_overlap and frequency run for each chromosome × each population
+    overlap_tasks = chromosomes * populations
+    frequency_tasks = chromosomes * populations
 
-    total = individuals_tasks + merge_tasks + sifting_tasks + overlap_tasks + frequency_tasks + populations_tasks
+    total = individuals_tasks + merge_tasks + sifting_tasks + overlap_tasks + frequency_tasks
 
     estimate = {
         "parameters": {
-            "individuals_per_job": ind_jobs,
+            "ind_jobs": ind_jobs,
             "chromosomes": chromosomes,
-            "tasks_per_chromosome": tasks_per_chr
+            "populations": populations,
+            "rows_per_job": rows_per_job
         },
         "task_breakdown": {
             "individuals": individuals_tasks,
             "individuals_merge": merge_tasks,
             "sifting": sifting_tasks,
             "mutation_overlap": overlap_tasks,
-            "frequency": frequency_tasks,
-            "populations": populations_tasks
+            "frequency": frequency_tasks
         },
         "total_tasks": total
     }

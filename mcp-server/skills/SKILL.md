@@ -6,15 +6,15 @@ Generate HyperFlow workflows for analyzing genetic variation from the 1000 Genom
 
 | Parameter | Description | Default | Constraint |
 |-----------|-------------|---------|------------|
-| `individuals_per_job` | Rows per parallel task | 250 | **Must divide 250,000 evenly** |
+| `ind_jobs` | Number of parallel jobs per chromosome | 250 | **Must divide 250,000 evenly** |
 | `name` | Workflow name | "1000genome" | Any string |
 | `version` | Workflow version | "1.0.0" | Any string |
 
 ## Critical Constraint
 
-**`individuals_per_job` must divide 250,000 evenly.**
+**`ind_jobs` must divide 250,000 evenly.**
 
-Each VCF file has 250,000 rows. The workflow splits processing into parallel tasks, and the division must be exact.
+Each VCF file has 250,000 rows. The `ind_jobs` parameter controls how many parallel jobs process each chromosome. Higher values = more parallelism.
 
 ### Valid Values
 
@@ -26,12 +26,12 @@ Each VCF file has 250,000 rows. The workflow splits processing into parallel tas
 
 ### Recommended Values
 
-| User Intent | Value | Tasks/Chromosome | Use Case |
-|-------------|-------|------------------|----------|
-| Quick test | 50000 | 5 | Testing, development |
-| Default | 250 | 1,000 | Production runs |
-| High parallelism | 25 | 10,000 | HPC clusters |
-| Single task | 250000 | 1 | Debugging |
+| User Intent | ind_jobs | Jobs/Chromosome | Rows/Job | Use Case |
+|-------------|----------|-----------------|----------|----------|
+| Quick test | 5 | 5 | 50,000 | Testing, development |
+| Default | 250 | 250 | 1,000 | Production runs |
+| High parallelism | 2500 | 2,500 | 100 | HPC clusters |
+| Single task | 1 | 1 | 250,000 | Debugging |
 
 ## Parameter Extraction
 
@@ -39,20 +39,20 @@ When a user describes a workflow request, extract parameters as follows:
 
 ### Parallelism Hints
 
-| User Says | Recommended `individuals_per_job` |
-|-----------|-----------------------------------|
-| "quick test", "fast", "small" | 50000 (5 tasks/chr) |
-| "default", "normal" | 250 (1000 tasks/chr) |
-| "parallel", "HPC", "cluster" | 25-50 (5000-10000 tasks/chr) |
-| "single", "sequential" | 250000 (1 task/chr) |
+| User Says | Recommended `ind_jobs` |
+|-----------|------------------------|
+| "quick test", "fast", "small" | 5 (5 jobs/chr) |
+| "default", "normal", "production" | 250 (250 jobs/chr) |
+| "parallel", "HPC", "cluster" | 2500-5000 (high parallelism) |
+| "single", "sequential", "debug" | 1 (1 job/chr) |
 
 ### Invalid Values - Common Mistakes
 
 These values do NOT divide 250,000 evenly and will fail:
 
 - 3, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18, 19...
-- 100000 (leaves remainder)
 - 30, 60, 70, 80, 90...
+- 300, 600, 700...
 
 If user requests an invalid value, suggest the nearest valid alternative.
 
@@ -62,49 +62,47 @@ The workflow processes VCF files through this pipeline:
 
 ```
 VCF Input
-    │
-    ├─► individuals_0 ─┐
-    ├─► individuals_1  │
-    ├─► individuals_2  ├─► individuals_merge ─► sifting ─► mutation_overlap ─► frequency
-    ├─► ...            │                                         ▲
-    └─► individuals_N ─┘                                         │
-                                                          populations
+    |
+    +-> individuals_0 -+
+    +-> individuals_1  |
+    +-> individuals_2  +-> individuals_merge -> sifting -+-> mutation_overlap (x7 populations)
+    +-> ...            |                                 +-> frequency (x7 populations)
+    +-> individuals_N -+
 ```
 
 ### Task Types
 
-| Task | Description |
-|------|-------------|
-| `individuals` | Parse VCF, extract homozygous variants for a subset of rows |
-| `individuals_merge` | Combine outputs from parallel individuals tasks |
-| `sifting` | Filter variants using SIFT scores from annotation files |
-| `mutation_overlap` | Calculate pairwise mutation sharing between individuals |
-| `frequency` | Compute allele frequency distribution |
-| `populations` | Load population sample lists |
+| Task | Count per Chromosome | Description |
+|------|---------------------|-------------|
+| `individuals` | ind_jobs | Parse VCF, extract homozygous variants |
+| `individuals_merge` | 1 | Combine outputs from parallel individuals tasks |
+| `sifting` | 1 | Filter variants using SIFT scores |
+| `mutation_overlap` | 7 | Calculate pairwise sharing (one per population) |
+| `frequency` | 7 | Compute allele frequency (one per population) |
 
 ### Task Count Formula
 
-For `individuals_per_job = N` with C chromosomes:
+For `ind_jobs = N` with C chromosomes and P populations (P=7):
 
 ```
-individuals tasks:       C × (250000 / N)
+individuals tasks:       C x N
 individuals_merge tasks: C
 sifting tasks:           C
-mutation_overlap tasks:  C
-frequency tasks:         C
-populations tasks:       1
-─────────────────────────────────────────
-Total:                   C × (250000/N + 4) + 1
+mutation_overlap tasks:  C x P
+frequency tasks:         C x P
+-----------------------------------------
+Total:                   C x (N + 2 + 2P)
+                       = C x (N + 16)
 ```
 
-**Examples** (10 chromosomes):
+**Examples** (10 chromosomes, 7 populations):
 
-| individuals_per_job | Total Tasks |
-|---------------------|-------------|
-| 250000 | 51 |
-| 50000 | 91 |
-| 250 | 10,041 |
-| 25 | 100,041 |
+| ind_jobs | individuals | merge | sifting | overlap | freq | Total |
+|----------|-------------|-------|---------|---------|------|-------|
+| 1 | 10 | 10 | 10 | 70 | 70 | 170 |
+| 5 | 50 | 10 | 10 | 70 | 70 | 210 |
+| 250 | 2,500 | 10 | 10 | 70 | 70 | 2,660 |
+| 2500 | 25,000 | 10 | 10 | 70 | 70 | 25,160 |
 
 ## Example Requests
 
@@ -114,7 +112,7 @@ Total:                   C × (250000/N + 4) + 1
 **Parameters**:
 ```json
 {
-  "individuals_per_job": 50000,
+  "ind_jobs": 5,
   "name": "1000genome-test"
 }
 ```
@@ -125,23 +123,38 @@ Total:                   C × (250000/N + 4) + 1
 **Parameters**:
 ```json
 {
-  "individuals_per_job": 250,
+  "ind_jobs": 250,
   "name": "1000genome-production"
 }
 ```
 
-### Example 3: Invalid Request
-**User**: "Use 100 parallel jobs per chromosome"
+### Example 3: High Parallelism
+**User**: "Generate a workflow for HPC cluster with maximum parallelism"
 
-**Response**: 100 is not a valid divisor of 250,000. Suggest 125 (2000 tasks/chr) or 100 (2500 tasks/chr).
-
-Wait - 100 IS valid (250000/100 = 2500). Let me check: 250000 % 100 = 0. Yes, 100 is valid.
+**Parameters**:
+```json
+{
+  "ind_jobs": 5000,
+  "name": "1000genome-hpc"
+}
+```
 
 ## Data Files
 
 The workflow uses 10 chromosomes (chr1-chr10), each with:
 - VCF file: `ALL.chr{N}.250000.vcf.gz` (~40-45MB each)
 - Annotation file: `ALL.chr{N}...annotation.vcf.gz` (~90-170MB each)
+
+## Populations
+
+7 population groups are analyzed:
+- **AFR** (661 samples): African
+- **AMR** (347 samples): Admixed American
+- **EAS** (504 samples): East Asian
+- **EUR** (503 samples): European
+- **SAS** (489 samples): South Asian
+- **GBR** (91 samples): British (subset of EUR)
+- **ALL** (2504 samples): All populations combined
 
 ## Scientific Purpose
 
