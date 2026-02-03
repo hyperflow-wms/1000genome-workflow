@@ -6,15 +6,43 @@ HyperFlow port of the Pegasus 1000genome workflow for identifying mutational ove
 
 This workflow analyzes genetic variation data from the 1000 Genomes Project to identify mutational overlaps across populations. It processes VCF files for multiple chromosomes through a series of analysis steps including individual processing, sifting, mutation overlap detection, and frequency calculation.
 
+```mermaid
+flowchart LR
+    subgraph Input
+        VCF["VCF Files<br/>(variants)"]
+        ANN["Annotations<br/>(SIFT scores)"]
+        POP["Population<br/>files"]
+    end
+
+    subgraph Workflow["HyperFlow Workflow"]
+        IND["individuals<br/>×N parallel"]
+        MRG["merge"]
+        SFT["sifting"]
+        MUT["mutation_overlap<br/>×7 populations"]
+        FRQ["frequency<br/>×7 populations"]
+    end
+
+    subgraph Output
+        TAR["Analysis<br/>results"]
+        PLT["Plots"]
+    end
+
+    VCF --> IND --> MRG --> MUT & FRQ --> TAR & PLT
+    ANN --> SFT --> MUT
+    POP --> MUT & FRQ
+```
+
 ## Repository Structure
 
 ```
 1000genome-workflow/
+├── workflow-composer/      # Native workflow generator (recommended)
 ├── worker-base-image/      # Base Docker image with analysis scripts
 ├── worker-image/           # HyperFlow worker image (Kubernetes)
-├── workflow-generator/     # Workflow DAG generation tools
-├── mcp-server/             # MCP server for AI-assisted workflow generation
+├── workflow-generator/     # Legacy DAG generation (Pegasus-based)
+├── mcp-server/             # MCP server for AI-assisted generation
 ├── data-container/         # Input data + workflow.json (~1.7GB image)
+├── tests/integration/      # Integration tests with Docker Compose
 ├── scripts/                # Utility scripts
 └── fargate/                # AWS Fargate-specific components (legacy)
 ```
@@ -71,7 +99,33 @@ make push-all
 
 ## Generating Workflows
 
-Using Docker:
+### Using workflow-composer (recommended)
+
+The `workflow-composer` package generates HyperFlow workflows natively in Python:
+
+```bash
+# Install
+pip install -e workflow-composer
+
+# Generate workflow from data.csv
+workflow-composer generate \
+    --data-csv workflow-generator/data.csv \
+    --populations-dir workflow-generator/data/populations \
+    --parallelism medium \
+    --output workflow.json
+```
+
+**Parallelism presets:**
+| Preset | Jobs per chromosome | Use case |
+|--------|---------------------|----------|
+| small | 10 | Testing, small regions |
+| medium | 50 | Standard analysis |
+| large | 250 | Full genome |
+
+See [workflow-composer/README.md](workflow-composer/README.md) for details.
+
+### Using Docker (legacy)
+
 ```bash
 make generate
 ```
@@ -99,6 +153,22 @@ Add to Claude Desktop configuration:
   }
 }
 ```
+
+## Integration Tests
+
+Run integration tests to validate the complete pipeline:
+
+```bash
+cd tests/integration
+
+# Test with micro dataset (fast, ~2-3 minutes)
+./test-workflow-composer.sh --parallelism small --yes
+
+# Test with real 1000 Genomes data via tabix
+./test-hla-region.sh --quick --yes
+```
+
+See [tests/integration/README.md](tests/integration/README.md) for detailed documentation on the end-to-end workflow execution pipeline.
 
 ## License
 
