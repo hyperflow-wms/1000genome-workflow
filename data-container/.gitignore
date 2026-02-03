@@ -1,3 +1,8 @@
-# Annotation files are too large for git (~1.2GB)
-# Use the Docker image or download script instead
+# Data files are stored in Docker image only
+# Use: docker pull hyperflowwms/1000genome-data:1.0
+
+# VCF files (~425MB total)
+data/20130502/*.vcf.gz
+
+# Annotation files (~1.2GB total)
 data/20130502/*.annotation.vcf.gz
