@@ -22,7 +22,8 @@ def processing(inputfile, columfile, c, counter, stop, total):
     tic = time.perf_counter()
 
     counter = int(counter)
-    ending = int(min(stop, total))
+    stop = int(stop)
+    total = int(total)
 
     ### step 0
     unzipped = 'ALL.chr{}.individuals.vcf'.format(c)
@@ -34,6 +35,13 @@ def processing(inputfile, columfile, c, counter, stop, total):
     #     decompress(inputfile, unzipped)
 
     rawdata = readfile(inputfile)
+
+    # Self-discover total if -1 sentinel is passed
+    if total == -1:
+        total = len(rawdata)
+        print("== Auto-discovered total lines: {}".format(total), flush=True)
+
+    ending = min(stop, total)
 
     ### step 2
     ## Giving a different directory name (chromosome no-counter) for each individuals job
@@ -49,7 +57,6 @@ def processing(inputfile, columfile, c, counter, stop, total):
     # We consider the line from counter to stop and we don't over total, then we remove lines starting with '#'
     #sed -n "$counter"','"$stop"'p;'"$total"'q' $unzipped | grep -ve "#" > cc
     regex = re.compile('(?!#)')
-    # print(counter, min(stop, total), data[int(counter):int(min(stop, total))] )
     data = list(filter(regex.match, rawdata[counter:ending]))
     data = [x.rstrip('\n') for x in data] # Remove \n from words 
 
