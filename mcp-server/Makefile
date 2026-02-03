@@ -1,6 +1,6 @@
 REPO_NAME = 1000genome-mcp
 PREFIX = hyperflowwms
-VERSION = 1.0
+VERSION = 1.1
 TAG = $(VERSION)
 
 all: push

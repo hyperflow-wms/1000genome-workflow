@@ -2,17 +2,22 @@
 """
 MCP Server for 1000genome workflow generation.
 
-Provides tools for generating and analyzing HyperFlow workflows
-for the 1000 Genomes Project mutation overlap analysis.
+Provides tools and resources (skills) for generating and analyzing HyperFlow
+workflows for the 1000 Genomes Project mutation overlap analysis.
+
+Resources (Skills):
+- 1000genome://skill - Parameter extraction rules and constraints
+- 1000genome://populations - Population codes and sample counts
+- 1000genome://research - Scientific context and runtime estimates
 """
 
 import json
 import subprocess
-import sys
 import os
+from pathlib import Path
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.types import Tool, TextContent, Resource
 
 # Initialize MCP server
 server = Server("1000genome-workflow")
@@ -20,6 +25,71 @@ server = Server("1000genome-workflow")
 # Path to workflow generator scripts
 GENERATOR_PATH = "/1000genome-workflow"
 
+# Path to skill files
+SKILLS_PATH = Path(__file__).parent / "skills"
+
+# Valid divisors of 250,000 for individuals_per_job parameter
+VALID_IND_JOBS = [
+    1, 2, 4, 5, 8, 10, 16, 20, 25, 40, 50, 100, 125, 200, 250,
+    500, 625, 1000, 1250, 2000, 2500, 5000, 6250, 10000, 12500,
+    25000, 50000, 62500, 125000, 250000
+]
+
+# Skill resources definition
+SKILL_RESOURCES = [
+    {
+        "uri": "file:///1000genome-workflow/skills/SKILL.md",
+        "name": "Workflow Generation Skill",
+        "description": "Parameter extraction rules, constraints, and examples. READ THIS FIRST before using generate_workflow.",
+        "path": "SKILL.md"
+    },
+    {
+        "uri": "file:///1000genome-workflow/skills/populations.md",
+        "name": "Population Reference",
+        "description": "Details on 7 population groups (AFR, AMR, EAS, EUR, SAS, GBR, ALL) with sample counts and natural language mappings.",
+        "path": "references/populations.md"
+    },
+    {
+        "uri": "file:///1000genome-workflow/skills/research.md",
+        "name": "Research Contexts",
+        "description": "Scientific background, task descriptions, memory/runtime estimates, and common analysis patterns.",
+        "path": "references/research-contexts.md"
+    }
+]
+
+
+# ============ RESOURCES (SKILLS) ============
+
+@server.list_resources()
+async def list_resources():
+    """List available skill resources."""
+    return [
+        Resource(
+            uri=r["uri"],
+            name=r["name"],
+            description=r["description"],
+            mimeType="text/markdown"
+        )
+        for r in SKILL_RESOURCES
+    ]
+
+
+@server.read_resource()
+async def read_resource(uri: str):
+    """Read a skill resource by URI."""
+    uri_str = str(uri)  # Convert AnyUrl to string for comparison
+    for r in SKILL_RESOURCES:
+        if r["uri"] == uri_str:
+            skill_path = SKILLS_PATH / r["path"]
+            if skill_path.exists():
+                return skill_path.read_text()
+            return f"Error: Skill file not found: {r['path']}"
+
+    available = ", ".join(r["uri"] for r in SKILL_RESOURCES)
+    return f"Unknown resource: {uri}\n\nAvailable resources: {available}"
+
+
+# ============ TOOLS ============
 
 @server.list_tools()
 async def list_tools():
@@ -27,7 +97,12 @@ async def list_tools():
     return [
         Tool(
             name="generate_workflow",
-            description="Generate a 1000genome HyperFlow workflow DAG",
+            description=(
+                "Generate a 1000genome HyperFlow workflow DAG.\n\n"
+                "⚠️ IMPORTANT: Read skill first with read_resource('1000genome://skill')\n\n"
+                "Key constraint: individuals_per_job must divide 250,000 evenly.\n"
+                "Valid values: 1, 2, 4, 5, 10, 20, 25, 50, 100, 125, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 250000..."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -43,7 +118,7 @@ async def list_tools():
                     },
                     "individuals_per_job": {
                         "type": "integer",
-                        "description": "Number of individuals to process per job (default: 250)",
+                        "description": "Rows per parallel task. MUST divide 250,000 evenly. Default: 250. Use 50000 for quick tests.",
                         "default": 250
                     }
                 },
@@ -66,7 +141,7 @@ async def list_tools():
         ),
         Tool(
             name="list_chromosomes",
-            description="List available chromosome data files",
+            description="List available chromosome data files from data.csv",
             inputSchema={
                 "type": "object",
                 "properties": {},
@@ -86,6 +161,26 @@ async def list_tools():
                 },
                 "required": ["workflow_json"]
             }
+        ),
+        Tool(
+            name="estimate_tasks",
+            description="Estimate task count for given parameters without generating workflow",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "individuals_per_job": {
+                        "type": "integer",
+                        "description": "Rows per parallel task (must divide 250,000)",
+                        "default": 250
+                    },
+                    "chromosomes": {
+                        "type": "integer",
+                        "description": "Number of chromosomes (default: 10)",
+                        "default": 10
+                    }
+                },
+                "required": []
+            }
         )
     ]
 
@@ -93,7 +188,6 @@ async def list_tools():
 @server.call_tool()
 async def call_tool(name: str, arguments: dict):
     """Handle tool calls."""
-
     if name == "generate_workflow":
         return await generate_workflow(arguments)
     elif name == "get_workflow_stats":
@@ -102,6 +196,8 @@ async def call_tool(name: str, arguments: dict):
         return await list_chromosomes(arguments)
     elif name == "validate_workflow":
         return await validate_workflow(arguments)
+    elif name == "estimate_tasks":
+        return await estimate_tasks(arguments)
     else:
         return [TextContent(type="text", text=f"Unknown tool: {name}")]
 
@@ -111,6 +207,21 @@ async def generate_workflow(arguments: dict):
     name = arguments.get("name", "1000genome")
     version = arguments.get("version", "1.0.0")
     ind_jobs = arguments.get("individuals_per_job", 250)
+
+    # Validate individuals_per_job constraint
+    if 250000 % ind_jobs != 0:
+        # Find nearest valid values
+        nearest = sorted(VALID_IND_JOBS, key=lambda x: abs(x - ind_jobs))[:5]
+        return [TextContent(
+            type="text",
+            text=(
+                f"❌ Error: individuals_per_job={ind_jobs} is invalid.\n\n"
+                f"The value must divide 250,000 evenly (each VCF has 250,000 rows).\n\n"
+                f"Nearest valid values: {nearest}\n\n"
+                f"💡 Tip: Read the skill for more details:\n"
+                f"   read_resource('1000genome://skill')"
+            )
+        )]
 
     try:
         # Change to generator directory
@@ -134,9 +245,18 @@ async def generate_workflow(arguments: dict):
         workflow["name"] = name
         workflow["version"] = version
 
+        # Add generation info
+        task_count = len(workflow.get("processes", []))
+
         return [TextContent(
             type="text",
-            text=json.dumps(workflow, indent=2)
+            text=(
+                f"✅ Workflow generated successfully!\n\n"
+                f"Parameters:\n"
+                f"  - individuals_per_job: {ind_jobs}\n"
+                f"  - Total tasks: {task_count}\n\n"
+                f"{json.dumps(workflow, indent=2)}"
+            )
         )]
 
     except subprocess.CalledProcessError as e:
@@ -305,6 +425,57 @@ async def validate_workflow(arguments: dict):
             type="text",
             text=f"Error: {str(e)}"
         )]
+
+
+async def estimate_tasks(arguments: dict):
+    """Estimate task count for given parameters."""
+    ind_jobs = arguments.get("individuals_per_job", 250)
+    chromosomes = arguments.get("chromosomes", 10)
+
+    # Validate
+    if 250000 % ind_jobs != 0:
+        nearest = sorted(VALID_IND_JOBS, key=lambda x: abs(x - ind_jobs))[:5]
+        return [TextContent(
+            type="text",
+            text=(
+                f"❌ Invalid individuals_per_job={ind_jobs}\n"
+                f"Must divide 250,000 evenly.\n"
+                f"Nearest valid: {nearest}"
+            )
+        )]
+
+    # Calculate
+    tasks_per_chr = 250000 // ind_jobs
+    individuals_tasks = chromosomes * tasks_per_chr
+    merge_tasks = chromosomes
+    sifting_tasks = chromosomes
+    overlap_tasks = chromosomes
+    frequency_tasks = chromosomes
+    populations_tasks = 1
+
+    total = individuals_tasks + merge_tasks + sifting_tasks + overlap_tasks + frequency_tasks + populations_tasks
+
+    estimate = {
+        "parameters": {
+            "individuals_per_job": ind_jobs,
+            "chromosomes": chromosomes,
+            "tasks_per_chromosome": tasks_per_chr
+        },
+        "task_breakdown": {
+            "individuals": individuals_tasks,
+            "individuals_merge": merge_tasks,
+            "sifting": sifting_tasks,
+            "mutation_overlap": overlap_tasks,
+            "frequency": frequency_tasks,
+            "populations": populations_tasks
+        },
+        "total_tasks": total
+    }
+
+    return [TextContent(
+        type="text",
+        text=json.dumps(estimate, indent=2)
+    )]
 
 
 async def main():
