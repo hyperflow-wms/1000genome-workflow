@@ -1,0 +1,41 @@
+[project]
+name = "workflow-composer"
+version = "0.1.0"
+description = "Generate genomics workflow plans from natural language"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+mcp = [
+    "mcp>=0.1.0",
+]
+llm = [
+    "litellm>=1.0",
+    "instructor>=1.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+all = [
+    "workflow-composer[mcp,llm,dev]",
+]
+
+[project.scripts]
+g1kwf = "workflow_composer.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/workflow_composer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

@@ -5,4 +5,8 @@ data/20130502/*.vcf
 data/20130502/sifting/*.vcf
 .DS_Store
 *.pyc
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.env
 node_modules
