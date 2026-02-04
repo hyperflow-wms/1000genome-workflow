@@ -184,8 +184,8 @@ class TestTaskCounts:
         expected_tasks = 10 * (5 + 2 + 2*7)
         assert len(wf["processes"]) == expected_tasks
 
-    def test_signal_count(self):
-        """Verify signal count for default configuration."""
+    def test_file_count(self):
+        """Verify file count for default configuration."""
         if not (WORKFLOW_GENERATOR_PATH / "data.csv").exists():
             pytest.skip("workflow-generator data not available")
 

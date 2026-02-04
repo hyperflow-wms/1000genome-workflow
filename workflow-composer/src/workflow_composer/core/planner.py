@@ -174,9 +174,9 @@ def estimate_task_counts(
     task_count = num_chromosomes * (ind_jobs + 2 + 2 * num_populations)
 
     # File count is approximately 2× task count (inputs + outputs)
-    signal_count = task_count * 2
+    file_count = task_count * 2
 
-    return task_count, signal_count
+    return task_count, file_count
 
 
 def create_advisory_plan(
@@ -206,7 +206,7 @@ def create_advisory_plan(
     ind_jobs = calculate_ind_jobs(intent, parallelism)
 
     # Step 3: Estimate task counts (without generating)
-    task_count, signal_count = estimate_task_counts(intent, ind_jobs)
+    task_count, file_count = estimate_task_counts(intent, ind_jobs)
 
     # Step 4: Generate descriptions
     description = generate_description(intent, data_plan, task_count)
@@ -242,7 +242,7 @@ def create_advisory_plan(
         estimated_runtime_minutes=estimated_runtime,
         estimated_storage_gb=estimated_storage,
         task_count=task_count,
-        signal_count=signal_count
+        file_count=file_count
     )
 
 
@@ -303,7 +303,7 @@ def plan_workflow(
 
     # Step 6: Extract statistics
     task_count = len(workflow["processes"])
-    signal_count = len(workflow["signals"])
+    file_count = len(workflow["signals"])
 
     # Step 7: Generate descriptions
     description = generate_description(intent, data_plan, task_count)
@@ -339,5 +339,5 @@ def plan_workflow(
         estimated_runtime_minutes=estimated_runtime,
         estimated_storage_gb=estimated_storage,
         task_count=task_count,
-        signal_count=signal_count
+        file_count=file_count
     )

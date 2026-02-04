@@ -4,6 +4,13 @@ Uses LiteLLM + Instructor for provider-agnostic structured extraction.
 """
 from __future__ import annotations
 
+import warnings
+
+# Suppress deprecation warnings from instructor's Google dependencies
+# (we use LiteLLM, not the deprecated google.generativeai directly)
+warnings.filterwarnings("ignore", category=FutureWarning, module="google")
+warnings.filterwarnings("ignore", category=FutureWarning, module="instructor.providers.gemini")
+
 try:
     import instructor
     import litellm

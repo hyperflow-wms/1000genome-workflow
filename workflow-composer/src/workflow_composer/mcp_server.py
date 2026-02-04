@@ -265,7 +265,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
 ### Statistics
 - Tasks: {plan.task_count}
-- Files: {plan.signal_count}
+- Files: {plan.file_count}
 
 ### Data Preparation
 - Source: {plan.data_preparation.source_type.upper()} ({plan.data_preparation.base_url})
@@ -379,13 +379,13 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
             # Format response
             task_count = len(workflow["processes"])
-            signal_count = len(workflow["signals"])
+            file_count = len(workflow["signals"])
 
             response = f"""## Generated Workflow
 
 ### Statistics
 - Tasks: {task_count}
-- Files: {signal_count}
+- Files: {file_count}
 - Chromosomes: {len(chromosomes)}
 - Populations: {len(populations)}
 - Parallelism: {parallelism} (ind_jobs={ind_jobs})

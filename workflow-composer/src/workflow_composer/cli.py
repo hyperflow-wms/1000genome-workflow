@@ -154,7 +154,7 @@ def compose(question: str, model: str, output_format: str, compute_env: str,
 
 ## Statistics
 - Tasks: {plan.task_count}
-- Files: {plan.signal_count}
+- Files: {plan.file_count}
 
 ## Data Preparation
 Source: {plan.data_preparation.source_type}

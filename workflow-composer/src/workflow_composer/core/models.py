@@ -111,4 +111,4 @@ class WorkflowPlan(BaseModel):
 
     # Statistics
     task_count: int
-    signal_count: int
+    file_count: int
