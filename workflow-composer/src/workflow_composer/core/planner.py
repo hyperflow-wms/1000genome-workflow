@@ -147,7 +147,7 @@ def estimate_task_counts(
     intent: ResearchIntent,
     ind_jobs: int
 ) -> tuple[int, int]:
-    """Estimate task and signal counts without needing actual data files.
+    """Estimate task and file counts without needing actual data files.
 
     Formula: total_tasks = C × (ind_jobs + 2 + 2P)
     where:
@@ -156,7 +156,7 @@ def estimate_task_counts(
       P = number of populations
 
     Returns:
-        Tuple of (task_count, signal_count)
+        Tuple of (task_count, file_count)
     """
     # Determine chromosome count
     if intent.regions:
@@ -173,7 +173,7 @@ def estimate_task_counts(
     # Task count formula: C × (ind_jobs + 1 merge + 1 sift + 2P analysis)
     task_count = num_chromosomes * (ind_jobs + 2 + 2 * num_populations)
 
-    # Signal count is approximately 2× task count (inputs + outputs)
+    # File count is approximately 2× task count (inputs + outputs)
     signal_count = task_count * 2
 
     return task_count, signal_count

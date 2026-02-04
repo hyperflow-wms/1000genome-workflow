@@ -80,7 +80,7 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
                 f.write(result)
             click.echo(f"Workflow written to {output}", err=True)
             click.echo(f"  Tasks: {len(workflow['processes'])}", err=True)
-            click.echo(f"  Signals: {len(workflow['signals'])}", err=True)
+            click.echo(f"  Files: {len(workflow['signals'])}", err=True)
         else:
             click.echo(result)
 
@@ -154,7 +154,7 @@ def compose(question: str, model: str, output_format: str, compute_env: str,
 
 ## Statistics
 - Tasks: {plan.task_count}
-- Signals: {plan.signal_count}
+- Files: {plan.signal_count}
 
 ## Data Preparation
 Source: {plan.data_preparation.source_type}

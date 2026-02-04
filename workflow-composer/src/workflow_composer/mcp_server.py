@@ -265,7 +265,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
 ### Statistics
 - Tasks: {plan.task_count}
-- Signals: {plan.signal_count}
+- Files: {plan.signal_count}
 
 ### Data Preparation
 - Source: {plan.data_preparation.source_type.upper()} ({plan.data_preparation.base_url})
@@ -385,7 +385,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
 ### Statistics
 - Tasks: {task_count}
-- Signals: {signal_count}
+- Files: {signal_count}
 - Chromosomes: {len(chromosomes)}
 - Populations: {len(populations)}
 - Parallelism: {parallelism} (ind_jobs={ind_jobs})

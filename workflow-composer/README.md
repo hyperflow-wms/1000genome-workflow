@@ -129,7 +129,7 @@ The native generator produces **functionally equivalent** but not byte-identical
 
 | Aspect | daxgen.py + hflow-convert-dax | Native Generator |
 |--------|-------------------------------|------------------|
-| Signal count | 2689 (one duplicate bug) | 2688 (correct) |
+| File count | 2689 (one duplicate bug) | 2688 (correct) |
 | Population order | Non-deterministic | Sorted alphabetically |
 
 ## Test Data vs Production Data

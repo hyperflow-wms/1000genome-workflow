@@ -120,12 +120,20 @@ fi
 log_phase "PHASE 1: PLANNING (before data exists)"
 
 # Step 1.1: Estimate variant count using workflow-composer
-log_info "Step 1.1: Estimating variant count for HLA region..."
+log_info "Step 1.1: Estimating variant count for region chr${HLA_CHROM}:${HLA_START}-${HLA_END}..."
 
-ESTIMATED_COUNT=$(python3 << 'PYEOF'
-from workflow_composer.core.data_resolver import estimate_variant_count, resolve_region
+ESTIMATED_COUNT=$(python3 << PYEOF
+from workflow_composer.core.data_resolver import estimate_variant_count
+from workflow_composer.core.models import GenomicRegion
 
-region = resolve_region("HLA")
+# Use actual region coordinates (respects quick mode)
+region = GenomicRegion(
+    name="HLA",
+    chromosome="${HLA_CHROM}",
+    start=${HLA_START},
+    end=${HLA_END},
+    context="immune function"
+)
 estimated = estimate_variant_count(region=region)
 print(estimated)
 PYEOF
@@ -165,16 +173,16 @@ with open("$WORKFLOW_DIR/workflow-estimated.json", "w") as f:
     json.dump(workflow, f, indent=2)
 
 print(f"Tasks: {len(workflow['processes'])}")
-print(f"Signals: {len(workflow['signals'])}")
+print(f"Files: {len(workflow['signals'])}")
 PYEOF
 
 log_success "Estimated workflow saved to workflow-estimated.json"
 
 # Show estimated workflow stats
 ESTIMATED_TASKS=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow-estimated.json'))['processes']))")
-ESTIMATED_SIGNALS=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow-estimated.json'))['signals']))")
+ESTIMATED_FILES=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow-estimated.json'))['signals']))")
 echo "  Estimated tasks: $ESTIMATED_TASKS"
-echo "  Estimated signals: $ESTIMATED_SIGNALS"
+echo "  Estimated files: $ESTIMATED_FILES"
 
 echo ""
 log_info "Planning phase complete. At this point, the user/agent can:"
@@ -267,16 +275,16 @@ log_success "Exact workflow generated"
 
 # Compare workflows
 EXACT_TASKS=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow.json'))['processes']))")
-EXACT_SIGNALS=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow.json'))['signals']))")
+EXACT_FILES=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow.json'))['signals']))")
 
 echo ""
 echo "┌─────────────────────────────────────────┐"
 echo "│  WORKFLOW COMPARISON                    │"
 echo "├─────────────────────────────────────────┤"
 echo "│  Estimated workflow:                    │"
-printf "│    Tasks: %3d   Signals: %3d           │\n" $ESTIMATED_TASKS $ESTIMATED_SIGNALS
+printf "│    Tasks: %3d   Files: %3d             │\n" $ESTIMATED_TASKS $ESTIMATED_FILES
 echo "│  Exact workflow:                        │"
-printf "│    Tasks: %3d   Signals: %3d           │\n" $EXACT_TASKS $EXACT_SIGNALS
+printf "│    Tasks: %3d   Files: %3d             │\n" $EXACT_TASKS $EXACT_FILES
 echo "└─────────────────────────────────────────┘"
 echo ""
 
