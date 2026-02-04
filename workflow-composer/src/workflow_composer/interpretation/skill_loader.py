@@ -3,7 +3,8 @@ Load skills documents for LLM context.
 """
 from pathlib import Path
 
-SKILL_DIR = Path(__file__).parent.parent.parent.parent / "skills"
+# Skills are inside the package (src/workflow_composer/skills/)
+SKILL_DIR = Path(__file__).parent.parent / "skills"
 
 SKILL_FILES = [
     "SKILL.md",

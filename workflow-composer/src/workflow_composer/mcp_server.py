@@ -13,7 +13,7 @@ except ImportError:
     HAS_MCP = False
 
 from .core.models import ResearchIntent, GenomicRegion, OutputFormat
-from .core.planner import plan_workflow
+from .core.planner import create_advisory_plan
 from .core.data_resolver import resolve_region, KNOWN_REGIONS
 
 if HAS_MCP:
@@ -57,15 +57,16 @@ if HAS_MCP:
         return [
             Tool(
                 name="plan_workflow",
-                description="""Generate a workflow plan for population genetics research.
+                description="""Generate an advisory workflow plan for population genetics research.
 
-Returns a complete plan including:
+Returns a planning document including:
 - Human-readable description
-- Data preparation steps
-- Workflow (HyperFlow JSON)
-- Execution hints and estimates
+- Data preparation steps (tabix commands, file downloads)
+- Estimated task counts and runtime
+- Execution hints and recommendations
 
-The plan should be reviewed before execution.""",
+This is an ADVISORY plan - actual workflow.json generation requires
+data files and should be done using the CLI: g1kwf generate""",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -144,7 +145,7 @@ The plan should be reviewed before execution.""",
                 focus=arguments.get("focus", "all_variants")
             )
 
-            plan = plan_workflow(
+            plan = create_advisory_plan(
                 intent=intent,
                 output_format=OutputFormat(arguments.get("output_format", "hyperflow")),
                 compute_environment=arguments.get("compute_environment", "aws")
@@ -185,10 +186,13 @@ The plan should be reviewed before execution.""",
 
 ---
 
-*Review this plan. If acceptable, the workflow JSON can be passed to execution agents.*
+*This is an advisory plan. To generate the actual workflow.json:*
+1. Extract data using the steps above
+2. Create data.csv with VCF file paths and row counts
+3. Run: `g1kwf generate --data-csv data.csv --populations-dir <dir> --output workflow.json`
 
 <details>
-<summary>Full Plan JSON</summary>
+<summary>Full Plan Details (JSON)</summary>
 
 ```json
 {plan.model_dump_json(indent=2)}

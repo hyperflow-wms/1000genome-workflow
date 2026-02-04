@@ -143,6 +143,109 @@ def estimate_runtime(intent: ResearchIntent, data_plan: DataPreparationPlan, tas
     return int(base_time + transfer_time + analysis_time)
 
 
+def estimate_task_counts(
+    intent: ResearchIntent,
+    ind_jobs: int
+) -> tuple[int, int]:
+    """Estimate task and signal counts without needing actual data files.
+
+    Formula: total_tasks = C × (ind_jobs + 2 + 2P)
+    where:
+      C = number of chromosomes (default 1 for region-based)
+      ind_jobs = parallelism preset (10/50/250)
+      P = number of populations
+
+    Returns:
+        Tuple of (task_count, signal_count)
+    """
+    # Determine chromosome count
+    if intent.regions:
+        # For regions, count unique chromosomes
+        num_chromosomes = len(set(r.chromosome for r in intent.regions))
+    elif intent.chromosomes:
+        num_chromosomes = len(intent.chromosomes)
+    else:
+        # Default to full genome (22 autosomes + X + Y)
+        num_chromosomes = 24
+
+    num_populations = len(intent.populations) if intent.populations else 7
+
+    # Task count formula: C × (ind_jobs + 1 merge + 1 sift + 2P analysis)
+    task_count = num_chromosomes * (ind_jobs + 2 + 2 * num_populations)
+
+    # Signal count is approximately 2× task count (inputs + outputs)
+    signal_count = task_count * 2
+
+    return task_count, signal_count
+
+
+def create_advisory_plan(
+    intent: ResearchIntent,
+    output_format: OutputFormat = OutputFormat.HYPERFLOW,
+    compute_environment: str = "aws",
+    parallelism: str | None = None
+) -> WorkflowPlan:
+    """Create an advisory workflow plan without requiring actual data files.
+
+    This is designed for MCP server use where we want to describe what a workflow
+    would look like without needing data.csv or population files.
+
+    Args:
+        intent: Structured research intent
+        output_format: Target workflow format
+        compute_environment: Target environment (aws, gcp, local)
+        parallelism: Parallelism preset ("small", "medium", "large") or None for auto
+
+    Returns:
+        WorkflowPlan with estimated counts (workflow field will be empty)
+    """
+    # Step 1: Create data preparation plan
+    data_plan = create_data_preparation_plan(intent, compute_environment)
+
+    # Step 2: Calculate appropriate parallelism
+    ind_jobs = calculate_ind_jobs(intent, parallelism)
+
+    # Step 3: Estimate task counts (without generating)
+    task_count, signal_count = estimate_task_counts(intent, ind_jobs)
+
+    # Step 4: Generate descriptions
+    description = generate_description(intent, data_plan, task_count)
+    rationale = generate_rationale(intent, data_plan, compute_environment)
+
+    # Step 5: Calculate hints and estimates
+    execution_hints = ExecutionHints(
+        prefer_remote_extraction=data_plan.use_remote_extraction,
+        parallel_population_analysis=len(intent.populations) > 1,
+        estimated_memory_per_task_gb=2.0,
+        recommended_parallelism=min(task_count, 100)
+    )
+
+    estimated_runtime = estimate_runtime(intent, data_plan, task_count)
+    estimated_storage = data_plan.estimated_transfer_mb / 1024 * 2  # Input + output
+
+    return WorkflowPlan(
+        description=description,
+        rationale=rationale,
+        data_preparation=data_plan,
+        workflow={},  # Empty - advisory only
+        output_format=output_format,
+        execution_hints=execution_hints,
+        parameters_used={
+            "analysis_type": intent.analysis_type,
+            "populations": intent.populations,
+            "chromosomes": intent.chromosomes,
+            "regions": [r.model_dump() for r in intent.regions] if intent.regions else None,
+            "focus": intent.focus,
+            "compute_environment": compute_environment,
+            "ind_jobs": ind_jobs
+        },
+        estimated_runtime_minutes=estimated_runtime,
+        estimated_storage_gb=estimated_storage,
+        task_count=task_count,
+        signal_count=signal_count
+    )
+
+
 def plan_workflow(
     intent: ResearchIntent,
     output_format: OutputFormat = OutputFormat.HYPERFLOW,
