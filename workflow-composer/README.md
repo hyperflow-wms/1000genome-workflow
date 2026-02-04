@@ -116,10 +116,7 @@ pytest tests/ -v
 
 ## Detailed Documentation
 
-### Phase Details
-
-<details>
-<summary><strong>INTERPRET</strong> — Parse research question</summary>
+### INTERPRET — Parse research question
 
 The researcher asks a question like *"Do European and African populations show different mutation patterns in the HLA region?"*
 
@@ -130,10 +127,8 @@ The LLM extracts:
 - **Variant focus**: all_variants
 
 Output: `ResearchIntent` — a structured contract for downstream phases.
-</details>
 
-<details>
-<summary><strong>PLAN</strong> — Estimate costs and generate preliminary workflow</summary>
+### PLAN — Estimate costs and generate preliminary workflow
 
 Resolves the abstract request to concrete data sources:
 
@@ -142,10 +137,8 @@ Resolves the abstract request to concrete data sources:
 - **Estimated workflow**: Complete HyperFlow DAG based on estimated variant counts
 
 This enables early review before committing to large downloads.
-</details>
 
-<details>
-<summary><strong>EXTRACT</strong> — Acquire genomic data</summary>
+### EXTRACT — Acquire genomic data
 
 Executes data preparation from the plan:
 
@@ -156,10 +149,8 @@ tabix -h "https://ftp.1000genomes.ebi.ac.uk/.../ALL.chr6...vcf.gz" \
 ```
 
 Produces VCF files + `data.csv` manifest with actual variant counts.
-</details>
 
-<details>
-<summary><strong>GENERATE</strong> — Create production workflow</summary>
+### GENERATE — Create production workflow
 
 Regenerates workflow with exact task boundaries from actual data:
 
@@ -175,10 +166,8 @@ g1kwf generate --data-csv data.csv --populations-dir populations/ -o workflow.js
 ```
 
 Task parallelism can be tuned based on cluster size (vCPUs).
-</details>
 
-<details>
-<summary><strong>EXECUTE</strong> — Run via HyperFlow</summary>
+### EXECUTE — Run via HyperFlow
 
 Submit `workflow.json` to HyperFlow for execution on your compute infrastructure (Kubernetes, HPC cluster, or local Docker for testing).
 
@@ -189,7 +178,6 @@ Submit `workflow.json` to HyperFlow for execution on your compute infrastructure
 4. `frequency` — Calculate allele frequencies
 
 **Outputs:** `chr{N}-{POP}.tar.gz`, `chr{N}-{POP}-freq.tar.gz`
-</details>
 
 ### MCP Tools Reference
 
