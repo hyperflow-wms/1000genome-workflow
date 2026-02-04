@@ -46,7 +46,7 @@ flowchart LR
 ## Key Features
 
 - **Dual-mode operation**: MCP server (chat) + CLI (standalone)
-- **Native workflow generation**: Direct HyperFlow JSON output (no Pegasus dependency)
+- **Native workflow generation**: Direct HyperFlow JSON output 
 - **Human-in-the-loop**: Plans returned for review before execution
 - **Structured contracts**: Pydantic models for validation and documentation
 - **Format export**: HyperFlow and WfCommons formats supported
@@ -69,7 +69,7 @@ pip install -e ".[all]"
 
 ## Usage
 
-### Direct Workflow Generation (daxgen.py replacement)
+### Direct Workflow Generation 
 
 ```bash
 # Generate HyperFlow workflow directly
@@ -207,14 +207,6 @@ pytest tests/ -v
 pytest tests/test_generator.py -v
 ```
 
-## Known Differences from daxgen.py
-
-The native generator produces **functionally equivalent** but not byte-identical output:
-
-| Aspect | daxgen.py + hflow-convert-dax | Native Generator |
-|--------|-------------------------------|------------------|
-| File count | 2689 (one duplicate bug) | 2688 (correct) |
-| Population order | Non-deterministic | Sorted alphabetically |
 
 ## Test Data vs Production Data
 
