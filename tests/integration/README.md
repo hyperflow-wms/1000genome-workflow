@@ -65,8 +65,19 @@ Use `-y` to override and force execution.
 ## Prerequisites
 
 - Docker and Docker Compose
-- workflow-composer installed: `pip install -e workflow-composer`
+- workflow-composer installed: `pip install -e "workflow-composer[all]"`
 - Workflow images built: `make build-all` (from repo root)
+- **For INTERPRET phase**: Gemini API key (uses Gemini 2.0 Flash by default)
+
+### API Key Configuration
+
+The INTERPRET phase uses an LLM to parse natural language research questions. Set your API key:
+
+```bash
+export GEMINI_API_KEY=your-key-here
+```
+
+Alternatively, use `--mock-llm` to skip real LLM interpretation and use predefined intents from `cases.yaml`.
 
 ## Generated Files
 
