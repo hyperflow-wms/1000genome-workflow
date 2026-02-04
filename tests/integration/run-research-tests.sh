@@ -76,7 +76,7 @@ Options:
   --list               List available test cases and exit
   --mock-llm           Use mock intents instead of calling LLM (for CI)
   --model MODEL        LLM model to use
-  --stop-before-download   Stop after ESTIMATE phase
+  --stop-before-extract    Stop after ESTIMATE phase
   --stop-before-execute    Stop after GENERATE phase
   -y, --yes            Non-interactive mode, proceed through all phases
 
@@ -113,8 +113,8 @@ while [[ $# -gt 0 ]]; do
             MODEL="$2"
             shift 2
             ;;
-        --stop-before-download)
-            STOP_BEFORE="download"
+        --stop-before-extract)
+            STOP_BEFORE="extract"
             shift
             ;;
         --stop-before-execute)
@@ -396,17 +396,17 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     fi
 
     # ========================================================================
-    # PHASE 4: DOWNLOAD
+    # PHASE 4: EXTRACT
     # ========================================================================
-    log_phase "Phase 4: DOWNLOAD (Extract data via tabix)"
+    log_phase "Phase 4: EXTRACT (Extract data via tabix)"
 
-    SKIP_DOWNLOAD=$(python3 "$FRAMEWORK_PY" test-info \
+    SKIP_EXTRACT=$(python3 "$FRAMEWORK_PY" test-info \
         --yaml "$CASES_YAML" \
         --test-id "$TEST_ID" \
-        --field skip_download)
+        --field skip_extract)
 
-    if [ "$SKIP_DOWNLOAD" = "true" ]; then
-        log_info "Test configured to skip download phase"
+    if [ "$SKIP_EXTRACT" = "true" ]; then
+        log_info "Test configured to skip extract phase"
 
         if [ "$TEST_ID" = "micro" ]; then
             log_info "Setting up micro test data from Docker image..."
@@ -436,7 +436,7 @@ for TEST_ID in "${TEST_IDS[@]}"; do
             --intent-json "$INTENT_JSON" \
             --output-dir "$WORKFLOW_DIR")
 
-        DOWNLOAD_FAILED=false
+        EXTRACT_FAILED=false
 
         echo "$TABIX_COMMANDS" | python3 -c "
 import sys, json
@@ -474,10 +474,10 @@ for cmd in commands:
                                 curl -sL '$VCF_URL' | gunzip > '$OUTPUT_VCF'
                                 curl -sL '$ANNOTATION_URL' | gunzip > '$OUTPUT_ANNOTATION'
                             fi
-                        " 2>/dev/null || DOWNLOAD_FAILED=true
+                        " 2>/dev/null || EXTRACT_FAILED=true
 
-                    if [ "$DOWNLOAD_FAILED" = true ]; then
-                        log_error "Failed to download data for chromosome $CHROM"
+                    if [ "$EXTRACT_FAILED" = true ]; then
+                        log_error "Failed to extract data for chromosome $CHROM"
                     else
                         VARIANT_COUNT=$(grep -v '^#' "$WORKFLOW_DIR/$OUTPUT_VCF" 2>/dev/null | wc -l || echo "0")
                         log_success "Extracted $VARIANT_COUNT variants for chr$CHROM"
@@ -527,8 +527,8 @@ for cmd in commands:
         fi
     fi
 
-    if [ "$STOP_POINT" = "download" ]; then
-        log_warning "Stopping after DOWNLOAD phase"
+    if [ "$STOP_POINT" = "extract" ]; then
+        log_warning "Stopping after EXTRACT phase"
         SKIPPED=$((SKIPPED + 1))
         RESULTS[$TEST_ID]="SKIPPED (stop-before-execute)"
         continue

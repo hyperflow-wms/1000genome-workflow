@@ -12,7 +12,7 @@ push-all:
 	$(MAKE) -C worker-base-image push
 	$(MAKE) -C worker-image push
 	$(MAKE) -C workflow-generator push
-	$(MAKE) -C mcp-server push
+	$(MAKE) -C workflow-composer push
 	$(MAKE) -C data-container push
 
 # Individual image builds
@@ -25,8 +25,8 @@ build-worker: build-worker-base
 build-generator:
 	$(MAKE) -C workflow-generator image
 
-build-mcp: build-generator
-	$(MAKE) -C mcp-server image
+build-mcp:
+	$(MAKE) -C workflow-composer image
 
 build-data:
 	$(MAKE) -C data-container image
@@ -36,7 +36,7 @@ clean:
 	$(MAKE) -C worker-base-image clean || true
 	$(MAKE) -C worker-image clean || true
 	$(MAKE) -C workflow-generator clean || true
-	$(MAKE) -C mcp-server clean || true
+	$(MAKE) -C workflow-composer clean || true
 	$(MAKE) -C data-container clean || true
 
 # Generate workflow

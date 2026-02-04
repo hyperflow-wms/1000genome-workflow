@@ -1,22 +1,30 @@
+# workflow-composer Makefile
+#
+# Build MCP server Docker image and run tests
+
 REPO_NAME = 1000genome-mcp
 PREFIX = hyperflowwms
 VERSION = 2.0
 TAG = $(VERSION)
 
-# Build context is repository root (to include workflow-composer)
-ROOT_DIR = $(shell cd .. && pwd)
+.PHONY: all test image push clean
 
-all: push
+all: test
 
+# Run tests
+test:
+	pytest tests/ -v
+
+# Build MCP server Docker image
 image:
-	cd $(ROOT_DIR) && docker build --no-cache -f mcp-server/Dockerfile -t $(PREFIX)/$(REPO_NAME):$(TAG) .
+	docker build --no-cache -t $(PREFIX)/$(REPO_NAME):$(TAG) .
 	docker tag $(PREFIX)/$(REPO_NAME):$(TAG) $(PREFIX)/$(REPO_NAME):latest
 
+# Push to Docker Hub
 push: image
 	docker push $(PREFIX)/$(REPO_NAME):$(TAG)
 	docker push $(PREFIX)/$(REPO_NAME):latest
 
+# Clean up images
 clean:
 	docker rmi $(PREFIX)/$(REPO_NAME):$(TAG) $(PREFIX)/$(REPO_NAME):latest || true
-
-.PHONY: all image push clean

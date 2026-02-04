@@ -32,15 +32,64 @@ flowchart LR
     POP --> MUT & FRQ
 ```
 
+## End-to-End Pipeline
+
+The workflow-composer enables a 6-phase pipeline from natural language research questions to executed workflows:
+
+```mermaid
+flowchart LR
+    subgraph Step1["1. INTERPRET"]
+        A["Research Question"]
+    end
+
+    subgraph Step2["2. PLAN"]
+        B["Advisory Plan"]
+    end
+
+    subgraph Step3["3. ESTIMATE"]
+        C["Estimated Workflow"]
+    end
+
+    subgraph Step4["4. EXTRACT"]
+        D["Data via tabix"]
+    end
+
+    subgraph Step5["5. GENERATE"]
+        E["workflow.json"]
+    end
+
+    subgraph Step6["6. EXECUTE"]
+        F["HyperFlow"]
+    end
+
+    A --> B --> C --> D --> E --> F
+
+    style A fill:#e1f5fe
+    style B fill:#fff9c4
+    style C fill:#fff3e0
+    style E fill:#e8f5e9
+    style F fill:#f3e5f5
+```
+
+| Phase | Description |
+|-------|-------------|
+| **INTERPRET** | Parse natural language research question into structured intent |
+| **PLAN** | Create advisory plan with data extraction commands and estimates |
+| **ESTIMATE** | Generate preliminary workflow with estimated variant counts |
+| **EXTRACT** | Download data via tabix remote extraction (only needed regions) |
+| **GENERATE** | Create final workflow.json from actual data counts |
+| **EXECUTE** | Run workflow with HyperFlow + Docker workers |
+
+See [workflow-composer/README.md](workflow-composer/README.md) for detailed phase documentation.
+
 ## Repository Structure
 
 ```
 1000genome-workflow/
-├── workflow-composer/      # Native workflow generator (recommended)
+├── workflow-composer/      # Native workflow generator + MCP server (recommended)
 ├── worker-base-image/      # Base Docker image with analysis scripts
 ├── worker-image/           # HyperFlow worker image (Kubernetes)
 ├── workflow-generator/     # Legacy DAG generation (Pegasus-based)
-├── mcp-server/             # MCP server for AI-assisted generation
 ├── data-container/         # Input data + workflow.json (~1.7GB image)
 ├── tests/integration/      # Integration tests with Docker Compose
 ├── scripts/                # Utility scripts
@@ -140,7 +189,7 @@ docker run --rm -v $(pwd)/../data:/output hyperflowwms/1000genome-generator \
 
 ## MCP Server
 
-The MCP server enables AI-assisted workflow generation. See [mcp-server/README.md](mcp-server/README.md) for details.
+The MCP server enables AI-assisted workflow generation. See [workflow-composer/README.md](workflow-composer/README.md#mcp-server) for details.
 
 Add to Claude Desktop configuration:
 ```json
@@ -148,7 +197,7 @@ Add to Claude Desktop configuration:
   "mcpServers": {
     "1000genome": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "hyperflowwms/1000genome-mcp:1.0"]
+      "args": ["run", "-i", "--rm", "hyperflowwms/1000genome-mcp:2.0"]
     }
   }
 }

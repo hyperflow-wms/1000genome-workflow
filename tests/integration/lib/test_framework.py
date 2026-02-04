@@ -32,7 +32,7 @@ class StopPoint(Enum):
     AFTER_INTERPRET = "interpret"
     AFTER_PLAN = "plan"
     AFTER_ESTIMATE = "estimate"
-    AFTER_DOWNLOAD = "download"
+    AFTER_EXTRACT = "extract"
     AFTER_GENERATE = "generate"
     NEVER = "never"
 
@@ -47,7 +47,7 @@ class TestCase:
     expected_intent: dict | None = None
     mock_intent: dict | None = None
     skip_interpret: bool = False
-    skip_download: bool = False
+    skip_extract: bool = False
     data_csv: str | None = None
     expected_outputs: list[str] = field(default_factory=list)
     parallelism: str = "small"
@@ -63,7 +63,7 @@ class TestCase:
             expected_intent=data.get("expected_intent"),
             mock_intent=data.get("mock_intent"),
             skip_interpret=data.get("skip_interpret", False),
-            skip_download=data.get("skip_download", False),
+            skip_extract=data.get("skip_extract", False),
             data_csv=data.get("data_csv"),
             expected_outputs=data.get("expected_outputs", []),
             parallelism=data.get("parallelism", defaults.get("parallelism", "small"))
@@ -117,7 +117,7 @@ def load_thresholds(yaml_path: Path) -> tuple[float, float]:
 
     thresholds = data.get("volume_thresholds", {})
     return (
-        thresholds.get("stop_before_download_mb", 500),
+        thresholds.get("stop_before_extract_mb", 500),
         thresholds.get("stop_before_execute_mb", 50)
     )
 
@@ -364,7 +364,7 @@ def generate_estimated_workflow(
 
 def determine_stop_point(
     estimated_transfer_mb: float,
-    threshold_download: float,
+    threshold_extract: float,
     threshold_execute: float,
     explicit_stop: str | None,
     force_yes: bool
@@ -374,14 +374,14 @@ def determine_stop_point(
 
     Returns: StopPoint value as string
     """
-    if explicit_stop == "download":
+    if explicit_stop == "extract":
         return StopPoint.AFTER_ESTIMATE.value
     if explicit_stop == "execute":
         return StopPoint.AFTER_GENERATE.value
     if force_yes:
         return StopPoint.NEVER.value
 
-    if estimated_transfer_mb > threshold_download:
+    if estimated_transfer_mb > threshold_extract:
         return StopPoint.AFTER_ESTIMATE.value
     if estimated_transfer_mb > threshold_execute:
         return StopPoint.AFTER_GENERATE.value
@@ -595,8 +595,8 @@ def main():
                     skip_info = []
                     if tc.skip_interpret:
                         skip_info.append("skip-interpret")
-                    if tc.skip_download:
-                        skip_info.append("skip-download")
+                    if tc.skip_extract:
+                        skip_info.append("skip-extract")
                     skip_str = f" [{', '.join(skip_info)}]" if skip_info else ""
                     print(f"{tc.id}\t{tc.name}{skip_str}")
                 else:
