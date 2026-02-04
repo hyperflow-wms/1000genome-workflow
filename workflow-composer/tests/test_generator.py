@@ -71,10 +71,31 @@ class TestIndJobsValidation:
         result = validate_ind_jobs(250, 250000, "test.vcf")
         assert result == 250
 
-    def test_invalid_ind_jobs(self):
-        # 250000 % 7 != 0
-        with pytest.raises(ValueError, match="does not divide"):
-            validate_ind_jobs(7, 250000, "test.vcf")
+    def test_non_divisible_ind_jobs_allowed(self):
+        """Non-divisible row counts are now allowed.
+
+        The worker scripts handle partial ranges correctly via min(stop, total).
+        This test verifies that the generator accepts non-divisible counts.
+        """
+        # 250000 % 7 != 0, but this should now be allowed
+        result = validate_ind_jobs(7, 250000, "test.vcf")
+        assert result == 7  # Should not raise, just return the value
+
+    def test_invalid_row_count_rejected(self):
+        """Row count must be positive."""
+        with pytest.raises(ValueError, match="Row count must be positive"):
+            validate_ind_jobs(10, 0, "test.vcf")
+
+        with pytest.raises(ValueError, match="Row count must be positive"):
+            validate_ind_jobs(10, -5, "test.vcf")
+
+    def test_invalid_ind_jobs_rejected(self):
+        """ind_jobs must be positive."""
+        with pytest.raises(ValueError, match="ind_jobs must be positive"):
+            validate_ind_jobs(0, 100, "test.vcf")
+
+        with pytest.raises(ValueError, match="ind_jobs must be positive"):
+            validate_ind_jobs(-5, 100, "test.vcf")
 
     def test_ind_jobs_capped_to_threshold(self):
         # If ind_jobs > threshold, should be capped
@@ -340,6 +361,127 @@ class TestDaxgenComparison:
 
         assert native_normalized == daxgen_normalized, \
             "Process definitions differ"
+
+
+class TestRemainderHandling:
+    """Test that non-divisible row counts are handled correctly."""
+
+    def test_remainder_creates_extra_task(self):
+        """Non-divisible row counts should create an extra task for remainder."""
+        from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData
+
+        # 2487 rows with ind_jobs=10 → step=248, remainder=7
+        # Should create 11 tasks: 10 full + 1 partial
+        chromosomes = [
+            ChromosomeData(
+                vcf_file="ALL.chr6.test.vcf",
+                row_count=2487,
+                annotation_file="ALL.chr6.test.annotation.vcf",
+                chromosome="6"
+            )
+        ]
+
+        generator = HyperFlowGenerator()
+        workflow = generator.generate(
+            chromosomes=chromosomes,
+            populations=["EUR"],
+            ind_jobs=10,
+            name="test"
+        )
+
+        # Count individuals tasks
+        ind_tasks = [p for p in workflow["processes"] if p["name"] == "individuals"]
+        assert len(ind_tasks) == 11, "Should have 11 individuals tasks (10 full + 1 partial)"
+
+        # Verify last task covers remainder rows
+        last_args = ind_tasks[-1]["config"]["executor"]["args"]
+        # Args are: [vcf_file, chromosome, start, stop, total]
+        start = int(last_args[2])
+        stop = int(last_args[3])
+        total = int(last_args[4])
+
+        assert start == 2481, "Last task should start at 2481"
+        assert total == 2487, "Total should be 2487"
+        # Worker will process min(stop, total) = min(2729, 2487) = 2487
+
+    def test_exact_division_no_extra_task(self):
+        """Exactly divisible row counts should not create extra tasks."""
+        from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData
+
+        # 2480 rows with ind_jobs=10 → step=248, no remainder
+        chromosomes = [
+            ChromosomeData(
+                vcf_file="ALL.chr6.test.vcf",
+                row_count=2480,
+                annotation_file="ALL.chr6.test.annotation.vcf",
+                chromosome="6"
+            )
+        ]
+
+        generator = HyperFlowGenerator()
+        workflow = generator.generate(
+            chromosomes=chromosomes,
+            populations=["EUR"],
+            ind_jobs=10,
+            name="test"
+        )
+
+        ind_tasks = [p for p in workflow["processes"] if p["name"] == "individuals"]
+        assert len(ind_tasks) == 10, "Should have exactly 10 individuals tasks"
+
+
+class TestVariantEstimation:
+    """Test variant count estimation functions."""
+
+    def test_full_chromosome_estimate(self):
+        """Full chromosome should return known count."""
+        from workflow_composer.core.data_resolver import estimate_variant_count, CHROMOSOME_VARIANT_COUNT
+
+        est = estimate_variant_count(chromosome="6")
+        assert est == CHROMOSOME_VARIANT_COUNT["6"]
+
+    def test_region_estimate_includes_safety_margin(self):
+        """Region estimates should include safety margin."""
+        from workflow_composer.core.data_resolver import (
+            estimate_variant_count,
+            CHROMOSOME_VARIANT_COUNT,
+            CHROMOSOME_LENGTH_BP
+        )
+        from workflow_composer.core.models import GenomicRegion
+
+        # Create a region that is 1% of chromosome
+        chrom = "22"
+        chrom_length = CHROMOSOME_LENGTH_BP[chrom]
+        region_size = chrom_length // 100  # 1%
+
+        region = GenomicRegion(
+            name="test",
+            chromosome=chrom,
+            start=1000000,
+            end=1000000 + region_size,
+            context="test"
+        )
+
+        est = estimate_variant_count(region=region)
+
+        # Base estimate would be ~1% of chromosome variants
+        base_estimate = CHROMOSOME_VARIANT_COUNT[chrom] // 100
+
+        # Should be higher due to safety margin (default 1.2)
+        assert est > base_estimate, "Estimate should include safety margin"
+        assert est <= base_estimate * 1.5, "Safety margin should be reasonable"
+
+    def test_compute_optimal_ind_jobs(self):
+        """Optimal ind_jobs should find clean divisors when possible."""
+        from workflow_composer.core.data_resolver import compute_optimal_ind_jobs
+
+        # Exact divisor available
+        optimal = compute_optimal_ind_jobs(250000, target=100)
+        assert 250000 % optimal == 0, "Should find exact divisor when available"
+
+        # No exact divisor, should return close to target
+        optimal = compute_optimal_ind_jobs(2487, target=50)
+        assert 1 <= optimal <= 2487
 
 
 if __name__ == "__main__":

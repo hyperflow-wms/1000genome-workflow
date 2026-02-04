@@ -73,23 +73,21 @@ def load_populations(path: Path) -> list[str]:
 def validate_ind_jobs(ind_jobs: int, threshold: int, vcf_file: str) -> int:
     """Validate ind_jobs constraint.
 
-    Exactly mirrors daxgen.py lines 87-92:
-        ind_jobs = min(options.ind_jobs, threshold)
-        step = threshold // ind_jobs
-        rest = threshold % ind_jobs
-        if rest != 0:
-            sys.exit("ERROR: ...")
+    Returns the effective ind_jobs value, clamped to threshold if needed.
+
+    Note: We no longer require exact divisibility. The worker scripts handle
+    partial ranges correctly via min(stop, total). The last task simply
+    processes fewer rows if there's a remainder.
+
+    Original daxgen.py required divisibility, but this was overly strict.
     """
+    if threshold <= 0:
+        raise ValueError(f"Row count must be positive, got {threshold} for {vcf_file}")
+
+    if ind_jobs <= 0:
+        raise ValueError(f"ind_jobs must be positive, got {ind_jobs}")
+
     ind_jobs = min(ind_jobs, threshold)
-    step = threshold // ind_jobs
-    rest = threshold % ind_jobs
-
-    if rest != 0:
-        raise ValueError(
-            f"ERROR: for file {vcf_file}: required individuals jobs {ind_jobs} "
-            f"does not divide the number of rows {threshold}."
-        )
-
     return ind_jobs
 
 

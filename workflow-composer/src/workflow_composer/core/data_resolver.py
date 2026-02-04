@@ -21,6 +21,26 @@ CHROMOSOME_VCF_SIZE_MB = {
     "21": 190, "22": 190, "X": 500, "Y": 12,
 }
 
+# Variant counts per chromosome (1000G Phase 3)
+# Source: 1000 Genomes Phase 3 release notes
+# These are approximate counts for the full chromosome VCF files
+CHROMOSOME_VARIANT_COUNT = {
+    "1": 6_468_094, "2": 7_077_802, "3": 5_856_904, "4": 5_713_761, "5": 5_291_609,
+    "6": 5_066_529, "7": 4_693_378, "8": 4_570_167, "9": 3_566_166, "10": 4_014_083,
+    "11": 4_069_708, "12": 3_895_004, "13": 2_868_052, "14": 2_666_681, "15": 2_447_556,
+    "16": 2_714_200, "17": 2_322_539, "18": 2_269_476, "19": 1_815_549, "20": 1_819_185,
+    "21": 1_109_433, "22": 1_103_547, "X": 3_049_044, "Y": 62_042,
+}
+
+# Chromosome lengths in base pairs (GRCh37/hg19)
+CHROMOSOME_LENGTH_BP = {
+    "1": 249_250_621, "2": 243_199_373, "3": 198_022_430, "4": 191_154_276, "5": 180_915_260,
+    "6": 171_115_067, "7": 159_138_663, "8": 146_364_022, "9": 141_213_431, "10": 135_534_747,
+    "11": 135_006_516, "12": 133_851_895, "13": 115_169_878, "14": 107_349_540, "15": 102_531_392,
+    "16": 90_354_753, "17": 81_195_210, "18": 78_077_248, "19": 59_128_983, "20": 63_025_520,
+    "21": 48_129_895, "22": 51_304_566, "X": 155_270_560, "Y": 59_373_566,
+}
+
 # Known genomic regions
 KNOWN_REGIONS = {
     "HLA": GenomicRegion(name="HLA", chromosome="6", start=28477797, end=33448354, context="immune function"),
@@ -64,31 +84,119 @@ def should_use_remote_extraction(regions: list[GenomicRegion] | None, chromosome
 
     Uses genomic region size as fraction of chromosome length to decide.
     If any specified region is < 20% of its chromosome, tabix extraction is worthwhile.
-
-    Note: Chromosome sizes here are approximate VCF file sizes in MB, not base pair lengths.
-    We use the region size in Mb (megabases) compared to typical chromosome length (~250 Mb max).
     """
     if not regions:
         return False
 
-    # Approximate chromosome lengths in megabases (for comparison, not file size)
-    CHROMOSOME_LENGTH_MB = {
-        "1": 249, "2": 243, "3": 198, "4": 191, "5": 182,
-        "6": 171, "7": 159, "8": 146, "9": 141, "10": 136,
-        "11": 135, "12": 134, "13": 115, "14": 107, "15": 102,
-        "16": 90, "17": 83, "18": 80, "19": 59, "20": 64,
-        "21": 47, "22": 51, "X": 156, "Y": 57,
-    }
-
     for region in regions:
-        chrom_length = CHROMOSOME_LENGTH_MB.get(region.chromosome, 150)
-        region_size_mb = (region.end - region.start) / 1_000_000
+        chrom_length = CHROMOSOME_LENGTH_BP.get(region.chromosome, 150_000_000)
+        region_size_bp = region.end - region.start
 
         # If region is < 20% of chromosome, tabix extraction saves significant bandwidth
-        if region_size_mb < chrom_length * 0.2:
+        if region_size_bp < chrom_length * 0.2:
             return True
 
     return False
+
+
+def estimate_variant_count(
+    chromosome: str | None = None,
+    region: GenomicRegion | None = None,
+    safety_margin: float = 1.2
+) -> int:
+    """Estimate variant count for a chromosome or region.
+
+    This is used for PLANNING ONLY. Actual workflow generation should use
+    exact counts from scanned data files (deferred generation pattern).
+
+    Args:
+        chromosome: Chromosome number (e.g., "6", "22", "X")
+        region: Specific genomic region
+        safety_margin: Multiplier to ensure overestimation (default 1.2 = 20% buffer)
+
+    Returns:
+        Estimated variant count (intentionally overestimated for safety)
+
+    Strategy:
+    - Full chromosome: Use pre-computed counts from 1000G metadata
+    - Known region: Scale by region's fraction of chromosome
+    - Arbitrary region: Same scaling, with safety margin
+    """
+    if region:
+        # Estimate based on region's fraction of chromosome
+        chrom = region.chromosome
+        chrom_variants = CHROMOSOME_VARIANT_COUNT.get(chrom, 3_000_000)
+        chrom_length = CHROMOSOME_LENGTH_BP.get(chrom, 150_000_000)
+        region_size = region.end - region.start
+
+        # Base estimate: proportional to chromosome
+        base_estimate = int((region_size / chrom_length) * chrom_variants)
+
+        # Apply safety margin (overestimate is safe, underestimate loses data)
+        return int(base_estimate * safety_margin)
+
+    elif chromosome:
+        # Use pre-computed count for full chromosome
+        return CHROMOSOME_VARIANT_COUNT.get(chromosome, 3_000_000)
+
+    else:
+        raise ValueError("Must provide either chromosome or region")
+
+
+def compute_optimal_ind_jobs(
+    row_count: int,
+    target: int | None = None,
+    min_jobs: int = 1,
+    max_jobs: int = 500
+) -> int:
+    """Compute optimal ind_jobs value for a given row count.
+
+    Tries to find a value that divides row_count evenly for cleaner output,
+    but the generator will work correctly even with non-divisible values.
+
+    Args:
+        row_count: Number of rows/variants to process
+        target: Target parallelism (default: auto-select based on row_count)
+        min_jobs: Minimum allowed jobs
+        max_jobs: Maximum allowed jobs
+
+    Returns:
+        Recommended ind_jobs value
+    """
+    if row_count <= 0:
+        return 1
+
+    # Auto-select target based on row count magnitude
+    if target is None:
+        if row_count < 1_000:
+            target = 10
+        elif row_count < 50_000:
+            target = 50
+        elif row_count < 500_000:
+            target = 100
+        else:
+            target = 250
+
+    # Clamp to valid range
+    target = max(min_jobs, min(target, max_jobs, row_count))
+
+    # Try to find a nearby divisor for cleaner output
+    # Search within ±20% of target
+    search_range = max(1, target // 5)
+    best = target
+    best_remainder = row_count % target
+
+    for offset in range(search_range + 1):
+        for candidate in [target - offset, target + offset]:
+            if min_jobs <= candidate <= min(max_jobs, row_count):
+                remainder = row_count % candidate
+                if remainder < best_remainder:
+                    best = candidate
+                    best_remainder = remainder
+                    if remainder == 0:
+                        return best  # Found exact divisor
+
+    return best
 
 
 def get_vcf_filename(chromosome: str) -> str:
@@ -108,15 +216,7 @@ def estimate_region_size_mb(region: GenomicRegion) -> float:
     This gives a more accurate estimate than fixed bytes-per-position.
     """
     chrom_size_mb = CHROMOSOME_VCF_SIZE_MB.get(region.chromosome, 500)
-    # Get chromosome length in bp for proportion calculation
-    CHROM_LENGTH_BP = {
-        "1": 249e6, "2": 243e6, "3": 198e6, "4": 191e6, "5": 182e6,
-        "6": 171e6, "7": 159e6, "8": 146e6, "9": 141e6, "10": 136e6,
-        "11": 135e6, "12": 134e6, "13": 115e6, "14": 107e6, "15": 102e6,
-        "16": 90e6, "17": 83e6, "18": 80e6, "19": 59e6, "20": 64e6,
-        "21": 47e6, "22": 51e6, "X": 156e6, "Y": 57e6,
-    }
-    chrom_length = CHROM_LENGTH_BP.get(region.chromosome, 150e6)
+    chrom_length = CHROMOSOME_LENGTH_BP.get(region.chromosome, 150_000_000)
     region_size_bp = region.end - region.start
     # Estimate: region's fraction of chromosome × compressed file size
     return (region_size_bp / chrom_length) * chrom_size_mb
