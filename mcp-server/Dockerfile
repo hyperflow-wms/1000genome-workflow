@@ -1,13 +1,13 @@
-FROM hyperflowwms/1000genome-generator:1.0
+# Build from repository root:
+#   docker build -f mcp-server/Dockerfile -t hyperflowwms/1000genome-mcp .
 
-# Install MCP SDK
-RUN pip3 install --break-system-packages mcp
+FROM python:3.11-slim
 
-# Copy MCP server and skills
-COPY server.py /1000genome-workflow/
-COPY skills/ /1000genome-workflow/skills/
+WORKDIR /app
 
-WORKDIR /1000genome-workflow
+# Copy and install workflow-composer with MCP support
+COPY workflow-composer/ /app/workflow-composer/
+RUN pip install --no-cache-dir /app/workflow-composer mcp
 
 # Run MCP server
-ENTRYPOINT ["python3", "server.py"]
+ENTRYPOINT ["python", "-m", "workflow_composer.mcp_server"]

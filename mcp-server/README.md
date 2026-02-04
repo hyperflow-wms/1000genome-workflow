@@ -2,108 +2,91 @@
 
 MCP (Model Context Protocol) server for AI-assisted 1000genome workflow generation.
 
-## Overview
+This Docker image packages the [workflow-composer](../workflow-composer/) as an MCP server for integration with Claude Desktop and other MCP clients.
 
-This MCP server exposes tools and resources (skills) for generating and analyzing HyperFlow workflows for the 1000 Genomes Project mutation overlap analysis.
+## Quick Start
 
-## Resources (Skills)
-
-AI agents should read these resources before using tools to understand parameter constraints and extraction rules.
-
-| URI | Description |
-|-----|-------------|
-| `1000genome://skill` | **Read first!** Parameter extraction rules and constraints |
-| `1000genome://populations` | Population codes (AFR, EUR, etc.) with sample counts |
-| `1000genome://research` | Scientific context, runtime/memory estimates |
-
-### Usage Pattern
-
-```
-1. read_resource("1000genome://skill")  # Learn constraints
-2. estimate_tasks({...})                 # Verify parameters
-3. generate_workflow({...})              # Generate workflow
-```
-
-## Tools
-
-### generate_workflow
-
-Generate a 1000genome HyperFlow workflow DAG.
-
-**Parameters:**
-- `name` (string, optional): Workflow name (default: "1000genome")
-- `version` (string, optional): Workflow version (default: "1.0.0")
-- `individuals_per_job` (integer, optional): Rows per parallel task (default: 250)
-
-**Critical constraint:** `individuals_per_job` must divide 250,000 evenly.
-
-Valid values: 1, 2, 4, 5, 10, 20, 25, 50, 100, 125, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 250000...
-
-**Returns:** HyperFlow JSON workflow definition
-
-### estimate_tasks
-
-Estimate task count for given parameters without generating workflow.
-
-**Parameters:**
-- `individuals_per_job` (integer, optional): Rows per parallel task (default: 250)
-- `chromosomes` (integer, optional): Number of chromosomes (default: 10)
-
-**Returns:** Task breakdown and total count
-
-### get_workflow_stats
-
-Get statistics about a workflow.
-
-**Parameters:**
-- `workflow_json` (string): Workflow JSON content or path to workflow file
-
-**Returns:** Statistics including task count, file count, task breakdown by type
-
-### list_chromosomes
-
-List available chromosome data files from data.csv.
-
-**Returns:** List of chromosomes with VCF files and annotation files
-
-### validate_workflow
-
-Validate a HyperFlow workflow definition.
-
-**Parameters:**
-- `workflow_json` (string): Workflow JSON content to validate
-
-**Returns:** Validation result with errors and warnings
-
-## Usage with Claude Desktop
-
-Add to your Claude Desktop configuration (`~/.config/claude/claude_desktop_config.json`):
+Add to Claude Desktop configuration (`~/.config/Claude/claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
     "1000genome": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "hyperflowwms/1000genome-mcp:1.1"]
+      "args": ["run", "-i", "--rm", "hyperflowwms/1000genome-mcp:2.0"]
     }
   }
 }
 ```
 
+## Tools
+
+### plan_workflow
+
+Generate a workflow plan from research parameters.
+
+**Parameters:**
+- `analysis_type`: Type of analysis
+  - `single_population`: Analyze one population
+  - `population_comparison`: Compare two populations
+  - `multi_population`: Analyze multiple populations
+  - `region_analysis`: Focus on specific genomic region(s)
+- `populations`: List of population codes (EUR, AFR, EAS, AMR, SAS, GBR, ALL)
+- `chromosomes`: List of chromosomes (optional)
+- `regions`: Genomic regions like HLA, BRCA1, BRCA2, APOE (optional)
+- `parallelism`: Preset - small (10), medium (50), large (250)
+
+**Returns:** Workflow plan with task counts, data preparation steps, and estimates
+
+### list_known_regions
+
+List available genomic regions with coordinates.
+
+**Returns:** Table of regions (HLA, BRCA1, BRCA2, APOE, CYP2D6, HBB, CFTR, TP53)
+
+### list_populations
+
+List population codes with sample counts and descriptions.
+
+## Resources (Skills)
+
+The server provides skill documents as MCP resources:
+
+| Resource | Description |
+|----------|-------------|
+| SKILL.md | Workflow planning guidelines |
+| populations.md | Population codes and descriptions |
+| genomic-regions.md | Known genomic regions |
+| data-sources.md | Data source URLs (AWS, GCP, FTP) |
+| research-contexts.md | Scientific context mapping |
+
 ## Building
 
+Build from repository root:
+
 ```bash
-make image   # Build Docker image
-make push    # Push to Docker Hub
+cd mcp-server
+make image
+```
+
+Or directly:
+
+```bash
+docker build -f mcp-server/Dockerfile -t hyperflowwms/1000genome-mcp:2.0 .
 ```
 
 ## Running Locally
 
 ```bash
-docker run -i --rm hyperflowwms/1000genome-mcp:1.1
+docker run -i --rm hyperflowwms/1000genome-mcp:2.0
 ```
 
 ## Version History
 
-- **1.1**: Added resources (skills), parameter validation, estimate_tasks tool
-- **1.0**: Initial release with basic tools
+- **2.0**: Migrated to workflow-composer (native Python generator with parallelism presets)
+- **1.x**: Legacy daxgen.py-based generator (ind_jobs must divide 250,000)
+
+## See Also
+
+- [workflow-composer](../workflow-composer/) - The underlying workflow generator
+- [Main README](../README.md) - Project overview

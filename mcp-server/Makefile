@@ -1,12 +1,15 @@
 REPO_NAME = 1000genome-mcp
 PREFIX = hyperflowwms
-VERSION = 1.1
+VERSION = 2.0
 TAG = $(VERSION)
+
+# Build context is repository root (to include workflow-composer)
+ROOT_DIR = $(shell cd .. && pwd)
 
 all: push
 
 image:
-	docker build --no-cache -t $(PREFIX)/$(REPO_NAME):$(TAG) .
+	cd $(ROOT_DIR) && docker build --no-cache -f mcp-server/Dockerfile -t $(PREFIX)/$(REPO_NAME):$(TAG) .
 	docker tag $(PREFIX)/$(REPO_NAME):$(TAG) $(PREFIX)/$(REPO_NAME):latest
 
 push: image
