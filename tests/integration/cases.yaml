@@ -1,12 +1,12 @@
 # End-to-End Integration Test Cases
 #
-# Each test case represents a research question that exercises the full pipeline:
-#   NL Prompt → Interpret → Plan → Estimate → Extract → Generate → Execute
+# Each test case represents a research question that exercises the 5-phase pipeline:
+#   INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE
 #
 # Volume thresholds (estimated_transfer_mb):
 #   - < 50 MB: Safe to run end-to-end by default
 #   - 50-500 MB: Stop before execution by default
-#   - > 500 MB: Stop before extract by default
+#   - > 500 MB: Stop after plan by default
 
 version: "1.0"
 

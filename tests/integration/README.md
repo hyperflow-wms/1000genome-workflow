@@ -1,123 +1,121 @@
 # Integration Tests
 
-Integration tests for the 1000genome-workflow using Docker Compose.
-
-## Prerequisites
-
-- Docker and Docker Compose installed
-- All workflow images built (`make build-all` from repository root)
-- workflow-composer installed (`pip install -e workflow-composer`)
+End-to-end integration tests for the 1000genome-workflow pipeline.
 
 ## Quick Start
 
 ```bash
-# Run workflow-composer integration test (recommended)
-./test-workflow-composer.sh --parallelism small --yes
+# Run the micro smoke test (fastest, uses pre-existing data)
+./run-research-tests.sh micro
 
-# Or run the HLA region test with real data
-./test-hla-region.sh --quick --yes
+# Run HLA region test with real data extraction
+./run-research-tests.sh --mock-llm eas-hla-autoimmune
+
+# List all available test cases
+./run-research-tests.sh --list
 ```
 
-## Available Tests
+## Research Test Framework
 
-### Workflow Composer Test (Recommended)
+The main integration test is `run-research-tests.sh`, which exercises the full 5-phase pipeline:
 
-Tests the workflow-composer's ability to generate working HyperFlow workflows.
+```
+INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE
+```
+
+### Test Cases
+
+Defined in `cases.yaml`:
+
+| ID | Description | Volume | Default behavior |
+|----|-------------|--------|------------------|
+| `micro` | Smoke test with pre-existing data | ~1 MB | Full E2E |
+| `eas-hla-autoimmune` | HLA region analysis | ~25 MB | Full E2E |
+| `eur-afr-hla` | EUR vs AFR in HLA | ~25 MB | Full E2E |
+| `brca-breast-cancer` | BRCA1/BRCA2 genes | ~5 MB | Full E2E |
+| `eur-afr-chr22` | Full chromosome 22 | ~100 MB | Stop before execute |
+| `genome-wide-null` | All chromosomes | ~15 GB | Stop after plan |
+
+### Usage
 
 ```bash
-./test-workflow-composer.sh --parallelism small --yes
+# Run specific test
+./run-research-tests.sh <test-id>
+
+# Run with mock LLM (skip real interpretation)
+./run-research-tests.sh --mock-llm <test-id>
+
+# Force full execution regardless of volume
+./run-research-tests.sh -y <test-id>
+
+# Stop at specific phase
+./run-research-tests.sh --stop-before-extract <test-id>
+./run-research-tests.sh --stop-before-execute <test-id>
 ```
 
-Parameters:
-- Uses micro test data (10,000 variants, 30 individuals)
-- Generates workflow via workflow-composer (not legacy daxgen.py)
-- Verifies all expected outputs
+### Volume Thresholds
 
-### HLA Region Test (Real Data)
+Tests auto-stop based on estimated data transfer:
+- **< 50 MB**: Run end-to-end
+- **50-500 MB**: Stop before execute
+- **> 500 MB**: Stop after plan
 
-Tests with real 1000 Genomes data downloaded via tabix.
+Use `-y` to override and force execution.
 
-```bash
-# Quick mode (~100kb region, faster)
-./test-hla-region.sh --quick --yes
+## Prerequisites
 
-# Full HLA region (~5Mb, slower)
-./test-hla-region.sh --yes
-```
+- Docker and Docker Compose
+- workflow-composer installed: `pip install -e workflow-composer`
+- Workflow images built: `make build-all` (from repo root)
 
-Parameters:
-- Downloads real chromosome 6 HLA region data via tabix
-- Trims to 30 individuals for faster testing (minimum required by mutation_overlap.py)
-- Tests complete workflow with production data
-- **26 total tasks** (10 individuals + 1 merge + 1 sifting + 7×2 analyses)
+## Generated Files
 
-### Legacy Micro Workflow
+Each test run creates a workflow directory (e.g., `workflow-eas-hla-autoimmune/`) containing:
 
-```bash
-./setup-micro-workflow.sh
-./run-workflow.sh workflow-micro
-```
+### Pipeline Artifacts (interesting to inspect)
 
-Parameters:
-- 1 chromosome (chr1)
-- 10,000 rows (instead of 250,000)
-- 5 parallel individuals jobs
-- 30 individuals (minimum 26 required by mutation_overlap.py)
-- **21 total jobs**, completes in ~2-3 minutes
+| File | Phase | Description |
+|------|-------|-------------|
+| `intent.json` | INTERPRET | Structured research intent from NL parsing |
+| `plan.json` | PLAN | Advisory plan with data commands and estimates |
+| `workflow-estimated.json` | PLAN | Preliminary workflow based on estimated counts |
+| `data.csv` | EXTRACT | Manifest: `vcf_file,row_count,annotation_file` |
+| `workflow.json` | GENERATE | Final production workflow |
 
-### Legacy Tiny Workflow (Full data, single job)
-
-```bash
-./setup-tiny-workflow.sh
-./run-workflow.sh workflow-tiny
-```
-
-Parameters:
-- 1 chromosome (chr1)
-- 250,000 rows (full data)
-- 1 individuals job
-- 2,504 individuals (all)
-- **17 total jobs**, takes much longer (~hours)
-
-## Configuration
-
-### Max Parallelism
-
-Control how many jobs run in parallel:
-
-```bash
-MAX_PARALLELISM=30 ./run-workflow.sh workflow-micro
-```
-
-Default is 20.
-
-## Output Files
-
-After successful execution, the workflow directory contains:
+### Extracted Data (from EXTRACT phase)
 
 | File | Description |
 |------|-------------|
-| `chr1n-*.tar.gz` | Individual job outputs (variant data per row range) |
-| `chr1n.tar.gz` | Merged individuals output |
-| `sifted.SIFT.chr1.txt` | Filtered variants with SIFT scores |
-| `chr1-{POP}.tar.gz` | Mutation overlap analysis per population |
-| `chr1-{POP}-freq.tar.gz` | Frequency analysis per population |
+| `ALL.chr{N}.{region}.vcf` | Extracted VCF with variant data |
+| `ALL.chr{N}.{region}.annotation.vcf` | SIFT annotations for sifting |
+| `columns.txt` | Sample IDs (one per line) |
+| `AFR`, `EUR`, `EAS`, ... | Population membership files |
 
-## Cleanup
+### Workflow Outputs (from EXECUTE phase)
 
-```bash
-# Remove workflow directory
-rm -rf workflow-micro
-
-# Remove Docker resources
-docker-compose down
-```
+| File | Description |
+|------|-------------|
+| `chr{N}n.tar.gz` | Merged individuals output |
+| `sifted.SIFT.chr{N}.txt` | SIFT-filtered variants |
+| `chr{N}-{POP}.tar.gz` | Mutation overlap per population |
+| `chr{N}-{POP}-freq.tar.gz` | Frequency analysis per population |
 
 ---
 
-## End-to-End Pipeline Documentation
+## Legacy Tests
 
-For detailed documentation of the 5-phase pipeline (INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE), see:
+These older tests are still available but `run-research-tests.sh` is preferred:
 
-- **[workflow-composer/README.md](../../workflow-composer/README.md#end-to-end-pipeline)** - Detailed phase descriptions, diagrams, and agent implementation guide
-- **[Main README](../../README.md#end-to-end-pipeline)** - Pipeline overview
+| Script | Description |
+|--------|-------------|
+| `test-workflow-composer.sh` | Tests workflow-composer with micro data |
+| `test-hla-region.sh` | Downloads HLA data via tabix |
+| `setup-micro-workflow.sh` + `run-workflow.sh` | Manual micro workflow setup |
+
+---
+
+## Documentation
+
+For detailed pipeline documentation, see:
+- [workflow-composer/README.md](../../workflow-composer/README.md#detailed-documentation)
+- [Main README](../../README.md#end-to-end-pipeline)
