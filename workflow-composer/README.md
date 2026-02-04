@@ -473,21 +473,6 @@ def execute_genomic_analysis(prompt: str):
 | **GENERATE** | data.csv + cluster size | `workflow.json` | Build production workflow with real data |
 | **EXECUTE** | workflow.json | Output archives | Run the analysis |
 
-### Performance Considerations
-
-| Factor | Impact | Mitigation |
-|--------|--------|------------|
-| Number of individuals | 80× slowdown with 2504 vs 30 | Trim columns.txt for testing |
-| Region size | Linear with variant count | Use `--quick` for small subset |
-| Parallelism | More tasks = more overhead | Match to data size |
-| Network | Tabix extraction speed | Use regional data mirrors |
-
-### Debugging Tips
-
-1. **Workflow not starting?** Check that input signals have `"data": [{}]` attribute
-2. **Tasks stuck?** Check Redis connection and worker container logs
-3. **Missing outputs?** Verify all input files exist and are readable
-4. **Wrong chromosome?** Chromosome is extracted from VCF filename pattern
 
 ## License
 
