@@ -6,7 +6,42 @@ Generate genomics workflow plans from natural language for the 1000 Genomes Proj
 
 The **workflow-composer** is an agent that transforms natural language research questions into executable workflow plans for scientific computing. It produces structured output suitable for human review and downstream execution agents.
 
-**This component replaces the `mcp-server/` folder** and eliminates the external dependency on `daxgen.py + hflow-convert-dax`.
+```mermaid
+flowchart LR
+    subgraph Step1["1. INTERPRET"]
+        A["Research Question"]
+    end
+
+    subgraph Step2["2. PLAN"]
+        B["Advisory Plan"]
+    end
+
+    subgraph Step3["3. ESTIMATE"]
+        C["Estimated Workflow"]
+    end
+
+    subgraph Step4["4. EXTRACT"]
+        D["Data via tabix"]
+    end
+
+    subgraph Step5["5. GENERATE"]
+        E["workflow.json"]
+    end
+
+    subgraph Step6["6. EXECUTE"]
+        F["HyperFlow"]
+    end
+
+    A --> B --> C --> D --> E --> F
+
+    style A fill:#e1f5fe
+    style B fill:#fff9c4
+    style C fill:#fff3e0
+    style E fill:#e8f5e9
+    style F fill:#f3e5f5
+```
+
+→ [Detailed pipeline documentation](#end-to-end-pipeline)
 
 ## Key Features
 
@@ -211,53 +246,7 @@ When `use_remote_extraction: true`, the workflow should be run against the extra
 
 ## End-to-End Pipeline
 
-The workflow-composer supports a 6-phase pipeline from research questions to executed workflows.
-
-### Pipeline Overview
-
-```mermaid
-flowchart LR
-    subgraph Step1["1. INTERPRET"]
-        A["Research Intent<br/><i>'HLA region'</i>"]
-    end
-
-    subgraph Step2["2. PLAN"]
-        B["Advisory Plan<br/><i>tabix commands</i>"]
-    end
-
-    subgraph Step3["3. ESTIMATE"]
-        C["Estimated Workflow<br/><i>~2500 variants</i>"]
-    end
-
-    subgraph Step4["4. EXTRACT"]
-        D["Data Extraction<br/><i>tabix</i>"]
-        D1["VCF: 25 MB"]
-        D2["Annotations"]
-    end
-
-    subgraph Step5["5. GENERATE"]
-        E["workflow.json<br/><i>26 tasks</i>"]
-    end
-
-    subgraph Step6["6. EXECUTE"]
-        F["HyperFlow<br/><i>Docker workers</i>"]
-        F1["Output files"]
-    end
-
-    A --> B
-    B --> C
-    C --> D
-    D --> D1 & D2
-    D1 & D2 --> E
-    E --> F
-    F --> F1
-
-    style A fill:#e1f5fe
-    style B fill:#fff9c4
-    style C fill:#fff3e0
-    style E fill:#e8f5e9
-    style F1 fill:#f3e5f5
-```
+The workflow-composer supports a 6-phase pipeline from research questions to executed workflows. See the [Overview](#overview) for the simple diagram.
 
 ### Detailed Data Flow
 
