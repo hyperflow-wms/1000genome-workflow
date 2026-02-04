@@ -32,6 +32,10 @@ CHROMOSOME_VARIANT_COUNT = {
     "21": 1_109_433, "22": 1_103_547, "X": 3_049_044, "Y": 62_042,
 }
 
+# VCF compression ratio (compressed .vcf.gz to uncompressed .vcf)
+# Typical range is 15-25x for 1000 Genomes VCF files
+VCF_COMPRESSION_RATIO = 20
+
 # Chromosome lengths in base pairs (GRCh37/hg19)
 CHROMOSOME_LENGTH_BP = {
     "1": 249_250_621, "2": 243_199_373, "3": 198_022_430, "4": 191_154_276, "5": 180_915_260,
@@ -287,5 +291,6 @@ def create_data_preparation_plan(
         base_url=source_config["base_url"],
         steps=steps,
         estimated_transfer_mb=total_transfer_mb,
+        estimated_disk_mb=total_transfer_mb * VCF_COMPRESSION_RATIO,
         use_remote_extraction=use_remote
     )

@@ -48,8 +48,8 @@ def generate_description(intent: ResearchIntent, data_plan: DataPreparationPlan,
     if data_plan.use_remote_extraction:
         transfer_desc = (
             f" Data will be extracted directly using tabix remote queries, "
-            f"transferring approximately {data_plan.estimated_transfer_mb:.1f} MB "
-            f"instead of downloading full chromosome files."
+            f"transferring ~{data_plan.estimated_transfer_mb:.1f} MB compressed "
+            f"(~{data_plan.estimated_disk_mb:.0f} MB on disk)."
         )
 
     focus_desc = ""

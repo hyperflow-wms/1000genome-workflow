@@ -61,7 +61,8 @@ class DataPreparationPlan(BaseModel):
     source_type: Literal["s3", "gcs", "ftp"]
     base_url: str
     steps: list[DataPrepStep]
-    estimated_transfer_mb: float
+    estimated_transfer_mb: float  # Compressed network transfer
+    estimated_disk_mb: float = 0.0  # Uncompressed on-disk size
     use_remote_extraction: bool = False  # True if using tabix remote
 
 

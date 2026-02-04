@@ -318,14 +318,15 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         continue
     fi
 
-    TRANSFER_MB=$(echo "$PLAN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['data_preparation']['estimated_transfer_mb'])")
+    TRANSFER_MB=$(echo "$PLAN_JSON" | python3 -c "import sys,json; print(round(json.load(sys.stdin)['data_preparation']['estimated_transfer_mb'], 2))")
+    DISK_MB=$(echo "$PLAN_JSON" | python3 -c "import sys,json; print(round(json.load(sys.stdin)['data_preparation'].get('estimated_disk_mb', 0), 1))")
     TASK_COUNT=$(echo "$PLAN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['task_count'])")
     FILE_COUNT=$(echo "$PLAN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['file_count'])")
 
     log_success "Plan created"
     log_info "  Tasks: $TASK_COUNT"
     log_info "  Files: $FILE_COUNT"
-    log_info "  Estimated transfer: ${TRANSFER_MB} MB"
+    log_info "  Estimated: ~${TRANSFER_MB} MB transfer, ~${DISK_MB} MB on disk"
 
     # Show human-readable plan summary
     DESCRIPTION=$(echo "$PLAN_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['description'])")
@@ -474,7 +475,9 @@ for cmd in commands:
                         log_error "Failed to extract data for chromosome $CHROM"
                     else
                         VARIANT_COUNT=$(grep -v '^#' "$WORKFLOW_DIR/$OUTPUT_VCF" 2>/dev/null | wc -l || echo "0")
-                        log_success "Extracted $VARIANT_COUNT variants for chr$CHROM"
+                        VCF_SIZE=$(du -h "$WORKFLOW_DIR/$OUTPUT_VCF" 2>/dev/null | cut -f1)
+                        ANN_SIZE=$(du -h "$WORKFLOW_DIR/$OUTPUT_ANNOTATION" 2>/dev/null | cut -f1)
+                        log_success "Extracted chr$CHROM: $VARIANT_COUNT variants (VCF: $VCF_SIZE, annotation: $ANN_SIZE)"
                     fi
                 fi
                 # Reset variables
@@ -499,6 +502,10 @@ for cmd in commands:
             fi
         done
 
+        # Report total extracted size
+        TOTAL_SIZE=$(du -sh "$WORKFLOW_DIR" 2>/dev/null | cut -f1)
+        log_info "Total extracted data: $TOTAL_SIZE"
+
         # Copy supporting files
         log_info "Copying supporting files..."
         docker run --rm -u "$(id -u):$(id -g)" -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
@@ -507,11 +514,11 @@ for cmd in commands:
                 cp /data/populations/* /output/
             " 2>/dev/null
 
-        # Trim to 30 individuals for faster testing
+        # Use balanced columns file (30 samples from each population)
         cd "$WORKFLOW_DIR"
-        if [ -f columns.txt ]; then
-            cut -f1-39 columns.txt > columns_30.txt && mv columns_30.txt columns.txt
-            log_success "Supporting files ready (trimmed to 30 individuals)"
+        if [ -f "$SCRIPT_DIR/lib/columns_balanced.txt" ]; then
+            cp "$SCRIPT_DIR/lib/columns_balanced.txt" columns.txt
+            log_success "Supporting files ready (150 balanced samples: 30 per population)"
         fi
     fi
 

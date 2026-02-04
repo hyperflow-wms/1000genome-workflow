@@ -140,7 +140,7 @@ class Results:
                 if 2 * pq >= len(randomized_list):
                     break
                 b_multiset = collections.Counter(mutation_index_array[randomized_list[2 * pq]])
-                print('time, inidividual: %s' % ids[randomized_list[2 * pq]])
+                # print('time, inidividual: %s' % ids[randomized_list[2 * pq]])
                 r_ids.append(ids[randomized_list[2 * pq]])
                 result = result + b_multiset
             random_indiv.append(r_ids)
