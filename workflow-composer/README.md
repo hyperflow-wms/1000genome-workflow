@@ -13,32 +13,28 @@ flowchart LR
     end
 
     subgraph Step2["2. PLAN"]
-        B["Advisory Plan"]
+        B["Advisory Plan +<br/>Estimated Workflow"]
     end
 
-    subgraph Step3["3. ESTIMATE"]
-        C["Estimated Workflow"]
+    subgraph Step3["3. EXTRACT"]
+        C["Data via tabix"]
     end
 
-    subgraph Step4["4. EXTRACT"]
-        D["Data via tabix"]
+    subgraph Step4["4. GENERATE"]
+        D["workflow.json"]
     end
 
-    subgraph Step5["5. GENERATE"]
-        E["workflow.json"]
+    subgraph Step5["5. EXECUTE"]
+        E["HyperFlow"]
     end
 
-    subgraph Step6["6. EXECUTE"]
-        F["HyperFlow"]
-    end
-
-    A --> B --> C --> D --> E --> F
+    A --> B --> C --> D --> E
 
     style A fill:#e1f5fe
     style B fill:#fff9c4
     style C fill:#fff3e0
-    style E fill:#e8f5e9
-    style F fill:#f3e5f5
+    style D fill:#e8f5e9
+    style E fill:#f3e5f5
 ```
 
 → [Detailed pipeline documentation](#end-to-end-pipeline)
@@ -238,7 +234,7 @@ When `use_remote_extraction: true`, the workflow should be run against the extra
 
 ## End-to-End Pipeline
 
-The workflow-composer supports a 6-phase pipeline from research questions to executed workflows. See the [Overview](#overview) for the simple diagram.
+The workflow-composer supports a 5-phase pipeline from research questions to executed workflows. See the [Overview](#overview) for the simple diagram.
 
 ### Detailed Data Flow
 
@@ -250,7 +246,7 @@ flowchart TB
         R3[".tbi index files"]
     end
 
-    subgraph Phase4["4. EXTRACT (Tabix)"]
+    subgraph Phase3["3. EXTRACT (Tabix)"]
         T["tabix -h URL region"]
     end
 
@@ -263,7 +259,7 @@ flowchart TB
         L6["workflow.json"]
     end
 
-    subgraph Phase6["6. EXECUTE (HyperFlow)"]
+    subgraph Phase5["5. EXECUTE (HyperFlow)"]
         H1["individuals ×10"]
         H2["merge ×1"]
         H3["sifting ×1"]
@@ -302,45 +298,46 @@ flowchart TB
 
 ### Phase 1: INTERPRET
 
-An execution agent receives a natural language request like:
-- "Analyze genetic variation in the HLA region"
-- "Compare EUR vs AFR populations in BRCA1"
+**Purpose**: Translate the scientist's research question into a machine-readable specification.
 
-The agent (or LLM) must resolve this to a structured `ResearchIntent`:
+The researcher asks a question in natural language, like *"Do European and African populations show different deleterious mutation patterns in the HLA region?"* This phase uses an LLM (or a mock for testing) to extract:
 
-| Intent Component | Example | Source |
-|-----------------|---------|--------|
-| Region name | "HLA" | User prompt |
-| Chromosome | 6 | `KNOWN_REGIONS` in `data_resolver.py` |
-| Start position | 28,477,797 | `KNOWN_REGIONS` |
-| End position | 33,448,354 | `KNOWN_REGIONS` |
-| Populations | AFR, ALL, AMR, EAS, EUR, GBR, SAS | Default or user-specified |
+- **Populations** to compare (EUR, AFR)
+- **Genomic scope**: specific regions (HLA), chromosomes, or genome-wide
+- **Analysis type**: population comparison, multi-population survey, region analysis
+- **Variant focus**: all variants, deleterious only, etc.
+
+The output is a `ResearchIntent` — a structured contract that downstream phases can process deterministically.
 
 ### Phase 2: PLAN
 
-Creates an advisory workflow plan with:
-- Human-readable description and rationale
-- Tabix extraction commands for data acquisition
-- Estimated task counts and data transfer volume
-- Execution hints and recommendations
+**Purpose**: Determine what data is needed, estimate computational costs, and generate the workflow structure — all *before* committing to data extraction or execution.
 
-The plan is saved to `plan.json` for reference.
+Given the ResearchIntent, this phase resolves the abstract request to concrete 1000 Genomes data sources and produces:
 
-### Phase 3: ESTIMATE
+- **Data acquisition commands**: Exact tabix commands to extract regions from remote VCF files, or full-chromosome download URLs
+- **Estimated data transfer**: How many megabytes will be downloaded
+- **Estimated workflow** (`workflow-estimated.json`): A complete HyperFlow workflow with all tasks and dependencies, based on estimated variant counts from 1000 Genomes metadata
 
-Generates a preliminary `workflow-estimated.json` using estimated variant counts.
-This allows validation of workflow structure before data extraction.
+The estimated workflow enables:
 
-Volume thresholds determine auto-stop behavior:
-- < 50 MB: Safe to run end-to-end
-- 50-500 MB: Stop before execute by default
-- \> 500 MB: Stop before extract by default
+- **Structural validation**: Verify the workflow DAG is correctly formed
+- **Parallelism preview**: See exactly how many `individuals`, `sifting`, `mutation_overlap`, and `frequency` tasks will be created
+- **Early review**: For large analyses, validate the approach before downloading gigabytes of data
 
-### Phase 4: EXTRACT (Tabix)
+### Phase 3: EXTRACT
 
-Rather than downloading entire chromosomes (850+ MB each), use **tabix** for random
-access extraction of specific regions:
+**Purpose**: Acquire the actual genomic data from 1000 Genomes repositories.
 
+Executes the data preparation steps from the PLAN phase:
+
+- For **region-based analyses**: Uses `tabix` to extract specific genomic coordinates from remote VCF files (e.g., `tabix -h s3://1000genomes/.../ALL.chr6...vcf.gz 6:28477797-33448354`)
+- For **chromosome-scale analyses**: Downloads complete VCF files
+- Retrieves matching **annotation files** for SIFT scores
+
+This phase produces the actual VCF files that will be processed, along with a `data.csv` manifest listing each file and its true row count.
+
+**Example tabix extraction:**
 ```bash
 # Extract only the HLA region from the remote VCF (requires SSL-enabled tabix)
 tabix -h \
@@ -348,12 +345,6 @@ tabix -h \
   6:28477797-33448354 \
   > ALL.chr6.hla.vcf
 ```
-
-**Key points:**
-- Tabix uses the `.tbi` index file to seek directly to the region
-- Downloads ~25 MB instead of 850 MB for full chromosome
-- Requires a container with SSL support (e.g., `broadinstitute/gatk:4.4.0.0`)
-- Also extract matching annotation file for sifting step
 
 **Required files after extraction:**
 ```
@@ -364,10 +355,18 @@ workflow-dir/
 ├── AFR, ALL, AMR, EAS, EUR, GBR, SAS  # Population files
 ```
 
-### Phase 5: GENERATE
+### Phase 4: GENERATE
 
-After extraction, count actual data and create `data.csv`:
+**Purpose**: Create the production workflow using actual variant counts from the extracted data.
 
+Now that we have real data, this phase regenerates the HyperFlow workflow with **exact** task boundaries. The difference from the estimated workflow in PLAN:
+
+- **Accurate task partitioning**: `individuals` tasks split the data based on actual row counts, not estimates
+- **Correct file references**: Tasks reference the actual extracted filenames
+- **Cluster-aware parallelism**: The number of parallel tasks can be tuned based on available compute resources (vCPUs), balancing task granularity against scheduling overhead
+- **Production-ready**: The output `workflow.json` is ready for execution
+
+**Creating data.csv from extracted files:**
 ```bash
 # Count variants (excluding header lines)
 VARIANT_COUNT=$(grep -v '^#' ALL.chr6.hla.vcf | wc -l)
@@ -377,14 +376,7 @@ VARIANT_COUNT=$(grep -v '^#' ALL.chr6.hla.vcf | wc -l)
 echo "ALL.chr6.hla.vcf,${VARIANT_COUNT},ALL.chr6.hla.annotation.vcf" > data.csv
 ```
 
-**data.csv format:**
-```
-<vcf_file>,<row_count>,<annotation_file>
-ALL.chr6.hla.vcf,2480,ALL.chr6.hla.annotation.vcf
-```
-
-Use workflow-composer to generate the HyperFlow workflow JSON:
-
+**Generate workflow:**
 ```bash
 g1kwf generate \
     --data-csv data.csv \
@@ -393,10 +385,20 @@ g1kwf generate \
     --output workflow.json
 ```
 
-### Phase 6: EXECUTE
+The task count may differ slightly from estimates because chromosomal variant density varies, and the 20% safety margin in estimates is conservative.
 
-Run the workflow using Docker Compose with HyperFlow:
+### Phase 5: EXECUTE
 
+**Purpose**: Run the workflow on the compute infrastructure.
+
+Submits the generated `workflow.json` to HyperFlow for execution. The workflow processes variants through the 1000 Genomes pipeline:
+
+1. **individuals**: Partition VCF by rows, extract sample columns
+2. **sifting**: Filter variants by SIFT deleteriousness scores
+3. **mutation_overlap**: Count shared mutations within each population
+4. **frequency**: Calculate allele frequencies
+
+**Run with Docker Compose:**
 ```bash
 export WORKFLOW_DIR=/path/to/workflow-dir
 export USER_ID=$(id -u)
@@ -406,10 +408,7 @@ export MAX_PARALLELISM=20
 docker-compose up
 ```
 
-**Execution environment:**
-- **Redis**: Job queue for HyperFlow
-- **HyperFlow**: Workflow engine that schedules tasks
-- **Worker containers**: Execute individual tasks (individuals.py, sifting.py, etc.)
+Results are written to output archives (e.g., `chr6-EUR.tar.gz`, `chr6-EUR-freq.tar.gz`) containing the mutation overlap and frequency statistics that answer the original research question.
 
 ### Expected Outputs
 
@@ -431,15 +430,14 @@ def execute_genomic_analysis(prompt: str):
     intent = interpret_research_question(prompt)  # LLM call
     region = resolve_region(intent.region_name)   # HLA → chr6:28477797-33448354
 
-    # Phase 2: PLAN - create advisory plan
+    # Phase 2: PLAN - create advisory plan + estimated workflow
     plan = create_advisory_plan(intent)
     save_json(plan, "plan.json")
-
-    # Phase 3: ESTIMATE - generate preliminary workflow
     estimated_workflow = generate_estimated_workflow(intent)
+    save_json(estimated_workflow, "workflow-estimated.json")
     check_volume_thresholds(plan.estimated_transfer_mb)
 
-    # Phase 4: EXTRACT - get data via tabix
+    # Phase 3: EXTRACT - get data via tabix
     vcf_file = tabix_extract(
         url=get_vcf_url(region.chromosome),
         region=f"{region.chromosome}:{region.start}-{region.end}"
@@ -449,7 +447,7 @@ def execute_genomic_analysis(prompt: str):
         region=f"{region.chromosome}:{region.start}-{region.end}"
     )
 
-    # Phase 5: GENERATE - create final workflow from actual data
+    # Phase 4: GENERATE - create final workflow from actual data
     variant_count = count_variants(vcf_file)
     create_data_csv(vcf_file, variant_count, annotation_file)
     workflow = generate_workflow(
@@ -458,12 +456,22 @@ def execute_genomic_analysis(prompt: str):
         parallelism="small"
     )
 
-    # Phase 6: EXECUTE
+    # Phase 5: EXECUTE
     run_hyperflow(workflow)
 
     # Verify and return results
     return verify_outputs()
 ```
+
+### Summary
+
+| Phase | Input | Output | Key Decision |
+|-------|-------|--------|--------------|
+| **INTERPRET** | Natural language question | `ResearchIntent` | What does the scientist want to study? |
+| **PLAN** | ResearchIntent | Advisory plan + `workflow-estimated.json` | What data is needed, how big, and is the structure correct? |
+| **EXTRACT** | Plan | VCF files + `data.csv` | Acquire the actual genomic data |
+| **GENERATE** | data.csv + cluster size | `workflow.json` | Build production workflow with real data |
+| **EXECUTE** | workflow.json | Output archives | Run the analysis |
 
 ### Performance Considerations
 

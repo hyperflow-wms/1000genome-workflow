@@ -31,7 +31,6 @@ class StopPoint(Enum):
     """Where to stop test execution."""
     AFTER_INTERPRET = "interpret"
     AFTER_PLAN = "plan"
-    AFTER_ESTIMATE = "estimate"
     AFTER_EXTRACT = "extract"
     AFTER_GENERATE = "generate"
     NEVER = "never"
@@ -288,7 +287,7 @@ def generate_estimated_workflow(
     vcpus: int | None = None
 ) -> dict:
     """
-    Phase 3: Generate workflow with estimated variant counts.
+    Generate workflow with estimated variant counts (part of Phase 2: PLAN).
 
     Parallelism precedence:
     1. ind_jobs (explicit)
@@ -375,14 +374,14 @@ def determine_stop_point(
     Returns: StopPoint value as string
     """
     if explicit_stop == "extract":
-        return StopPoint.AFTER_ESTIMATE.value
+        return StopPoint.AFTER_PLAN.value
     if explicit_stop == "execute":
         return StopPoint.AFTER_GENERATE.value
     if force_yes:
         return StopPoint.NEVER.value
 
     if estimated_transfer_mb > threshold_extract:
-        return StopPoint.AFTER_ESTIMATE.value
+        return StopPoint.AFTER_PLAN.value
     if estimated_transfer_mb > threshold_execute:
         return StopPoint.AFTER_GENERATE.value
 

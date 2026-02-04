@@ -76,7 +76,7 @@ Options:
   --list               List available test cases and exit
   --mock-llm           Use mock intents instead of calling LLM (for CI)
   --model MODEL        LLM model to use
-  --stop-before-extract    Stop after ESTIMATE phase
+  --stop-before-extract    Stop after PLAN phase
   --stop-before-execute    Stop after GENERATE phase
   -y, --yes            Non-interactive mode, proceed through all phases
 
@@ -307,7 +307,7 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     # ========================================================================
     # PHASE 2: PLAN
     # ========================================================================
-    log_phase "Phase 2: PLAN (Advisory workflow plan)"
+    log_phase "Phase 2: PLAN (Advisory plan + estimated workflow)"
 
     if ! PLAN_JSON=$(python3 "$FRAMEWORK_PY" plan \
         --intent-json "$INTENT_JSON" \
@@ -349,6 +349,25 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     echo "$INTENT_JSON" | python3 -m json.tool > "$WORKFLOW_DIR/intent.json"
     echo "$PLAN_JSON" | python3 -m json.tool > "$WORKFLOW_DIR/plan.json"
 
+    # Generate estimated workflow
+    if ! ESTIMATED_WORKFLOW=$(python3 "$FRAMEWORK_PY" estimate \
+        --intent-json "$INTENT_JSON" \
+        $PARALLELISM_FLAGS 2>&1); then
+        log_error "Estimate generation failed: $ESTIMATED_WORKFLOW"
+        FAILED=$((FAILED + 1))
+        RESULTS[$TEST_ID]="FAILED (plan)"
+        continue
+    fi
+
+    echo "$ESTIMATED_WORKFLOW" | python3 -m json.tool > "$WORKFLOW_DIR/workflow-estimated.json"
+
+    EST_TASKS=$(echo "$ESTIMATED_WORKFLOW" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['processes']))")
+    EST_FILES=$(echo "$ESTIMATED_WORKFLOW" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['signals']))")
+
+    log_success "Estimated workflow generated"
+    log_info "  Tasks: $EST_TASKS"
+    log_info "  Files: $EST_FILES"
+
     # Determine stop point
     STOP_FLAG=""
     [ -n "$STOP_BEFORE" ] && STOP_FLAG="--explicit-stop $STOP_BEFORE"
@@ -363,31 +382,8 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         log_warning "Auto-stop: $STOP_POINT (transfer: ${TRANSFER_MB} MB)"
     fi
 
-    # ========================================================================
-    # PHASE 3: ESTIMATE
-    # ========================================================================
-    log_phase "Phase 3: ESTIMATE (Generate workflow with estimated counts)"
-
-    if ! ESTIMATED_WORKFLOW=$(python3 "$FRAMEWORK_PY" estimate \
-        --intent-json "$INTENT_JSON" \
-        $PARALLELISM_FLAGS 2>&1); then
-        log_error "Estimate generation failed: $ESTIMATED_WORKFLOW"
-        FAILED=$((FAILED + 1))
-        RESULTS[$TEST_ID]="FAILED (estimate)"
-        continue
-    fi
-
-    echo "$ESTIMATED_WORKFLOW" | python3 -m json.tool > "$WORKFLOW_DIR/workflow-estimated.json"
-
-    EST_TASKS=$(echo "$ESTIMATED_WORKFLOW" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['processes']))")
-    EST_FILES=$(echo "$ESTIMATED_WORKFLOW" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['signals']))")
-
-    log_success "Estimated workflow generated"
-    log_info "  Tasks: $EST_TASKS"
-    log_info "  Files: $EST_FILES"
-
-    if [ "$STOP_POINT" = "estimate" ]; then
-        log_warning "Stopping after ESTIMATE phase (volume threshold exceeded)"
+    if [ "$STOP_POINT" = "plan" ]; then
+        log_warning "Stopping after PLAN phase (volume threshold exceeded)"
         echo ""
         echo "To proceed: $0 -y $TEST_ID"
         SKIPPED=$((SKIPPED + 1))
@@ -396,9 +392,9 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     fi
 
     # ========================================================================
-    # PHASE 4: EXTRACT
+    # PHASE 3: EXTRACT
     # ========================================================================
-    log_phase "Phase 4: EXTRACT (Extract data via tabix)"
+    log_phase "Phase 3: EXTRACT (Acquire data via tabix)"
 
     SKIP_EXTRACT=$(python3 "$FRAMEWORK_PY" test-info \
         --yaml "$CASES_YAML" \
@@ -535,9 +531,9 @@ for cmd in commands:
     fi
 
     # ========================================================================
-    # PHASE 5: GENERATE
+    # PHASE 4: GENERATE
     # ========================================================================
-    log_phase "Phase 5: GENERATE (Create final workflow with actual counts)"
+    log_phase "Phase 4: GENERATE (Create final workflow with actual counts)"
 
     cd "$WORKFLOW_DIR"
 
@@ -611,9 +607,9 @@ for cmd in commands:
     fi
 
     # ========================================================================
-    # PHASE 6: EXECUTE
+    # PHASE 5: EXECUTE
     # ========================================================================
-    log_phase "Phase 6: EXECUTE (Run workflow)"
+    log_phase "Phase 5: EXECUTE (Run workflow)"
 
     if [ ! -f "$WORKFLOW_DIR/workflow.json" ]; then
         log_warning "No workflow.json - skipping execution"

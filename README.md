@@ -34,8 +34,8 @@ flowchart LR
 
 ## End-to-End Pipeline
 
-This project implements the **workflow composer agent** which enables a 6-phase pipeline from natural language research questions to executed workflows.
-Note that the composer provides plan for phases 4 and 6, but they need to be executed by workflow execution agents on the target system.
+This project implements the **workflow composer agent** which enables a 5-phase pipeline from natural language research questions to executed workflows.
+Note that the composer provides plan for phases 3 and 5, but they need to be executed by workflow execution agents on the target system.
 
 ```mermaid
 flowchart LR
@@ -44,40 +44,35 @@ flowchart LR
     end
 
     subgraph Step2["2. PLAN"]
-        B["Advisory Plan"]
+        B["Advisory Plan +<br/>Estimated Workflow"]
     end
 
-    subgraph Step3["3. ESTIMATE"]
-        C["Estimated Workflow"]
+    subgraph Step3["3. EXTRACT"]
+        C["Data via tabix"]
     end
 
-    subgraph Step4["4. EXTRACT"]
-        D["Download data"]
+    subgraph Step4["4. GENERATE"]
+        D["workflow.json"]
     end
 
-    subgraph Step5["5. GENERATE"]
-        E["workflow.json"]
+    subgraph Step5["5. EXECUTE"]
+        E["HyperFlow"]
     end
 
-    subgraph Step6["6. EXECUTE"]
-        F["HyperFlow"]
-    end
-
-    A --> B --> C --> D --> E --> F
+    A --> B --> C --> D --> E
 
     style A fill:#e1f5fe
     style B fill:#fff9c4
     style C fill:#fff3e0
-    style E fill:#e8f5e9
-    style F fill:#f3e5f5
+    style D fill:#e8f5e9
+    style E fill:#f3e5f5
 ```
 
 | Phase | Description |
 |-------|-------------|
 | **INTERPRET** | Parse natural language research question into structured intent |
-| **PLAN** | Create advisory plan with data extraction commands and estimates |
-| **ESTIMATE** | Generate preliminary workflow with estimated variant counts |
-| **EXTRACT** | Download data via tabix remote extraction (only needed regions) |
+| **PLAN** | Create advisory plan with estimated workflow for validation |
+| **EXTRACT** | Acquire genomic data via tabix remote extraction |
 | **GENERATE** | Create final workflow.json from actual data counts |
 | **EXECUTE** | Run workflow with HyperFlow + Docker workers |
 

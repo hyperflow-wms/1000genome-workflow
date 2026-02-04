@@ -117,7 +117,7 @@ docker-compose down
 
 ## End-to-End Pipeline Documentation
 
-For detailed documentation of the 6-phase pipeline (INTERPRET → PLAN → ESTIMATE → EXTRACT → GENERATE → EXECUTE), see:
+For detailed documentation of the 5-phase pipeline (INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE), see:
 
 - **[workflow-composer/README.md](../../workflow-composer/README.md#end-to-end-pipeline)** - Detailed phase descriptions, diagrams, and agent implementation guide
 - **[Main README](../../README.md#end-to-end-pipeline)** - Pipeline overview
