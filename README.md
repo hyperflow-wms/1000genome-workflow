@@ -34,7 +34,8 @@ flowchart LR
 
 ## End-to-End Pipeline
 
-The workflow-composer enables a 6-phase pipeline from natural language research questions to executed workflows:
+This project implements the **workflow composer agent** which enables a 6-phase pipeline from natural language research questions to executed workflows.
+Note that the composer provides plan for phases 4 and 6, but they need to be executed by workflow execution agents on the target system.
 
 ```mermaid
 flowchart LR
@@ -51,7 +52,7 @@ flowchart LR
     end
 
     subgraph Step4["4. EXTRACT"]
-        D["Data via tabix"]
+        D["Download data"]
     end
 
     subgraph Step5["5. GENERATE"]
