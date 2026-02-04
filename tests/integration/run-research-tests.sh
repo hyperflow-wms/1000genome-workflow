@@ -407,16 +407,13 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         if [ "$TEST_ID" = "micro" ]; then
             log_info "Setting up micro test data from Docker image..."
 
-            docker run --rm -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
+            docker run --rm -u "$(id -u):$(id -g)" -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
                 sh -c "
                     cp /data/20130502/ALL.chr1.250000.vcf.gz /output/ && gunzip -f /output/ALL.chr1.250000.vcf.gz
                     cp /data/20130502/columns.txt /output/
                     cp /data/populations/* /output/
                     cp /data/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.annotation.vcf.gz /output/ && gunzip -f /output/ALL.chr1*.annotation.vcf.gz
                 " 2>/dev/null
-
-            # Fix ownership (Docker creates files as root)
-            sudo chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || true
 
             cd "$WORKFLOW_DIR"
             cut -f1-39 columns.txt > columns_30.txt && mv columns_30.txt columns.txt
@@ -457,6 +454,7 @@ for cmd in commands:
                     fi
 
                     docker run --rm \
+                        -u "$(id -u):$(id -g)" \
                         -v "$WORKFLOW_DIR:/output" \
                         "$TABIX_IMAGE" \
                         sh -c "
@@ -501,19 +499,13 @@ for cmd in commands:
             fi
         done
 
-        # Fix ownership of extracted files (Docker creates files as root)
-        sudo chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || true
-
         # Copy supporting files
         log_info "Copying supporting files..."
-        docker run --rm -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
+        docker run --rm -u "$(id -u):$(id -g)" -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
             sh -c "
                 cp /data/20130502/columns.txt /output/
                 cp /data/populations/* /output/
             " 2>/dev/null
-
-        # Fix ownership (Docker creates files as root)
-        sudo chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || true
 
         # Trim to 30 individuals for faster testing
         cd "$WORKFLOW_DIR"
@@ -640,9 +632,6 @@ for cmd in commands:
 
     if docker-compose up 2>&1; then
         log_success "Workflow execution completed"
-
-        # Fix ownership of output files (Docker containers run as root)
-        sudo chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || chown -R "$(id -u):$(id -g)" "$WORKFLOW_DIR"/* 2>/dev/null || true
 
         # Verify outputs
         log_info "Verifying outputs..."
