@@ -33,7 +33,9 @@ def merging(c, tar_files):
     print('= Merging chromosome {}...'.format(c))
     tic = time.perf_counter()
 
-    merged_dir = 'merged/'
+    # Use chromosome-specific directory to avoid race conditions
+    # when multiple merge tasks run in parallel
+    merged_dir = 'merged_chr{}/'.format(c)
     os.makedirs(merged_dir, exist_ok=True)
 
     data = {}
