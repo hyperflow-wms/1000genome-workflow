@@ -70,7 +70,7 @@ DATA_SOURCES = {
     },
     "local": {
         "type": "ftp",
-        "base_url": "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502",
+        "base_url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502",
         "supports_tabix": True
     }
 }
@@ -210,7 +210,12 @@ def get_vcf_filename(chromosome: str) -> str:
     elif chromosome == "Y":
         return "ALL.chrY.phase3_integrated_v2a.20130502.genotypes.vcf.gz"
     else:
-        return f"ALL.chr{chromosome}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
+        return f"ALL.chr{chromosome}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz"
+
+
+def get_annotation_filename(chromosome: str) -> str:
+    """Get functional annotation VCF filename for chromosome."""
+    return f"ALL.chr{chromosome}.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.annotation.vcf.gz"
 
 
 def estimate_region_size_mb(region: GenomicRegion) -> float:
@@ -246,32 +251,52 @@ def create_data_preparation_plan(
 
     use_remote = should_use_remote_extraction(intent.regions, chromosomes)
 
+    annotation_base = f"{source_config['base_url']}/supporting/functional_annotation/filtered"
+
     for chrom in chromosomes:
         vcf_filename = get_vcf_filename(chrom)
+        annotation_filename = get_annotation_filename(chrom)
+        vcf_url = f"{source_config['base_url']}/{vcf_filename}"
+        annotation_url = f"{annotation_base}/{annotation_filename}"
 
         if use_remote and intent.regions:
-            # Extract specific regions
+            # Extract specific regions via tabix
             for region in intent.regions:
                 if region.chromosome != chrom:
                     continue
 
                 region_str = f"{chrom}:{region.start}-{region.end}"
-                output_file = f"chr{chrom}_{region.name.lower()}.vcf.gz"
+                region_tag = region.name.lower()
+                output_vcf = f"ALL.chr{chrom}.{region_tag}.vcf"
+                output_ann = f"ALL.chr{chrom}.{region_tag}.annotation.vcf"
 
                 steps.append(DataPrepStep(
                     action=DataPrepAction.EXTRACT_REGION,
-                    source=f"{source_config['base_url']}/{vcf_filename}",
+                    source=vcf_url,
+                    annotation_source=annotation_url,
                     region=region_str,
-                    output_file=output_file
+                    output_file=output_vcf,
+                    output_annotation=output_ann,
+                    commands=[
+                        f"tabix -h {vcf_url} {region_str} > {output_vcf}",
+                        f"tabix -h {annotation_url} {region_str} > {output_ann}",
+                    ],
                 ))
                 total_transfer_mb += estimate_region_size_mb(region)
         else:
             # Download full chromosome
-            output_file = f"chr{chrom}.vcf.gz"
+            output_vcf = f"ALL.chr{chrom}.vcf"
+            output_ann = f"ALL.chr{chrom}.annotation.vcf"
             steps.append(DataPrepStep(
                 action=DataPrepAction.DOWNLOAD,
-                source=f"{source_config['base_url']}/{vcf_filename}",
-                output_file=output_file
+                source=vcf_url,
+                annotation_source=annotation_url,
+                output_file=output_vcf,
+                output_annotation=output_ann,
+                commands=[
+                    f"curl -sL {vcf_url} | gunzip > {output_vcf}",
+                    f"curl -sL {annotation_url} | gunzip > {output_ann}",
+                ],
             ))
             total_transfer_mb += CHROMOSOME_VCF_SIZE_MB.get(chrom, 500)
 

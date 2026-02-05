@@ -427,8 +427,7 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         log_info "Extracting data via tabix..."
 
         TABIX_COMMANDS=$(python3 "$FRAMEWORK_PY" tabix-commands \
-            --intent-json "$INTENT_JSON" \
-            --output-dir "$WORKFLOW_DIR")
+            --plan-json "@$WORKFLOW_DIR/plan.json")
 
         EXTRACT_FAILED=false
 

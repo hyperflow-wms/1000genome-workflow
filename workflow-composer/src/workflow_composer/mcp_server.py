@@ -276,6 +276,8 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 """
             for i, step in enumerate(plan.data_preparation.steps, 1):
                 response += f"\n{i}. {step.action.value}: {step.output_file}"
+                for cmd in step.commands:
+                    response += f"\n   `{cmd}`"
 
             response += f"""
 

@@ -444,72 +444,38 @@ def verify_outputs(workflow_dir: Path, expected_outputs: list[str]) -> tuple[int
     return len(missing), missing
 
 
-def get_tabix_commands(intent_dict: dict, output_dir: str) -> list[dict]:
+def get_tabix_commands(plan_dict: dict) -> list[dict]:
     """
-    Generate tabix extraction commands for downloading data.
+    Extract data preparation commands from a workflow plan.
+
+    Reads steps directly from the plan's data_preparation section,
+    which contains accurate URLs, regions, and ready-to-execute commands.
 
     Returns list of command specs with: chromosome, region, vcf_url, annotation_url, output_files
     """
-    from workflow_composer.core.models import GenomicRegion
-    from workflow_composer.core.data_resolver import KNOWN_REGIONS
-
-    # 1000 Genomes URLs
-    VCF_BASE = "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502"
-    ANNOTATION_BASE = f"{VCF_BASE}/supporting/functional_annotation/filtered"
-
     commands = []
 
-    if intent_dict.get("regions"):
-        for r in intent_dict["regions"]:
-            if isinstance(r, dict):
-                region = GenomicRegion(**r)
-            else:
-                region = r
+    data_prep = plan_dict.get("data_preparation", {})
+    for step in data_prep.get("steps", []):
+        if step["action"] not in ("extract_region", "download"):
+            continue
 
-            chrom = region.chromosome
-            region_str = f"{chrom}:{region.start}-{region.end}"
-            region_name = region.name.lower()
+        # Extract chromosome from region string or output filename
+        region = step.get("region")
+        if region:
+            chrom = region.split(":")[0]
+        else:
+            # Parse from output filename like ALL.chr22.vcf
+            chrom = step["output_file"].split(".")[1].replace("chr", "")
 
-            # VCF filename varies by chromosome
-            if chrom == "X":
-                vcf_file = "ALL.chrX.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.gz"
-            elif chrom == "Y":
-                vcf_file = "ALL.chrY.phase3_integrated_v2a.20130502.genotypes.vcf.gz"
-            else:
-                vcf_file = f"ALL.chr{chrom}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz"
-
-            annotation_file = f"ALL.chr{chrom}.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.annotation.vcf.gz"
-
-            commands.append({
-                "chromosome": chrom,
-                "region": region_str,
-                "region_name": region_name,
-                "vcf_url": f"{VCF_BASE}/{vcf_file}",
-                "annotation_url": f"{ANNOTATION_BASE}/{annotation_file}",
-                "output_vcf": f"ALL.chr{chrom}.{region_name}.vcf",
-                "output_annotation": f"ALL.chr{chrom}.{region_name}.annotation.vcf"
-            })
-
-    elif intent_dict.get("chromosomes"):
-        for chrom in intent_dict["chromosomes"]:
-            if chrom == "X":
-                vcf_file = "ALL.chrX.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.gz"
-            elif chrom == "Y":
-                vcf_file = "ALL.chrY.phase3_integrated_v2a.20130502.genotypes.vcf.gz"
-            else:
-                vcf_file = f"ALL.chr{chrom}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz"
-
-            annotation_file = f"ALL.chr{chrom}.phase3_shapeit2_mvncall_integrated_v5.20130502.sites.annotation.vcf.gz"
-
-            commands.append({
-                "chromosome": chrom,
-                "region": None,  # Full chromosome
-                "region_name": None,
-                "vcf_url": f"{VCF_BASE}/{vcf_file}",
-                "annotation_url": f"{ANNOTATION_BASE}/{annotation_file}",
-                "output_vcf": f"ALL.chr{chrom}.vcf",
-                "output_annotation": f"ALL.chr{chrom}.annotation.vcf"
-            })
+        commands.append({
+            "chromosome": chrom,
+            "region": region or "",
+            "vcf_url": step.get("source", ""),
+            "annotation_url": step.get("annotation_source", ""),
+            "output_vcf": step["output_file"],
+            "output_annotation": step.get("output_annotation", ""),
+        })
 
     return commands
 
@@ -575,8 +541,7 @@ def main():
 
     # Tabix commands
     tabix_parser = subparsers.add_parser("tabix-commands", help="Generate tabix extraction commands")
-    tabix_parser.add_argument("--intent-json", required=True)
-    tabix_parser.add_argument("--output-dir", required=True)
+    tabix_parser.add_argument("--plan-json", required=True, help="Plan JSON string or @file path")
 
     # Get test case info
     info_parser = subparsers.add_parser("test-info", help="Get test case info")
@@ -683,8 +648,13 @@ def main():
             }))
 
         elif args.command == "tabix-commands":
-            intent = json.loads(args.intent_json)
-            commands = get_tabix_commands(intent, args.output_dir)
+            plan_input = args.plan_json
+            if plan_input.startswith("@"):
+                with open(plan_input[1:]) as f:
+                    plan = json.load(f)
+            else:
+                plan = json.loads(plan_input)
+            commands = get_tabix_commands(plan)
             print(json.dumps(commands))
 
         elif args.command == "test-info":

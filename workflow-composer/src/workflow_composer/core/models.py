@@ -49,11 +49,14 @@ class DataPrepAction(str, Enum):
 class DataPrepStep(BaseModel):
     """A single data preparation step."""
     action: DataPrepAction
-    source: str | None = None           # Input file or URL
+    source: str | None = None           # VCF file URL
+    annotation_source: str | None = None  # Annotation VCF URL
     region: str | None = None           # e.g., "6:28477797-33448354"
     population: str | None = None       # e.g., "EUR"
     input_file: str | None = None       # Local input file
-    output_file: str                    # Output file name
+    output_file: str                    # VCF output file name
+    output_annotation: str | None = None  # Annotation output file name
+    commands: list[str] = []            # Ready-to-execute shell commands
 
 
 class DataPreparationPlan(BaseModel):
