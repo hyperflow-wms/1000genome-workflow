@@ -79,12 +79,18 @@ for workflow generation.
 Based on the user's question, extract:
 1. analysis_type: What kind of analysis is being requested?
 2. populations: Which population(s) are involved?
-3. chromosomes: Which chromosome(s) if specified (null if not)
-4. regions: Which genomic region(s) if specified (null if not)
+3. chromosomes: Which chromosome(s) if explicitly specified by number (null if not).
+   Do NOT set chromosomes when a gene or region name is mentioned — use regions instead.
+4. regions: If the user mentions a gene name (e.g., BRCA1, TP53, CFTR) or a named
+   genomic region (e.g., HLA), look up its chromosome and coordinates in the
+   genomic-regions.md table above and return the full GenomicRegion with name,
+   chromosome, start, and end. This is REQUIRED whenever a gene or region name
+   appears in the question.
 5. focus: What type of variants to focus on?
 
-Use the mappings in the skill documents to translate natural language
-to the correct codes and coordinates.
+IMPORTANT: When a gene name like BRCA1 or HLA is mentioned, you MUST populate
+the regions field with the corresponding coordinates from the genomic-regions
+table. Never leave regions as null when a known gene or region is referenced.
 """
 
     return client.chat.completions.create(
