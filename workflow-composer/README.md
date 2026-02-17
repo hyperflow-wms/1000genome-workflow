@@ -161,8 +161,11 @@ VARIANTS=$(grep -v '^#' ALL.chr6.hla.vcf | wc -l)
 # Create manifest
 echo "ALL.chr6.hla.vcf,${VARIANTS},ALL.chr6.hla.annotation.vcf" > data.csv
 
-# Generate
+# Generate (all populations)
 g1kwf generate --data-csv data.csv --populations-dir populations/ -o workflow.json
+
+# Generate (specific populations only)
+g1kwf generate --data-csv data.csv --populations-dir populations/ --populations EUR,AFR -o workflow.json
 ```
 
 Task parallelism can be tuned based on cluster size (vCPUs).
