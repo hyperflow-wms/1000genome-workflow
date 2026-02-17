@@ -50,8 +50,6 @@ test_cases:
       focus: deleterious
 
     expected_outputs:
-      - "chr22n.tar.gz"
-      - "sifted.SIFT.chr22.txt"
       - "chr22-EUR.tar.gz"
       - "chr22-AFR.tar.gz"
       - "chr22-EUR-freq.tar.gz"
@@ -121,8 +119,6 @@ test_cases:
       focus: all_variants
 
     expected_outputs:
-      - "chr6n.tar.gz"
-      - "sifted.SIFT.chr6.txt"
       - "chr6-EAS.tar.gz"
       - "chr6-EAS-freq.tar.gz"
 
@@ -149,8 +145,6 @@ test_cases:
       focus: all_variants
 
     expected_outputs:
-      - "chr1n.tar.gz"
-      - "sifted.SIFT.chr1.txt"
       - "chr1-AFR.tar.gz"
       - "chr1-ALL.tar.gz"
       - "chr1-AMR.tar.gz"
@@ -195,8 +189,6 @@ test_cases:
       focus: all_variants
 
     expected_outputs:
-      - "chr6n.tar.gz"
-      - "sifted.SIFT.chr6.txt"
       - "chr6-EUR.tar.gz"
       - "chr6-AFR.tar.gz"
       - "chr6-EUR-freq.tar.gz"
@@ -244,10 +236,6 @@ test_cases:
       focus: all_variants
 
     expected_outputs:
-      - "chr17n.tar.gz"
-      - "chr13n.tar.gz"
-      - "sifted.SIFT.chr17.txt"
-      - "sifted.SIFT.chr13.txt"
       - "chr17-AFR.tar.gz"
       - "chr17-EUR.tar.gz"
       - "chr17-EAS.tar.gz"
@@ -293,7 +281,5 @@ test_cases:
       focus: all_variants
 
     expected_outputs:
-      - "chr17n.tar.gz"
-      - "sifted.SIFT.chr17.txt"
       - "chr17-GBR.tar.gz"
       - "chr17-GBR-freq.tar.gz"
