@@ -579,11 +579,16 @@ for cmd in commands:
         CLI_PARALLELISM="--parallelism $PARALLELISM"
     fi
 
+    # Pass intent populations to generator so it only creates tasks for requested populations
+    INTENT_POPULATIONS=$(echo "$INTENT_JSON" | python3 -c "import sys,json; print(','.join(json.load(sys.stdin)['populations']))")
+    CLI_POPULATIONS="--populations $INTENT_POPULATIONS"
+
     cd "$REPO_ROOT/workflow-composer"
     python3 -m workflow_composer.cli generate \
         --data-csv "$WORKFLOW_DIR/data.csv" \
         --populations-dir "$REPO_ROOT/workflow-generator/data/populations" \
         $CLI_PARALLELISM \
+        $CLI_POPULATIONS \
         --output "$WORKFLOW_DIR/workflow.json" 2>/dev/null
 
     GEN_TASKS=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow.json'))['processes']))")
