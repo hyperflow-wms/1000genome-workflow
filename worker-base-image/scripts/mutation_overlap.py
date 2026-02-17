@@ -43,10 +43,8 @@ pop_dir = './'
 outdata_dir = './output_no_sift/'
 plot_dir = './plots_no_sift/'
 
-if not os.path.exists(outdata_dir):
-  os.makedirs(outdata_dir)
-if not os.path.exists(plot_dir):
-  os.makedirs(plot_dir)
+os.makedirs(outdata_dir, exist_ok=True)
+os.makedirs(plot_dir, exist_ok=True)
 
 OutputFormat = '.png'
 
