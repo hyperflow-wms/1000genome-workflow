@@ -42,9 +42,11 @@ def cli():
               help="Explicit individuals jobs per chromosome (overrides --parallelism)")
 @click.option("--name", default="1000genome", help="Workflow name")
 @click.option("--version", default="1.0.0", help="Workflow version")
+@click.option("--populations", default=None,
+              help="Comma-separated population filter (e.g., GBR or EUR,AFR). Default: all in dir.")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: int,
-             name: str, version: str, output: str):
+             name: str, version: str, populations: str, output: str):
     """
     Generate HyperFlow workflow directly (daxgen.py replacement).
 
@@ -64,13 +66,19 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
         else:
             ind_jobs = PARALLELISM_PRESETS[DEFAULT_PARALLELISM]
 
+    # Parse population filter
+    pop_filter = None
+    if populations:
+        pop_filter = [p.strip() for p in populations.split(",")]
+
     try:
         workflow = generate_workflow(
             data_csv=Path(data_csv),
             populations_dir=Path(populations_dir),
             ind_jobs=ind_jobs,
             name=name,
-            version=version
+            version=version,
+            population_filter=pop_filter
         )
 
         result = json.dumps(workflow, indent=2)
