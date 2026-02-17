@@ -85,6 +85,9 @@ Parallelism Options (mutually exclusive):
   --vcpus N                  Compute optimal parallelism for N vCPUs
   --ind-jobs N               Explicit ind_jobs value
 
+Sampling Options:
+  --max-samples-per-pop N    Cap individuals per population in columns.txt
+
 General Options:
   -v, --verbose        Verbose output
   -h, --help           Show this help message
@@ -135,6 +138,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ind-jobs)
             IND_JOBS="$2"
+            shift 2
+            ;;
+        --max-samples-per-pop)
+            MAX_SAMPLES_PER_POP="$2"
             shift 2
             ;;
         -v|--verbose)
@@ -505,7 +512,7 @@ for cmd in commands:
         TOTAL_SIZE=$(du -sh "$WORKFLOW_DIR" 2>/dev/null | cut -f1)
         log_info "Total extracted data: $TOTAL_SIZE"
 
-        # Copy supporting files
+        # Copy supporting files (full columns.txt and population files)
         log_info "Copying supporting files..."
         docker run --rm -u "$(id -u):$(id -g)" -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
             sh -c "
@@ -513,12 +520,54 @@ for cmd in commands:
                 cp /data/populations/* /output/
             " 2>/dev/null
 
-        # Use balanced columns file (30 samples from each population)
+        # Build columns.txt filtered to requested populations (with optional cap)
         cd "$WORKFLOW_DIR"
-        if [ -f "$SCRIPT_DIR/lib/columns_balanced.txt" ]; then
-            cp "$SCRIPT_DIR/lib/columns_balanced.txt" columns.txt
-            log_success "Supporting files ready (150 balanced samples: 30 per population)"
-        fi
+        INTENT_POPS=$(echo "$INTENT_JSON" | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin)['populations']))")
+
+        python3 -c "
+import sys
+
+pops = '$INTENT_POPS'.split()
+max_per_pop = ${MAX_SAMPLES_PER_POP:-0}
+
+# Read full columns.txt header
+with open('columns.txt') as f:
+    header = f.readline().strip().split('\t')
+
+vcf_fields = header[:9]
+all_individuals = header[9:]
+
+# Collect individuals from requested populations
+selected = []
+for pop in pops:
+    try:
+        with open(pop) as f:
+            pop_ids = set(f.read().split())
+    except FileNotFoundError:
+        print(f'Warning: population file {pop} not found', file=sys.stderr)
+        continue
+    # Keep only individuals present in the VCF columns
+    available = [ind for ind in all_individuals if ind in pop_ids]
+    if max_per_pop > 0:
+        available = available[:max_per_pop]
+    selected.extend(available)
+
+# Deduplicate while preserving order
+seen = set()
+unique = []
+for s in selected:
+    if s not in seen:
+        seen.add(s)
+        unique.append(s)
+
+# Write filtered columns.txt
+with open('columns.txt', 'w') as f:
+    f.write('\t'.join(vcf_fields + unique) + '\n')
+
+print('Selected %d individuals from %d population(s): %s' % (len(unique), len(pops), ' '.join(pops)))
+" 2>&1
+        SAMPLE_COUNT=$(head -1 columns.txt | tr '\t' '\n' | tail -n+10 | wc -l)
+        log_success "Supporting files ready ($SAMPLE_COUNT samples from: $INTENT_POPS)"
     fi
 
     if [ "$STOP_POINT" = "extract" ]; then
@@ -641,7 +690,7 @@ for cmd in commands:
 
     cd "$SCRIPT_DIR"
 
-    if docker-compose up 2>&1; then
+    if docker-compose up --abort-on-container-exit 2>&1; then
         log_success "Workflow execution completed"
 
         # Verify outputs
