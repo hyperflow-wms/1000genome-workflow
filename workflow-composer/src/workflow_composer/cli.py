@@ -137,8 +137,8 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
 @click.option("--model", default=None, help="LLM model (e.g., anthropic/claude-sonnet-4-20250514)")
 @click.option("--format", "output_format", default="hyperflow",
               type=click.Choice(["hyperflow", "wfcommons"]))
-@click.option("--env", "compute_env", default="aws",
-              type=click.Choice(["aws", "gcp", "local"]))
+@click.option("--env", "compute_env", default="local",
+              type=click.Choice(["local", "aws", "gcp"]))
 @click.option("--parallelism", "-p", default=None,
               type=click.Choice(list(PARALLELISM_PRESETS.keys())),
               help="Parallelism preset (auto-selected if not specified)")
@@ -221,8 +221,8 @@ Transfer: {plan.data_preparation.estimated_transfer_mb:.1f} MB
 @click.argument("intent_json")
 @click.option("--format", "output_format", default="hyperflow",
               type=click.Choice(["hyperflow", "wfcommons"]))
-@click.option("--env", "compute_env", default="aws",
-              type=click.Choice(["aws", "gcp", "local"]))
+@click.option("--env", "compute_env", default="local",
+              type=click.Choice(["local", "aws", "gcp"]))
 @click.option("--parallelism", "-p", default=None,
               type=click.Choice(list(PARALLELISM_PRESETS.keys())),
               help="Parallelism preset (auto-selected if not specified)")

@@ -141,8 +141,10 @@ on the target infrastructure, then run g1kwf generate.""",
                         },
                         "compute_environment": {
                             "type": "string",
-                            "enum": ["aws", "gcp", "local"],
-                            "default": "aws"
+                            "enum": ["local", "aws", "gcp"],
+                            "description": "Target environment. 'local' uses HTTPS URLs (works everywhere). "
+                                           "'aws'/'gcp' use cloud-native URLs (require credentials).",
+                            "default": "local"
                         }
                     },
                     "required": ["analysis_type", "populations"]
@@ -295,7 +297,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
             plan = create_advisory_plan(
                 intent=intent,
                 output_format=OutputFormat(arguments.get("output_format", "hyperflow")),
-                compute_environment=arguments.get("compute_environment", "aws")
+                compute_environment=arguments.get("compute_environment", "local")
             )
 
             # Format response for human review

@@ -2,9 +2,9 @@
 
 ## 1000 Genomes Phase 3 Data Locations
 
-### AWS S3 (Recommended for AWS compute)
+### HTTPS (Default, works everywhere)
 ```
-s3://1000genomes/release/20130502/
+https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/
 ├── ALL.chr{1-22}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
 ├── ALL.chrX.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.gz
 ├── ALL.chrY.phase3_integrated_v2a.20130502.genotypes.vcf.gz
@@ -12,14 +12,14 @@ s3://1000genomes/release/20130502/
 └── integrated_call_samples_v3.20130502.ALL.panel
 ```
 
-### Google Cloud Storage (Recommended for GCP compute)
+### AWS S3 (Use with compute_environment="aws")
 ```
-gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502/
+s3://1000genomes/release/20130502/
 ```
 
-### FTP (Fallback, rate-limited)
+### Google Cloud Storage (Use with compute_environment="gcp")
 ```
-ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/
+gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502/
 ```
 
 ## Data Extraction
@@ -40,13 +40,13 @@ the `g1kwf generate` command to run next. It does NOT require `g1kwf` installed.
 #### Full Chromosome Download
 Use when: Analyzing entire chromosome or multiple regions on same chromosome.
 ```bash
-aws s3 cp s3://1000genomes/release/20130502/ALL.chr22...vcf.gz ./ --no-sign-request
+curl -LO https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz
 ```
 
 #### Remote Region Extraction (tabix)
 Use when: Analyzing specific region (HLA, BRCA, etc.). Reduces data transfer significantly.
 ```bash
-tabix -h s3://1000genomes/release/20130502/ALL.chr6...vcf.gz 6:28477797-33448354 | bgzip > region.vcf.gz
+tabix -h https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz 6:28477797-33448354 > region.vcf
 ```
 
 #### Population Subsetting
@@ -73,6 +73,6 @@ bcftools view -S EUR.samples.list input.vcf.gz -Oz -o output_EUR.vcf.gz
    → Download full VCF
 
 3. Match data source to compute environment:
-   - AWS EC2 → S3 (free egress within region)
-   - GCP GCE → GCS (free egress within region)
-   - Local/HPC → FTP (or nearest cloud mirror)
+   - Default → HTTPS (works everywhere)
+   - AWS EC2 → S3 (free egress within region, set compute_environment="aws")
+   - GCP GCE → GCS (free egress within region, set compute_environment="gcp")

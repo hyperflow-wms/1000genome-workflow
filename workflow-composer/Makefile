@@ -4,7 +4,7 @@
 
 REPO_NAME = 1000genome-mcp
 PREFIX = hyperflowwms
-VERSION = 2.2
+VERSION = 2.3
 TAG = $(VERSION)
 
 .PHONY: all test image push clean

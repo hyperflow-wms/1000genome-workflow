@@ -237,7 +237,7 @@ def create_data_preparation_plan(
 ) -> DataPreparationPlan:
     """Create data preparation plan from research intent."""
 
-    source_config = DATA_SOURCES.get(compute_environment, DATA_SOURCES["aws"])
+    source_config = DATA_SOURCES.get(compute_environment, DATA_SOURCES["local"])
     steps = []
     total_transfer_mb = 0.0
 

@@ -52,10 +52,10 @@ the `g1kwf generate` command to run after data extraction.
   - `"hyperflow"`
   - `"wfcommons"`
 
-- `compute_environment`: Target environment (default: "aws")
-  - `"aws"`: Use S3 data source
-  - `"gcp"`: Use GCS data source
-  - `"local"`: Use FTP with local caching
+- `compute_environment`: Target environment (default: "local")
+  - `"local"`: Use HTTPS URLs (works everywhere)
+  - `"aws"`: Use S3 URLs (requires AWS credentials/htslib S3 plugin)
+  - `"gcp"`: Use GCS URLs (requires GCS configuration)
 
 ### generate_workflow
 
