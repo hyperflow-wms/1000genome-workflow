@@ -258,3 +258,42 @@ test_cases:
       - "chr13-EAS.tar.gz"
       - "chr13-SAS.tar.gz"
       - "chr13-AMR.tar.gz"
+
+  # ============================================================================
+  # Case 7: BRCA1 British - minimal fast test (TINY)
+  # ============================================================================
+  - id: brca1-gbr
+    name: "BRCA1 variants in British population"
+    description: |
+      Minimal test case: single gene region (BRCA1 on chr17), single small
+      population (GBR, 91 individuals). Designed to be the fastest possible
+      end-to-end test. ~8 tasks, runs in under a minute.
+
+    prompt: |
+      Analyze BRCA1 gene variants in the British population.
+
+    expected_intent:
+      analysis_type: region_analysis
+      populations: [GBR]
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+      focus: all_variants
+
+    mock_intent:
+      analysis_type: region_analysis
+      populations: [GBR]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+          context: "breast cancer"
+      focus: all_variants
+
+    expected_outputs:
+      - "chr17n.tar.gz"
+      - "sifted.SIFT.chr17.txt"
+      - "chr17-GBR.tar.gz"
+      - "chr17-GBR-freq.tar.gz"
