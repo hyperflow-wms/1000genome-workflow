@@ -11,6 +11,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import csv
+import shutil
+
+# Bundled population files directory
+BUNDLED_POPULATIONS_DIR = Path(__file__).parent.parent / "data" / "populations"
 
 # Parallelism presets: ind_jobs = parallel individuals tasks per chromosome
 # - small: Quick testing or limited resources
@@ -323,6 +327,102 @@ class HyperFlowGenerator:
             "ins": self.workflow_ins,
             "outs": self.workflow_outs
         }
+
+
+def generate_columns_txt(
+    data_csv: Path,
+    populations_dir: Path,
+    population_filter: list[str] | None = None,
+    max_samples_per_pop: int | None = None,
+) -> str:
+    """Generate columns.txt content filtered to requested populations.
+
+    Reads the VCF header from the first VCF in data.csv to get all individual IDs,
+    then filters to individuals belonging to the requested populations.
+
+    Args:
+        data_csv: Path to data.csv (VCF files must be in the same directory)
+        populations_dir: Path to populations/ directory
+        population_filter: If provided, only include these populations
+        max_samples_per_pop: If provided, cap individuals per population
+
+    Returns:
+        columns.txt content as a string (single header line)
+    """
+    chromosomes = load_data_csv(data_csv)
+    if not chromosomes:
+        raise ValueError("No chromosomes found in data.csv")
+
+    # Read VCF header from the first file to get individual IDs
+    vcf_path = data_csv.parent / chromosomes[0].vcf_file
+    header_line = None
+    with open(vcf_path) as f:
+        for line in f:
+            if line.startswith("#CHROM"):
+                header_line = line.rstrip("\n")
+                break
+
+    if header_line is None:
+        raise ValueError(f"No #CHROM header found in {vcf_path}")
+
+    fields = header_line.split("\t")
+    vcf_fields = fields[:9]
+    all_individuals = fields[9:]
+
+    # Determine which populations to use
+    populations = load_populations(populations_dir)
+    if population_filter:
+        populations = [p for p in population_filter if p in set(populations)]
+
+    # Read population files and collect individuals
+    selected = []
+    for pop in populations:
+        pop_path = populations_dir / pop
+        if not pop_path.exists():
+            continue
+        pop_ids = set(pop_path.read_text().split())
+        available = [ind for ind in all_individuals if ind in pop_ids]
+        if max_samples_per_pop is not None:
+            available = available[:max_samples_per_pop]
+        selected.extend(available)
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique = []
+    for s in selected:
+        if s not in seen:
+            seen.add(s)
+            unique.append(s)
+
+    return "\t".join(vcf_fields + unique) + "\n"
+
+
+def copy_population_files(
+    output_dir: Path,
+    populations_dir: Path,
+    population_filter: list[str] | None = None,
+) -> list[str]:
+    """Copy population files to the output directory.
+
+    Args:
+        output_dir: Destination directory
+        populations_dir: Source populations/ directory
+        population_filter: If provided, only copy these populations
+
+    Returns:
+        List of copied population names
+    """
+    populations = load_populations(populations_dir)
+    if population_filter:
+        populations = [p for p in population_filter if p in set(populations)]
+
+    copied = []
+    for pop in populations:
+        src = populations_dir / pop
+        if src.exists():
+            shutil.copy2(src, output_dir / pop)
+            copied.append(pop)
+    return copied
 
 
 def generate_workflow(

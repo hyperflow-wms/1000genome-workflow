@@ -15,7 +15,10 @@ from pathlib import Path
 import click
 
 from .core.models import OutputFormat, ResearchIntent
-from .core.generator import generate_workflow, PARALLELISM_PRESETS, DEFAULT_PARALLELISM
+from .core.generator import (
+    generate_workflow, generate_columns_txt, copy_population_files,
+    PARALLELISM_PRESETS, DEFAULT_PARALLELISM, BUNDLED_POPULATIONS_DIR,
+)
 from .core.planner import plan_workflow
 
 
@@ -32,8 +35,8 @@ def cli():
 @cli.command()
 @click.option("--data-csv", required=True, type=click.Path(exists=True),
               help="Path to data.csv")
-@click.option("--populations-dir", required=True, type=click.Path(exists=True),
-              help="Path to populations directory")
+@click.option("--populations-dir", default=None, type=click.Path(exists=True),
+              help="Path to populations directory (default: bundled)")
 @click.option("--parallelism", "-p", default=None,
               type=click.Choice(list(PARALLELISM_PRESETS.keys())),
               help=f"Parallelism preset: small={PARALLELISM_PRESETS['small']}, "
@@ -44,9 +47,11 @@ def cli():
 @click.option("--version", default="1.0.0", help="Workflow version")
 @click.option("--populations", default=None,
               help="Comma-separated population filter (e.g., GBR or EUR,AFR). Default: all in dir.")
+@click.option("--max-samples-per-pop", default=None, type=int,
+              help="Cap individuals per population in columns.txt")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: int,
-             name: str, version: str, populations: str, output: str):
+             name: str, version: str, populations: str, max_samples_per_pop: int, output: str):
     """
     Generate HyperFlow workflow directly (daxgen.py replacement).
 
@@ -59,6 +64,10 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
             --populations-dir workflow-generator/data/populations \\
             --parallelism medium
     """
+    # Resolve populations directory: explicit path > bundled
+    if populations_dir is None:
+        populations_dir = str(BUNDLED_POPULATIONS_DIR)
+
     # Resolve ind_jobs: explicit value > preset > default
     if ind_jobs is None:
         if parallelism:
@@ -84,11 +93,33 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
         result = json.dumps(workflow, indent=2)
 
         if output:
-            with open(output, "w") as f:
+            output_path = Path(output)
+            with open(output_path, "w") as f:
                 f.write(result)
             click.echo(f"Workflow written to {output}", err=True)
             click.echo(f"  Tasks: {len(workflow['processes'])}", err=True)
             click.echo(f"  Files: {len(workflow['signals'])}", err=True)
+
+            # Generate columns.txt alongside workflow.json
+            columns_txt = generate_columns_txt(
+                data_csv=Path(data_csv),
+                populations_dir=Path(populations_dir),
+                population_filter=pop_filter,
+                max_samples_per_pop=max_samples_per_pop,
+            )
+            columns_path = output_path.parent / "columns.txt"
+            with open(columns_path, "w") as f:
+                f.write(columns_txt)
+            ind_count = len(columns_txt.strip().split("\t")) - 9
+            click.echo(f"  columns.txt: {ind_count} individuals", err=True)
+
+            # Copy population files alongside workflow.json
+            copied_pops = copy_population_files(
+                output_dir=output_path.parent,
+                populations_dir=Path(populations_dir),
+                population_filter=pop_filter,
+            )
+            click.echo(f"  populations: {', '.join(copied_pops)}", err=True)
         else:
             click.echo(result)
 

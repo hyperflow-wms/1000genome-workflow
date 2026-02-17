@@ -430,144 +430,17 @@ for TEST_ID in "${TEST_IDS[@]}"; do
             log_success "Micro test data prepared"
         fi
     else
-        # Full tabix extraction
-        log_info "Extracting data via tabix..."
-
-        TABIX_COMMANDS=$(python3 "$FRAMEWORK_PY" tabix-commands \
-            --plan-json "@$WORKFLOW_DIR/plan.json")
-
-        EXTRACT_FAILED=false
-
-        echo "$TABIX_COMMANDS" | python3 -c "
-import sys, json
-commands = json.load(sys.stdin)
-for cmd in commands:
-    print(f\"CHROM={cmd['chromosome']}\")
-    print(f\"REGION={cmd.get('region', '')}\")
-    print(f\"VCF_URL={cmd['vcf_url']}\")
-    print(f\"ANNOTATION_URL={cmd['annotation_url']}\")
-    print(f\"OUTPUT_VCF={cmd['output_vcf']}\")
-    print(f\"OUTPUT_ANNOTATION={cmd['output_annotation']}\")
-    print('---')
-" | while IFS= read -r line; do
-            if [[ "$line" == "---" ]]; then
-                # Execute the tabix extraction
-                if [ -n "$CHROM" ]; then
-                    log_info "Extracting chromosome $CHROM..."
-
-                    TABIX_REGION_ARG=""
-                    if [ -n "$REGION" ]; then
-                        TABIX_REGION_ARG="$REGION"
-                    fi
-
-                    docker run --rm \
-                        -u "$(id -u):$(id -g)" \
-                        -v "$WORKFLOW_DIR:/output" \
-                        "$TABIX_IMAGE" \
-                        sh -c "
-                            set -e
-                            cd /output
-                            if [ -n '$TABIX_REGION_ARG' ]; then
-                                tabix -h '$VCF_URL' $TABIX_REGION_ARG > '$OUTPUT_VCF'
-                                tabix -h '$ANNOTATION_URL' $TABIX_REGION_ARG > '$OUTPUT_ANNOTATION'
-                            else
-                                # Full chromosome - download directly
-                                curl -sL '$VCF_URL' | gunzip > '$OUTPUT_VCF'
-                                curl -sL '$ANNOTATION_URL' | gunzip > '$OUTPUT_ANNOTATION'
-                            fi
-                        " 2>/dev/null || EXTRACT_FAILED=true
-
-                    if [ "$EXTRACT_FAILED" = true ]; then
-                        log_error "Failed to extract data for chromosome $CHROM"
-                    else
-                        VARIANT_COUNT=$(grep -v '^#' "$WORKFLOW_DIR/$OUTPUT_VCF" 2>/dev/null | wc -l || echo "0")
-                        VCF_SIZE=$(du -h "$WORKFLOW_DIR/$OUTPUT_VCF" 2>/dev/null | cut -f1)
-                        ANN_SIZE=$(du -h "$WORKFLOW_DIR/$OUTPUT_ANNOTATION" 2>/dev/null | cut -f1)
-                        log_success "Extracted chr$CHROM: $VARIANT_COUNT variants (VCF: $VCF_SIZE, annotation: $ANN_SIZE)"
-                    fi
-                fi
-                # Reset variables
-                CHROM=""
-                REGION=""
-                VCF_URL=""
-                ANNOTATION_URL=""
-                OUTPUT_VCF=""
-                OUTPUT_ANNOTATION=""
-            elif [[ "$line" == CHROM=* ]]; then
-                CHROM="${line#CHROM=}"
-            elif [[ "$line" == REGION=* ]]; then
-                REGION="${line#REGION=}"
-            elif [[ "$line" == VCF_URL=* ]]; then
-                VCF_URL="${line#VCF_URL=}"
-            elif [[ "$line" == ANNOTATION_URL=* ]]; then
-                ANNOTATION_URL="${line#ANNOTATION_URL=}"
-            elif [[ "$line" == OUTPUT_VCF=* ]]; then
-                OUTPUT_VCF="${line#OUTPUT_VCF=}"
-            elif [[ "$line" == OUTPUT_ANNOTATION=* ]]; then
-                OUTPUT_ANNOTATION="${line#OUTPUT_ANNOTATION=}"
-            fi
-        done
-
-        # Report total extracted size
-        TOTAL_SIZE=$(du -sh "$WORKFLOW_DIR" 2>/dev/null | cut -f1)
-        log_info "Total extracted data: $TOTAL_SIZE"
-
-        # Copy supporting files (full columns.txt and population files)
-        log_info "Copying supporting files..."
-        docker run --rm -u "$(id -u):$(id -g)" -v "$WORKFLOW_DIR:/output" "$DATA_IMAGE" \
-            sh -c "
-                cp /data/20130502/columns.txt /output/
-                cp /data/populations/* /output/
-            " 2>/dev/null
-
-        # Build columns.txt filtered to requested populations (with optional cap)
-        cd "$WORKFLOW_DIR"
-        INTENT_POPS=$(echo "$INTENT_JSON" | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin)['populations']))")
-
-        python3 -c "
-import sys
-
-pops = '$INTENT_POPS'.split()
-max_per_pop = ${MAX_SAMPLES_PER_POP:-0}
-
-# Read full columns.txt header
-with open('columns.txt') as f:
-    header = f.readline().strip().split('\t')
-
-vcf_fields = header[:9]
-all_individuals = header[9:]
-
-# Collect individuals from requested populations
-selected = []
-for pop in pops:
-    try:
-        with open(pop) as f:
-            pop_ids = set(f.read().split())
-    except FileNotFoundError:
-        print(f'Warning: population file {pop} not found', file=sys.stderr)
-        continue
-    # Keep only individuals present in the VCF columns
-    available = [ind for ind in all_individuals if ind in pop_ids]
-    if max_per_pop > 0:
-        available = available[:max_per_pop]
-    selected.extend(available)
-
-# Deduplicate while preserving order
-seen = set()
-unique = []
-for s in selected:
-    if s not in seen:
-        seen.add(s)
-        unique.append(s)
-
-# Write filtered columns.txt
-with open('columns.txt', 'w') as f:
-    f.write('\t'.join(vcf_fields + unique) + '\n')
-
-print('Selected %d individuals from %d population(s): %s' % (len(unique), len(pops), ' '.join(pops)))
-" 2>&1
-        SAMPLE_COUNT=$(head -1 columns.txt | tr '\t' '\n' | tail -n+10 | wc -l)
-        log_success "Supporting files ready ($SAMPLE_COUNT samples from: $INTENT_POPS)"
+        # Full extraction via extract-data.sh
+        EXTRACT_SCRIPT="$REPO_ROOT/workflow-composer/src/workflow_composer/scripts/extract-data.sh"
+        if ! bash "$EXTRACT_SCRIPT" \
+            --plan "$WORKFLOW_DIR/plan.json" \
+            --output-dir "$WORKFLOW_DIR" \
+            --docker-image "$TABIX_IMAGE"; then
+            log_error "Data extraction failed"
+            FAILED=$((FAILED + 1))
+            RESULTS[$TEST_ID]="FAILED (extract)"
+            continue
+        fi
     fi
 
     if [ "$STOP_POINT" = "extract" ]; then
@@ -584,33 +457,12 @@ print('Selected %d individuals from %d population(s): %s' % (len(unique), len(po
 
     cd "$WORKFLOW_DIR"
 
-    # Build data.csv from actual downloaded files
-    DATA_CSV_CONTENT=""
-    for vcf_file in ALL.chr*.vcf; do
-        if [ -f "$vcf_file" ] && [[ ! "$vcf_file" == *annotation* ]]; then
-            VARIANT_COUNT=$(grep -v '^#' "$vcf_file" 2>/dev/null | wc -l || echo "0")
-
-            # Find corresponding annotation file
-            # Extract chromosome from vcf filename
-            CHROM=$(echo "$vcf_file" | sed -n 's/.*chr\([0-9XY]*\).*/\1/p')
-            ANNOTATION_FILE=$(ls ALL.chr${CHROM}*.annotation.vcf 2>/dev/null | head -1)
-
-            if [ -n "$ANNOTATION_FILE" ] && [ "$VARIANT_COUNT" -gt 0 ]; then
-                DATA_CSV_CONTENT="${DATA_CSV_CONTENT}${vcf_file},${VARIANT_COUNT},${ANNOTATION_FILE}\n"
-            fi
-        fi
-    done
-
-    if [ -z "$DATA_CSV_CONTENT" ]; then
-        log_warning "No VCF files found - skipping workflow generation"
+    if [ ! -f "$WORKFLOW_DIR/data.csv" ]; then
+        log_warning "No data.csv found - skipping workflow generation"
         SKIPPED=$((SKIPPED + 1))
         RESULTS[$TEST_ID]="SKIPPED (no data)"
         continue
     fi
-
-    echo -e "$DATA_CSV_CONTENT" | head -n -1 > data.csv
-    log_info "Created data.csv:"
-    cat data.csv
 
     # Determine parallelism for CLI
     CLI_PARALLELISM=""
@@ -628,16 +480,19 @@ print('Selected %d individuals from %d population(s): %s' % (len(unique), len(po
         CLI_PARALLELISM="--parallelism $PARALLELISM"
     fi
 
-    # Pass intent populations to generator so it only creates tasks for requested populations
+    # Pass intent populations to generator
     INTENT_POPULATIONS=$(echo "$INTENT_JSON" | python3 -c "import sys,json; print(','.join(json.load(sys.stdin)['populations']))")
     CLI_POPULATIONS="--populations $INTENT_POPULATIONS"
+
+    CLI_MAX_SAMPLES=""
+    [ -n "$MAX_SAMPLES_PER_POP" ] && CLI_MAX_SAMPLES="--max-samples-per-pop $MAX_SAMPLES_PER_POP"
 
     cd "$REPO_ROOT/workflow-composer"
     python3 -m workflow_composer.cli generate \
         --data-csv "$WORKFLOW_DIR/data.csv" \
-        --populations-dir "$REPO_ROOT/workflow-generator/data/populations" \
         $CLI_PARALLELISM \
         $CLI_POPULATIONS \
+        $CLI_MAX_SAMPLES \
         --output "$WORKFLOW_DIR/workflow.json" 2>/dev/null
 
     GEN_TASKS=$(python3 -c "import json; print(len(json.load(open('$WORKFLOW_DIR/workflow.json'))['processes']))")

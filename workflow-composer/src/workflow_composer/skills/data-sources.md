@@ -22,21 +22,34 @@ gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/2013050
 ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/
 ```
 
-## Data Access Patterns
+## Data Extraction
 
-### Full Chromosome Download
+The recommended way to extract data is using the `extract-data.sh` resource
+(available via MCP resources). It takes a `plan.json` from `plan_workflow` and
+handles all extraction automatically:
+
+```bash
+bash extract-data.sh --plan plan.json --output-dir /path/to/workdir
+```
+
+The script runs the tabix commands from the plan, builds `data.csv`, and prints
+the `g1kwf generate` command to run next. It does NOT require `g1kwf` installed.
+
+### Manual Data Access Patterns
+
+#### Full Chromosome Download
 Use when: Analyzing entire chromosome or multiple regions on same chromosome.
 ```bash
 aws s3 cp s3://1000genomes/release/20130502/ALL.chr22...vcf.gz ./ --no-sign-request
 ```
 
-### Remote Region Extraction (tabix)
+#### Remote Region Extraction (tabix)
 Use when: Analyzing specific region (HLA, BRCA, etc.). Reduces data transfer significantly.
 ```bash
 tabix -h s3://1000genomes/release/20130502/ALL.chr6...vcf.gz 6:28477797-33448354 | bgzip > region.vcf.gz
 ```
 
-### Population Subsetting
+#### Population Subsetting
 After obtaining VCF (full or region), subset to specific populations:
 ```bash
 bcftools view -S EUR.samples.list input.vcf.gz -Oz -o output_EUR.vcf.gz

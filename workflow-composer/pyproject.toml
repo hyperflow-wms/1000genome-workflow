@@ -44,6 +44,8 @@ packages = ["src/workflow_composer"]
 include = [
     "src/workflow_composer/**/*.py",
     "src/workflow_composer/skills/*.md",
+    "src/workflow_composer/data/populations/*",
+    "src/workflow_composer/scripts/*.sh",
 ]
 
 [tool.pytest.ini_options]

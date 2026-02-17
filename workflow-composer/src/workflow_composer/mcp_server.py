@@ -4,6 +4,7 @@ MCP server interface for chat-based interaction.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
@@ -21,7 +22,12 @@ from .core.data_resolver import (
     estimate_variant_count,
     compute_optimal_ind_jobs
 )
-from .core.generator import HyperFlowGenerator, ChromosomeData, PARALLELISM_PRESETS
+from .core.generator import (
+    HyperFlowGenerator, ChromosomeData, PARALLELISM_PRESETS,
+    BUNDLED_POPULATIONS_DIR, load_populations,
+)
+
+SCRIPTS_DIR = Path(__file__).parent / "scripts"
 
 if HAS_MCP:
     server = Server("workflow-composer")
@@ -41,6 +47,20 @@ if HAS_MCP:
                     description=f"Skill document: {filename}",
                     mimeType="text/markdown"
                 ))
+
+        # Include extract-data.sh script
+        extract_script = SCRIPTS_DIR / "extract-data.sh"
+        if extract_script.exists():
+            resources.append(Resource(
+                uri=f"file://{extract_script}",
+                name="Extract Data Script",
+                description="Standalone bash script for extracting genomic data from a workflow plan. "
+                            "Takes plan.json, runs tabix commands, builds data.csv, and prints "
+                            "the workflow-composer generate command to run next. "
+                            "Does NOT require workflow-composer installed.",
+                mimeType="application/x-sh"
+            ))
+
         return resources
 
     @server.read_resource()
@@ -49,12 +69,21 @@ if HAS_MCP:
         from .interpretation.skill_loader import SKILL_DIR, SKILL_FILES
 
         uri_str = str(uri)
+
+        # Check skill files
         for filename in SKILL_FILES:
             filepath = SKILL_DIR / filename
             if uri_str.endswith(filename) or uri_str.endswith(str(filepath)):
                 if filepath.exists():
                     return filepath.read_text()
                 return f"Error: Skill file not found: {filename}"
+
+        # Check extract-data.sh
+        extract_script = SCRIPTS_DIR / "extract-data.sh"
+        if uri_str.endswith("extract-data.sh") or uri_str.endswith(str(extract_script)):
+            if extract_script.exists():
+                return extract_script.read_text()
+            return "Error: extract-data.sh not found"
 
         return f"Unknown resource: {uri}"
 
@@ -73,7 +102,10 @@ Returns a planning document including:
 - Execution hints and recommendations
 
 This is an ADVISORY plan - actual workflow.json generation requires
-data files and should be done using the CLI: g1kwf generate""",
+data files and should be done using the CLI: g1kwf generate
+
+After planning, use the extract-data.sh resource to extract data
+on the target infrastructure, then run g1kwf generate.""",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -118,22 +150,21 @@ data files and should be done using the CLI: g1kwf generate""",
             ),
             Tool(
                 name="generate_workflow",
-                description="""Generate actual HyperFlow workflow JSON from chromosome data.
+                description="""Generate HyperFlow workflow JSON from chromosome data.
 
 Use this tool when you have concrete data (either exact row counts from scanned
 files, or estimated counts). The generator handles non-exact counts gracefully.
 
-For production use with deferred generation:
+Recommended workflow:
 1. Use plan_workflow to get data preparation steps
-2. Execute data extraction on target infrastructure
-3. Scan files to get exact row counts
-4. Call generate_workflow with exact counts
+2. Use the extract-data.sh resource to extract data on target infrastructure
+   (the script runs tabix commands, builds data.csv, and prints the generate command)
+3. Call generate_workflow with the extracted chromosome data
 
-For testing or when exact counts are unavailable:
-- Use estimated row counts (the generator handles remainders correctly)
-- Overestimation is safe; underestimation may miss data
+The tool returns the workflow JSON, columns.txt (if vcf_header provided),
+and population file contents — everything needed for HyperFlow execution.
 
-Returns the complete workflow.json ready for HyperFlow execution.""",
+Population files are bundled in the package (no external data container needed).""",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -162,14 +193,27 @@ Returns the complete workflow.json ready for HyperFlow execution.""",
                         "populations": {
                             "type": "array",
                             "items": {"type": "string"},
-                            "description": "Population codes (e.g., ['EUR', 'AFR']). Default: all 7 populations",
-                            "default": ["AFR", "ALL", "AMR", "EAS", "EUR", "GBR", "SAS"]
+                            "description": "Population codes to include (e.g., ['GBR']). Default: all 7 populations."
                         },
                         "parallelism": {
                             "type": "string",
                             "enum": ["small", "medium", "large"],
                             "description": "Parallelism preset: small=10, medium=50, large=250 ind_jobs",
                             "default": "medium"
+                        },
+                        "ind_jobs": {
+                            "type": "integer",
+                            "description": "Explicit individuals jobs per chromosome (overrides parallelism preset)"
+                        },
+                        "max_samples_per_pop": {
+                            "type": "integer",
+                            "description": "Cap individuals per population in columns.txt (optional)"
+                        },
+                        "vcf_header": {
+                            "type": "string",
+                            "description": "The #CHROM header line from a VCF file. If provided, "
+                                           "columns.txt will be generated filtered to the requested populations. "
+                                           "Get this by running: head -1000 file.vcf | grep '^#CHROM'"
                         },
                         "name": {
                             "type": "string",
@@ -279,6 +323,9 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
                 for cmd in step.commands:
                     response += f"\n   `{cmd}`"
 
+            pops = ", ".join(plan.parameters_used.get("populations", []))
+            ind_jobs = plan.parameters_used.get("ind_jobs", 10)
+
             response += f"""
 
 ### Estimates
@@ -291,10 +338,22 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
 ---
 
-*This is an advisory plan. To generate the actual workflow.json:*
-1. Extract data using the steps above
-2. Create data.csv with VCF file paths and row counts
-3. Run: `g1kwf generate --data-csv data.csv --populations-dir <dir> --output workflow.json`
+*This is an advisory plan. To execute it:*
+
+1. **Extract data** using the `extract-data.sh` resource (available via MCP resources):
+   ```
+   bash extract-data.sh --plan plan.json --output-dir /path/to/workdir
+   ```
+   The script runs the tabix commands above, builds `data.csv`, and prints the generate command.
+
+2. **Generate workflow** using the CLI:
+   ```
+   g1kwf generate --data-csv data.csv --populations {pops} --ind-jobs {ind_jobs} -o workflow.json
+   ```
+   This produces `workflow.json`, `columns.txt`, and population files.
+   Population files are bundled in the package (no external data container needed).
+
+3. **Run with HyperFlow**: `hflow run workflow.json`
 
 <details>
 <summary>Full Plan Details (JSON)</summary>
@@ -329,11 +388,19 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
             if not chromosome_data:
                 return [TextContent(type="text", text="Error: chromosome_data is required")]
 
-            populations = arguments.get("populations", ["AFR", "ALL", "AMR", "EAS", "EUR", "GBR", "SAS"])
+            populations = arguments.get("populations")
+            if not populations:
+                populations = load_populations(BUNDLED_POPULATIONS_DIR)
+
             parallelism = arguments.get("parallelism", "medium")
             workflow_name = arguments.get("name", "1000genome")
+            max_samples_per_pop = arguments.get("max_samples_per_pop")
+            vcf_header = arguments.get("vcf_header")
 
-            ind_jobs = PARALLELISM_PRESETS.get(parallelism, 50)
+            # Resolve ind_jobs: explicit > preset
+            ind_jobs = arguments.get("ind_jobs")
+            if ind_jobs is None:
+                ind_jobs = PARALLELISM_PRESETS.get(parallelism, 50)
 
             # Convert input to ChromosomeData objects
             chromosomes = []
@@ -347,7 +414,6 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
                         text=f"Error: row_count must be positive, got {row_count} for {vcf_file}")]
 
                 # Extract chromosome number from VCF filename
-                # Expected format: *.chr{N}.*.vcf where N is 1-22, X, or Y
                 if 'chr' not in vcf_file:
                     return [TextContent(type="text",
                         text=f"Error: VCF filename must contain 'chr' pattern, got: {vcf_file}")]
@@ -355,7 +421,6 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
                 c_num = vcf_file[vcf_file.find('chr') + 3:]
                 c_num = c_num[0:c_num.find('.')] if '.' in c_num else c_num
 
-                # Validate extracted chromosome
                 valid_chroms = [str(i) for i in range(1, 23)] + ['X', 'Y']
                 if c_num not in valid_chroms:
                     return [TextContent(type="text",
@@ -389,8 +454,8 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 - Tasks: {task_count}
 - Files: {file_count}
 - Chromosomes: {len(chromosomes)}
-- Populations: {len(populations)}
-- Parallelism: {parallelism} (ind_jobs={ind_jobs})
+- Populations: {', '.join(populations)}
+- Parallelism: ind_jobs={ind_jobs}
 
 ### Chromosome Data
 | VCF File | Rows | Annotation |
@@ -398,6 +463,27 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 """
             for chrom in chromosomes:
                 response += f"| {chrom.vcf_file} | {chrom.row_count:,} | {chrom.annotation_file} |\n"
+
+            # Generate columns.txt if vcf_header provided
+            columns_txt = None
+            if vcf_header:
+                columns_txt = _generate_columns_from_header(
+                    vcf_header=vcf_header,
+                    populations=populations,
+                    max_samples_per_pop=max_samples_per_pop,
+                )
+                ind_count = len(columns_txt.strip().split("\t")) - 9
+                response += f"\n### columns.txt ({ind_count} individuals)\n"
+                response += f"```\n{columns_txt}```\n"
+
+            # Include population file contents
+            response += "\n### Population Files\n"
+            for pop in populations:
+                pop_path = BUNDLED_POPULATIONS_DIR / pop
+                if pop_path.exists():
+                    individuals = pop_path.read_text().strip().split("\n")
+                    response += f"\n**{pop}** ({len(individuals)} individuals):\n"
+                    response += f"```\n{pop_path.read_text()}```\n"
 
             response += f"""
 ### Workflow JSON
@@ -409,9 +495,10 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 ---
 
 *To execute this workflow:*
-1. Save the JSON above as `workflow.json`
-2. Ensure all input files are in the workflow directory
-3. Run with HyperFlow: `hflow run workflow.json`
+1. Save `workflow.json` in the working directory with the VCF files
+2. Save `columns.txt` (above) in the same directory
+3. Save the population files (above) in the same directory
+4. Run with HyperFlow: `hflow run workflow.json`
 """
 
             return [TextContent(type="text", text=response)]
@@ -497,6 +584,47 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
                 return [TextContent(type="text", text="Error: Provide either 'region', 'chromosome', or 'chromosome' with 'start' and 'end'")]
 
         raise ValueError(f"Unknown tool: {name}")
+
+
+def _generate_columns_from_header(
+    vcf_header: str,
+    populations: list[str],
+    max_samples_per_pop: int | None = None,
+) -> str:
+    """Generate columns.txt content from a VCF header line and bundled population files.
+
+    Args:
+        vcf_header: The #CHROM header line from a VCF file
+        populations: Population codes to include
+        max_samples_per_pop: Optional cap on individuals per population
+
+    Returns:
+        columns.txt content (single tab-separated header line)
+    """
+    fields = vcf_header.strip().split("\t")
+    vcf_fields = fields[:9]
+    all_individuals = fields[9:]
+
+    selected = []
+    for pop in populations:
+        pop_path = BUNDLED_POPULATIONS_DIR / pop
+        if not pop_path.exists():
+            continue
+        pop_ids = set(pop_path.read_text().split())
+        available = [ind for ind in all_individuals if ind in pop_ids]
+        if max_samples_per_pop is not None:
+            available = available[:max_samples_per_pop]
+        selected.extend(available)
+
+    # Deduplicate preserving order
+    seen = set()
+    unique = []
+    for s in selected:
+        if s not in seen:
+            seen.add(s)
+            unique.append(s)
+
+    return "\t".join(vcf_fields + unique) + "\n"
 
 
 async def main():
