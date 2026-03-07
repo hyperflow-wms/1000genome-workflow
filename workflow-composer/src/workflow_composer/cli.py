@@ -100,18 +100,21 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
             click.echo(f"  Tasks: {len(workflow['processes'])}", err=True)
             click.echo(f"  Files: {len(workflow['signals'])}", err=True)
 
-            # Generate columns.txt alongside workflow.json
-            columns_txt = generate_columns_txt(
-                data_csv=Path(data_csv),
-                populations_dir=Path(populations_dir),
-                population_filter=pop_filter,
-                max_samples_per_pop=max_samples_per_pop,
-            )
-            columns_path = output_path.parent / "columns.txt"
-            with open(columns_path, "w") as f:
-                f.write(columns_txt)
-            ind_count = len(columns_txt.strip().split("\t")) - 9
-            click.echo(f"  columns.txt: {ind_count} individuals", err=True)
+            # Generate columns.txt alongside workflow.json (requires VCF files)
+            try:
+                columns_txt = generate_columns_txt(
+                    data_csv=Path(data_csv),
+                    populations_dir=Path(populations_dir),
+                    population_filter=pop_filter,
+                    max_samples_per_pop=max_samples_per_pop,
+                )
+                columns_path = output_path.parent / "columns.txt"
+                with open(columns_path, "w") as f:
+                    f.write(columns_txt)
+                ind_count = len(columns_txt.strip().split("\t")) - 9
+                click.echo(f"  columns.txt: {ind_count} individuals", err=True)
+            except FileNotFoundError as e:
+                click.echo(f"  columns.txt: skipped (VCF files not found: {e})", err=True)
 
             # Copy population files alongside workflow.json
             copied_pops = copy_population_files(
