@@ -1,0 +1,439 @@
+  - id: t3_01
+    tier: T3
+    question: "Investigate how autoimmune disease susceptibility varies across all major continental ancestry groups"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AFR, AMR, EAS, EUR, SAS]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: all_variants
+
+  - id: t3_02
+    tier: T3
+    question: "Study the genetic basis of sickle cell disease in West African communities"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [YRI, GWD, MSL, ESN]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: deleterious
+
+  - id: t3_03
+    tier: T3
+    question: "Identify deleterious variants in hereditary breast cancer risk genes among Europeans"
+    ground_truth:
+      analysis_type: single_population
+      populations: [EUR]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: deleterious
+
+  - id: t3_04
+    tier: T3
+    question: "What rare genetic risk factors for late-onset dementia exist in South Asian populations?"
+    ground_truth:
+      analysis_type: single_population
+      populations: [SAS]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: rare
+
+  - id: t3_05
+    tier: T3
+    question: "How does drug metabolism enzyme variation differ between East Asian and European populations?"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [EAS, EUR]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+
+  - id: t3_06
+    tier: T3
+    question: "What are the common cystic fibrosis carrier variants in populations of Northern European ancestry?"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [CEU, FIN, GBR]
+      chromosomes: null
+      regions:
+        - name: CFTR
+          chromosome: "7"
+          start: 117120017
+          end: 117308718
+      focus: common
+
+  - id: t3_07
+    tier: T3
+    question: "Search for rare tumor suppressor gene mutations in the Japanese population"
+    ground_truth:
+      analysis_type: single_population
+      populations: [JPT]
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: rare
+
+  - id: t3_08
+    tier: T3
+    question: "Characterize common malaria resistance alleles across sub-Saharan African populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [YRI, LWK, GWD, MSL, ESN]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: common
+
+  - id: t3_09
+    tier: T3
+    question: "How diverse are transplant compatibility genes across globally representative populations?"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [AFR, AMR, EAS, EUR, SAS]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: all_variants
+
+  - id: t3_10
+    tier: T3
+    question: "Survey the full variant landscape of hereditary breast and ovarian cancer genes in Latin American populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [MXL, PUR, CLM, PEL]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: all_variants
+
+  - id: t3_11
+    tier: T3
+    question: "Compare rare dementia risk alleles between Northern and Southern Han Chinese populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [CHB, CHS]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: rare
+
+  - id: t3_12
+    tier: T3
+    question: "Profile pharmacogenomic variation across South Asian ethnic groups"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [GIH, PJL, BEB, STU, ITU]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+
+  - id: t3_13
+    tier: T3
+    question: "Examine common thalassemia carrier variants in Mediterranean and South Asian populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [TSI, IBS, GIH, PJL, BEB, STU, ITU]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: common
+
+  - id: t3_14
+    tier: T3
+    question: "Compare type 1 diabetes genetic susceptibility between African and European ancestry groups"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR, EUR]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: deleterious
+
+  - id: t3_15
+    tier: T3
+    question: "Are there rare Li-Fraumeni syndrome mutations shared across worldwide population groups?"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AFR, AMR, EAS, EUR, SAS]
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: rare
+
+  - id: t3_16
+    tier: T3
+    question: "Investigate rare inherited cancer predisposition variants in individuals of African Caribbean descent"
+    ground_truth:
+      analysis_type: single_population
+      populations: [ACB]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: rare
+
+  - id: t3_17
+    tier: T3
+    question: "Analyze common rheumatoid arthritis susceptibility alleles in East Asian populations"
+    ground_truth:
+      analysis_type: single_population
+      populations: [EAS]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: common
+
+  - id: t3_18
+    tier: T3
+    question: "How does drug response gene variation differ between Punjabi and Bengali communities?"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [PJL, BEB]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+
+  - id: t3_19
+    tier: T3
+    question: "Characterize the complete spectrum of cystic fibrosis mutations in the Iberian Peninsula population"
+    ground_truth:
+      analysis_type: single_population
+      populations: [IBS]
+      chromosomes: null
+      regions:
+        - name: CFTR
+          chromosome: "7"
+          start: 117120017
+          end: 117308718
+      focus: all_variants
+
+  - id: t3_20
+    tier: T3
+    question: "Identify deleterious ovarian cancer susceptibility variants in African Americans from the southwestern United States"
+    ground_truth:
+      analysis_type: single_population
+      populations: [ASW]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: deleterious
+
+  - id: t3_21
+    tier: T3
+    question: "Compare common sickle cell trait variant frequencies between African and admixed American populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR, AMR]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: common
+
+  - id: t3_22
+    tier: T3
+    question: "Examine immune system gene diversity in Vietnamese and Dai Chinese ethnic groups"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [KHV, CDX]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: all_variants
+
+  - id: t3_23
+    tier: T3
+    question: "Do protective variants against Alzheimer's disease exist across all major global ancestry groups?"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [AFR, AMR, EAS, EUR, SAS]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: rare
+
+  - id: t3_24
+    tier: T3
+    question: "Study the tumor suppressor gene variant landscape in the Finnish population"
+    ground_truth:
+      analysis_type: single_population
+      populations: [FIN]
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: all_variants
+
+  - id: t3_25
+    tier: T3
+    question: "What common breast cancer risk alleles are present in the British population?"
+    ground_truth:
+      analysis_type: single_population
+      populations: [GBR]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: common
+
+  - id: t3_26
+    tier: T3
+    question: "Compare common drug clearance enzyme polymorphisms between Mexican American and Puerto Rican populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [MXL, PUR]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: common
+
+  - id: t3_27
+    tier: T3
+    question: "Evaluate cystic fibrosis carrier status in individuals of Italian ancestry"
+    ground_truth:
+      analysis_type: single_population
+      populations: [TSI]
+      chromosomes: null
+      regions:
+        - name: CFTR
+          chromosome: "7"
+          start: 117120017
+          end: 117308718
+      focus: deleterious
+
+  - id: t3_28
+    tier: T3
+    question: "Are there cardiovascular disease risk alleles enriched in the Gujarati Indian community?"
+    ground_truth:
+      analysis_type: single_population
+      populations: [GIH]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: deleterious
+
+  - id: t3_29
+    tier: T3
+    question: "Characterize hereditary blood disorder gene variants in Kenyan and Nigerian populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [LWK, YRI, ESN]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: all_variants
+
+  - id: t3_30
+    tier: T3
+    question: "Compare rare autoimmune disease risk variants between South Asian and East Asian populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [SAS, EAS]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: rare

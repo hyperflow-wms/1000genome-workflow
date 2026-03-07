@@ -1,0 +1,343 @@
+  - id: t1_01
+    tier: T1
+    question: "Compare EUR and AFR on chromosome 21"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [EUR, AFR]
+      chromosomes: ["21"]
+      regions: null
+      focus: all_variants
+
+  - id: t1_02
+    tier: T1
+    question: "Analyze rare variants in GBR in the BRCA1 region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [GBR]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+      focus: rare
+
+  - id: t1_03
+    tier: T1
+    question: "Analyze all variants in YRI on chromosome 1"
+    ground_truth:
+      analysis_type: single_population
+      populations: [YRI]
+      chromosomes: ["1"]
+      regions: null
+      focus: all_variants
+
+  - id: t1_04
+    tier: T1
+    question: "Compare deleterious variants between CHB and JPT on chromosome 12"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [CHB, JPT]
+      chromosomes: ["12"]
+      regions: null
+      focus: deleterious
+
+  - id: t1_05
+    tier: T1
+    question: "Analyze common variants in GIH in the HLA region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [GIH]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: common
+
+  - id: t1_06
+    tier: T1
+    question: "Compare common variants between EAS and SAS on chromosome 9"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [EAS, SAS]
+      chromosomes: ["9"]
+      regions: null
+      focus: common
+
+  - id: t1_07
+    tier: T1
+    question: "Analyze rare variants in PUR on chromosome 22"
+    ground_truth:
+      analysis_type: single_population
+      populations: [PUR]
+      chromosomes: ["22"]
+      regions: null
+      focus: rare
+
+  - id: t1_08
+    tier: T1
+    question: "Analyze all variants in FIN in the APOE region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [FIN]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: all_variants
+
+  - id: t1_09
+    tier: T1
+    question: "Compare rare variants between AMR and EUR on chromosome 3"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AMR, EUR]
+      chromosomes: ["3"]
+      regions: null
+      focus: rare
+
+  - id: t1_10
+    tier: T1
+    question: "Analyze deleterious variants in LWK in the HBB region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [LWK]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: deleterious
+
+  - id: t1_11
+    tier: T1
+    question: "Analyze common variants in CEU on chromosome 7"
+    ground_truth:
+      analysis_type: single_population
+      populations: [CEU]
+      chromosomes: ["7"]
+      regions: null
+      focus: common
+
+  - id: t1_12
+    tier: T1
+    question: "Compare deleterious variants between AFR and EAS on chromosome 15"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR, EAS]
+      chromosomes: ["15"]
+      regions: null
+      focus: deleterious
+
+  - id: t1_13
+    tier: T1
+    question: "Analyze all variants in MXL in the CYP2D6 region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [MXL]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+
+  - id: t1_14
+    tier: T1
+    question: "Analyze rare variants in BEB on chromosome 5"
+    ground_truth:
+      analysis_type: single_population
+      populations: [BEB]
+      chromosomes: ["5"]
+      regions: null
+      focus: rare
+
+  - id: t1_15
+    tier: T1
+    question: "Compare rare variants in SAS and AFR in the TP53 region"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [SAS, AFR]
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: rare
+
+  - id: t1_16
+    tier: T1
+    question: "Analyze deleterious variants in STU on chromosome 2"
+    ground_truth:
+      analysis_type: single_population
+      populations: [STU]
+      chromosomes: ["2"]
+      regions: null
+      focus: deleterious
+
+  - id: t1_17
+    tier: T1
+    question: "Compare all variants between EUR and AMR in the CFTR region"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [EUR, AMR]
+      chromosomes: null
+      regions:
+        - name: CFTR
+          chromosome: "7"
+          start: 117120017
+          end: 117308718
+      focus: all_variants
+
+  - id: t1_18
+    tier: T1
+    question: "Analyze all variants in ESN on chromosome 10"
+    ground_truth:
+      analysis_type: single_population
+      populations: [ESN]
+      chromosomes: ["10"]
+      regions: null
+      focus: all_variants
+
+  - id: t1_19
+    tier: T1
+    question: "Compare common variants between GBR and FIN on chromosome 14"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [GBR, FIN]
+      chromosomes: ["14"]
+      regions: null
+      focus: common
+
+  - id: t1_20
+    tier: T1
+    question: "Analyze rare variants across AFR, EUR, and EAS on chromosome 4"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AFR, EUR, EAS]
+      chromosomes: ["4"]
+      regions: null
+      focus: rare
+
+  - id: t1_21
+    tier: T1
+    question: "Analyze common variants in CHS in the BRCA2 region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [CHS]
+      chromosomes: null
+      regions:
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: common
+
+  - id: t1_22
+    tier: T1
+    question: "Compare deleterious variants between SAS and EUR on chromosome 8"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [SAS, EUR]
+      chromosomes: ["8"]
+      regions: null
+      focus: deleterious
+
+  - id: t1_23
+    tier: T1
+    question: "Analyze all variants in PJL on chromosome 18"
+    ground_truth:
+      analysis_type: single_population
+      populations: [PJL]
+      chromosomes: ["18"]
+      regions: null
+      focus: all_variants
+
+  - id: t1_24
+    tier: T1
+    question: "Analyze deleterious variants across AMR, AFR, and SAS on chromosome 11"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AMR, AFR, SAS]
+      chromosomes: ["11"]
+      regions: null
+      focus: deleterious
+
+  - id: t1_25
+    tier: T1
+    question: "Compare all variants between IBS and TSI in the HLA region"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [IBS, TSI]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: all_variants
+
+  - id: t1_26
+    tier: T1
+    question: "Analyze rare variants in CDX on chromosome X"
+    ground_truth:
+      analysis_type: single_population
+      populations: [CDX]
+      chromosomes: ["X"]
+      regions: null
+      focus: rare
+
+  - id: t1_27
+    tier: T1
+    question: "Analyze common variants across EAS, EUR, AMR, AFR, and SAS on chromosome 20"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [EAS, EUR, AMR, AFR, SAS]
+      chromosomes: ["20"]
+      regions: null
+      focus: common
+
+  - id: t1_28
+    tier: T1
+    question: "Analyze all variants in KHV in the APOE region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [KHV]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: all_variants
+
+  - id: t1_29
+    tier: T1
+    question: "Compare common variants between PEL and CLM on chromosome 16"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [PEL, CLM]
+      chromosomes: ["16"]
+      regions: null
+      focus: common
+
+  - id: t1_30
+    tier: T1
+    question: "Analyze deleterious variants in ACB in the HBB region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [ACB]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: deleterious
