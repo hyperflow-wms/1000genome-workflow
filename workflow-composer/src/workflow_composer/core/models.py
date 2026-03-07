@@ -33,6 +33,8 @@ class ResearchIntent(BaseModel):
     chromosomes: list[str] | None = None  # e.g., ["6", "22"] or None for all
     regions: list[GenomicRegion] | None = None
     focus: Literal["all_variants", "deleterious", "common", "rare"] = "all_variants"
+    clarification_needed: bool = False
+    clarification_reason: str | None = None
 
 
 # ============================================================================
