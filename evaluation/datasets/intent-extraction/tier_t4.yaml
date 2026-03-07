@@ -1,0 +1,381 @@
+  - id: t4_01
+    tier: T4
+    question: "Analyze variants in the HLA region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_02
+    tier: T4
+    question: "Look at genetic differences in Europeans"
+    ground_truth:
+      analysis_type: single_population
+      populations: [EUR]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_03
+    tier: T4
+    question: "Compare the main populations against each other"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: []
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_04
+    tier: T4
+    question: "Do something with chromosome 6 data"
+    ground_truth:
+      analysis_type: single_population
+      populations: []
+      chromosomes: ["6"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_05
+    tier: T4
+    question: "Find interesting mutations in African populations"
+    ground_truth:
+      analysis_type: single_population
+      populations: [AFR]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_06
+    tier: T4
+    question: "Study breast cancer genetics across populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_07
+    tier: T4
+    question: "Show me the variants for South Asians"
+    ground_truth:
+      analysis_type: single_population
+      populations: [SAS]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_08
+    tier: T4
+    question: "Compare Asian groups for rare variants"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [EAS]
+      chromosomes: null
+      regions: null
+      focus: rare
+      clarification_needed: true
+
+  - id: t4_09
+    tier: T4
+    question: "I want to look at drug metabolism variation"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_10
+    tier: T4
+    question: "Pull up some data from chromosome 17"
+    ground_truth:
+      analysis_type: single_population
+      populations: []
+      chromosomes: ["17"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_11
+    tier: T4
+    question: "Analyze the APOE region for deleterious variants"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: deleterious
+      clarification_needed: true
+
+  - id: t4_12
+    tier: T4
+    question: "What can you tell me about the Japanese population?"
+    ground_truth:
+      analysis_type: single_population
+      populations: [JPT]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_13
+    tier: T4
+    question: "Compare American populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AMR]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_14
+    tier: T4
+    question: "Look into sickle cell disease variants"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_15
+    tier: T4
+    question: "Give me the genetic data for East Asians"
+    ground_truth:
+      analysis_type: single_population
+      populations: [EAS]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_16
+    tier: T4
+    question: "Analyze all European subgroups together"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [CEU, TSI, FIN, GBR, IBS]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_17
+    tier: T4
+    question: "Do something with the CFTR gene data"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: CFTR
+          chromosome: "7"
+          start: 117120017
+          end: 117308718
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_18
+    tier: T4
+    question: "Check TP53 for mutations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_19
+    tier: T4
+    question: "Look at mutations in the Ad Mixed American group"
+    ground_truth:
+      analysis_type: single_population
+      populations: [AMR]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_20
+    tier: T4
+    question: "Analyze the Gujarati population for common variants"
+    ground_truth:
+      analysis_type: single_population
+      populations: [GIH]
+      chromosomes: null
+      regions: null
+      focus: common
+      clarification_needed: true
+
+  - id: t4_21
+    tier: T4
+    question: "Compare some African subpopulations for deleterious mutations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: []
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+
+  - id: t4_22
+    tier: T4
+    question: "Find rare variants in the genome"
+    ground_truth:
+      analysis_type: single_population
+      populations: []
+      chromosomes: null
+      regions: null
+      focus: rare
+      clarification_needed: true
+
+  - id: t4_23
+    tier: T4
+    question: "Run a genetic analysis on chromosome 11"
+    ground_truth:
+      analysis_type: single_population
+      populations: []
+      chromosomes: ["11"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_24
+    tier: T4
+    question: "Study pharmacogenomic variation in CYP2D6"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_25
+    tier: T4
+    question: "Look at differences between populations on chromosome 1"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: []
+      chromosomes: ["1"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_26
+    tier: T4
+    question: "Find deleterious variants in the Finnish population"
+    ground_truth:
+      analysis_type: single_population
+      populations: [FIN]
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+
+  - id: t4_27
+    tier: T4
+    question: "Study cancer genetics in a few populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: []
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_28
+    tier: T4
+    question: "Examine the BRCA2 region for rare mutations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: []
+      chromosomes: null
+      regions:
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: rare
+      clarification_needed: true
+
+  - id: t4_29
+    tier: T4
+    question: "Run the standard analysis for South Asian subpopulations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [GIH, PJL, BEB, STU, ITU]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+
+  - id: t4_30
+    tier: T4
+    question: "Analyze some genomic data and find what stands out"
+    ground_truth:
+      analysis_type: single_population
+      populations: []
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true

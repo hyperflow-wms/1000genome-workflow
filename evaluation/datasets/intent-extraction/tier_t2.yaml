@@ -1,0 +1,331 @@
+  - id: t2_01
+    tier: T2
+    question: "Analyze all variants in the European population on chromosome 1"
+    ground_truth:
+      analysis_type: single_population
+      populations: [EUR]
+      chromosomes: ["1"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_02
+    tier: T2
+    question: "Compare common variants between African and East Asian populations on chromosome 2"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR, EAS]
+      chromosomes: ["2"]
+      regions: null
+      focus: common
+
+  - id: t2_03
+    tier: T2
+    question: "Identify deleterious variants in the HLA region for South Asian individuals"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [SAS]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: deleterious
+
+  - id: t2_04
+    tier: T2
+    question: "Find rare variants in British individuals on chromosome 3"
+    ground_truth:
+      analysis_type: single_population
+      populations: [GBR]
+      chromosomes: ["3"]
+      regions: null
+      focus: rare
+
+  - id: t2_05
+    tier: T2
+    question: "Compare Japanese and Finnish populations across all variant types on chromosome 4"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [JPT, FIN]
+      chromosomes: ["4"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_06
+    tier: T2
+    question: "Study common variants shared among African, European, and East Asian populations on chromosome 5"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AFR, EUR, EAS]
+      chromosomes: ["5"]
+      regions: null
+      focus: common
+
+  - id: t2_07
+    tier: T2
+    question: "Examine deleterious variants in the BRCA1 gene among Ad Mixed American populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [AMR]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+      focus: deleterious
+
+  - id: t2_08
+    tier: T2
+    question: "Characterize all genetic variants in the Yoruba population from Nigeria on chromosome 7"
+    ground_truth:
+      analysis_type: single_population
+      populations: [YRI]
+      chromosomes: ["7"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_09
+    tier: T2
+    question: "Identify rare variants in Punjabi individuals compared to those of Northern and Western European descent on chromosome 8"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [PJL, CEU]
+      chromosomes: ["8"]
+      regions: null
+      focus: rare
+
+  - id: t2_10
+    tier: T2
+    question: "Analyze all variants in the APOE gene region for European populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [EUR]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: all_variants
+
+  - id: t2_11
+    tier: T2
+    question: "Study common genetic variants shared between South Asian and African populations on chromosome 10"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [SAS, AFR]
+      chromosomes: ["10"]
+      regions: null
+      focus: common
+
+  - id: t2_12
+    tier: T2
+    question: "Find deleterious variants in Han Chinese from Beijing on chromosome 11"
+    ground_truth:
+      analysis_type: single_population
+      populations: [CHB]
+      chromosomes: ["11"]
+      regions: null
+      focus: deleterious
+
+  - id: t2_13
+    tier: T2
+    question: "Compare rare variants between Mexican-American and Puerto Rican populations on chromosome 12"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [MXL, PUR]
+      chromosomes: ["12"]
+      regions: null
+      focus: rare
+
+  - id: t2_14
+    tier: T2
+    question: "Analyze all variants in the CYP2D6 drug metabolism gene for East Asian populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [EAS]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: all_variants
+
+  - id: t2_15
+    tier: T2
+    question: "Identify common variants in Bengali individuals from Bangladesh on chromosome 14"
+    ground_truth:
+      analysis_type: single_population
+      populations: [BEB]
+      chromosomes: ["14"]
+      regions: null
+      focus: common
+
+  - id: t2_16
+    tier: T2
+    question: "Compare all genetic variants between Gambian and Luhya Kenyan populations on chromosome 15"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [GWD, LWK]
+      chromosomes: ["15"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_17
+    tier: T2
+    question: "Find deleterious variants in the hemoglobin beta gene region for African populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [AFR]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: deleterious
+
+  - id: t2_18
+    tier: T2
+    question: "Analyze rare variants across European, Ad Mixed American, and South Asian populations on chromosome 16"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [EUR, AMR, SAS]
+      chromosomes: ["16"]
+      regions: null
+      focus: rare
+
+  - id: t2_19
+    tier: T2
+    question: "Characterize all variants in the Toscani Italian population on chromosome 17"
+    ground_truth:
+      analysis_type: single_population
+      populations: [TSI]
+      chromosomes: ["17"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_20
+    tier: T2
+    question: "Compare common variants between Sri Lankan Tamil and Indian Telugu populations on chromosome 18"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [STU, ITU]
+      chromosomes: ["18"]
+      regions: null
+      focus: common
+
+  - id: t2_21
+    tier: T2
+    question: "Investigate rare variants in the cystic fibrosis gene region for European populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [EUR]
+      chromosomes: null
+      regions:
+        - name: CFTR
+          chromosome: "7"
+          start: 117120017
+          end: 117308718
+      focus: rare
+
+  - id: t2_22
+    tier: T2
+    question: "Identify deleterious variants across East Asian and Ad Mixed American populations on chromosome 20"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [EAS, AMR]
+      chromosomes: ["20"]
+      regions: null
+      focus: deleterious
+
+  - id: t2_23
+    tier: T2
+    question: "Study rare variants in Colombian individuals from Medellín on chromosome 21"
+    ground_truth:
+      analysis_type: single_population
+      populations: [CLM]
+      chromosomes: ["21"]
+      regions: null
+      focus: rare
+
+  - id: t2_24
+    tier: T2
+    question: "Compare all genetic variants between African Caribbean and Esan Nigerian populations on chromosome 22"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [ACB, ESN]
+      chromosomes: ["22"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_25
+    tier: T2
+    question: "Examine deleterious variants in the TP53 tumor suppressor gene region in South Asian populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [SAS]
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: deleterious
+
+  - id: t2_26
+    tier: T2
+    question: "Identify common variants in Vietnamese Kinh individuals on the X chromosome"
+    ground_truth:
+      analysis_type: single_population
+      populations: [KHV]
+      chromosomes: ["X"]
+      regions: null
+      focus: common
+
+  - id: t2_27
+    tier: T2
+    question: "Compare rare variants between Peruvian and Gujarati Indian populations on chromosome 9"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [PEL, GIH]
+      chromosomes: ["9"]
+      regions: null
+      focus: rare
+
+  - id: t2_28
+    tier: T2
+    question: "Analyze all variants across African, East Asian, South Asian, and European populations on chromosome 13"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AFR, EAS, SAS, EUR]
+      chromosomes: ["13"]
+      regions: null
+      focus: all_variants
+
+  - id: t2_29
+    tier: T2
+    question: "Investigate deleterious variants in the BRCA2 breast cancer gene for Ad Mixed American populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [AMR]
+      chromosomes: null
+      regions:
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: deleterious
+
+  - id: t2_30
+    tier: T2
+    question: "Compare common variants between Southern Han Chinese and Chinese Dai populations on chromosome 6"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [CHS, CDX]
+      chromosomes: ["6"]
+      regions: null
+      focus: common

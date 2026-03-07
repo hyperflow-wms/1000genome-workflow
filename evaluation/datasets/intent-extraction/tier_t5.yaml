@@ -1,0 +1,457 @@
+  - id: t5_01
+    tier: T5
+    question: "Analyze rare variants in the APOE region for Central Asian and South Asian populations"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [SAS]
+      chromosomes: null
+      regions:
+        - name: APOE
+          chromosome: "19"
+          start: 44905796
+          end: 44909393
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "Central Asian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_02
+    tier: T5
+    question: "Look at common variants on chromosome 25 for Finnish and British individuals"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [FIN, GBR]
+      chromosomes: null
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "chromosome 25"
+          reason: "Invalid chromosome; human chromosomes are 1-22, X, and Y"
+
+  - id: t5_03
+    tier: T5
+    question: "Study the FOXP2 region across African and East Asian populations for all variants"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR, EAS]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "FOXP2 region"
+          reason: "FOXP2 is not in the known genomic regions list"
+
+  - id: t5_04
+    tier: T5
+    question: "Examine deleterious mutations in the BRAC1 gene among Yoruba individuals"
+    ground_truth:
+      analysis_type: single_population
+      populations: [YRI]
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "BRAC1"
+          reason: "Misspelling of BRCA1; not an exact match to a known region name"
+
+  - id: t5_05
+    tier: T5
+    question: "Identify common variants comparing EAS with all East Asian sub-populations including CHB, JPT, and CHS"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [EAS, CHB, JPT, CHS]
+      chromosomes: null
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "Compare EAS with all East Asian sub-populations"
+          reason: "Contradictory: EAS is the super-population containing CHB, JPT, CHS; comparing a super-population with its own sub-populations is ambiguous"
+
+  - id: t5_06
+    tier: T5
+    question: "What are the rare variants in Puerto Rican and Oceanian populations on chromosome 15?"
+    ground_truth:
+      analysis_type: single_population
+      populations: [PUR]
+      chromosomes: ["15"]
+      regions: null
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "Oceanian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_07
+    tier: T5
+    question: "Identify deleterious variants in the CYP2D6 region for Gujarati individuals on chromosome 0"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [GIH]
+      chromosomes: null
+      regions:
+        - name: CYP2D6
+          chromosome: "22"
+          start: 42518900
+          end: 42528000
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "chromosome 0"
+          reason: "Invalid chromosome; human chromosomes are 1-22, X, and Y"
+
+  - id: t5_08
+    tier: T5
+    question: "Analyze the insulin region in CEU populations for common variants on chromosome 11"
+    ground_truth:
+      analysis_type: single_population
+      populations: [CEU]
+      chromosomes: ["11"]
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "insulin region"
+          reason: "Not in the known genomic regions list"
+
+  - id: t5_09
+    tier: T5
+    question: "Compare Europian and African populations for all variants on chromosome 3"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR]
+      chromosomes: ["3"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "Europian"
+          reason: "Misspelling; not a valid 1000 Genomes population code. Possibly intended EUR"
+
+  - id: t5_10
+    tier: T5
+    question: "Study rare variants in Northern African and Luhya populations in the HLA region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [LWK]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "Northern African"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_11
+    tier: T5
+    question: "Compare Japanese and Korean populations on chromosome 12 for common variants"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [JPT]
+      chromosomes: ["12"]
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "Korean"
+          reason: "Not a valid 1000 Genomes population; no Korean-specific population is included in the project"
+
+  - id: t5_12
+    tier: T5
+    question: "Look at the HGH gene in Han Chinese Beijing population for deleterious variants"
+    ground_truth:
+      analysis_type: single_population
+      populations: [CHB]
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "HGH gene"
+          reason: "Not in the known genomic regions list"
+
+  - id: t5_13
+    tier: T5
+    question: "Analyze deleterious variants on chromosome W in Bengali and South Asian populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [BEB, SAS]
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "chromosome W"
+          reason: "Invalid chromosome; human chromosomes are 1-22, X, and Y"
+
+  - id: t5_14
+    tier: T5
+    question: "What are the common variants in EAAS and AMR populations on chromosome 9?"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AMR]
+      chromosomes: ["9"]
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "EAAS"
+          reason: "Misspelling; not a valid 1000 Genomes population code. Possibly intended EAS"
+
+  - id: t5_15
+    tier: T5
+    question: "Compare Mediterranean populations including TSI and IBS for all variants in the BRCA2 region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [TSI, IBS]
+      chromosomes: null
+      regions:
+        - name: BRCA2
+          chromosome: "13"
+          start: 32315086
+          end: 32400266
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "Mediterranean populations"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_16
+    tier: T5
+    question: "Study deleterious variants on chromosome 30 in Punjabi Lahore individuals"
+    ground_truth:
+      analysis_type: single_population
+      populations: [PJL]
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "chromosome 30"
+          reason: "Invalid chromosome; human chromosomes are 1-22, X, and Y"
+
+  - id: t5_17
+    tier: T5
+    question: "Analyze the EGFR region for a population comparison between AFR and EUR on all variants"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [AFR, EUR]
+      chromosomes: null
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "EGFR region"
+          reason: "Not in the known genomic regions list"
+
+  - id: t5_18
+    tier: T5
+    question: "Look at rare variants in the CFRT gene for Mexican Los Angeles populations"
+    ground_truth:
+      analysis_type: single_population
+      populations: [MXL]
+      chromosomes: null
+      regions: null
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "CFRT"
+          reason: "Misspelling of CFTR; not an exact match to a known region name"
+
+  - id: t5_19
+    tier: T5
+    question: "Compare rare variants in AFR super-population with its sub-populations YRI and LWK in the HLA region"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [AFR, YRI, LWK]
+      chromosomes: null
+      regions:
+        - name: HLA
+          chromosome: "6"
+          start: 28477797
+          end: 33448354
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "Compare AFR with its sub-populations YRI and LWK"
+          reason: "Contradictory: AFR is the super-population containing YRI and LWK; comparing a super-population with its own sub-populations is ambiguous"
+
+  - id: t5_20
+    tier: T5
+    question: "Identify all variants in Polynesian and South Asian populations on chromosome 5"
+    ground_truth:
+      analysis_type: single_population
+      populations: [SAS]
+      chromosomes: ["5"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "Polynesian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_21
+    tier: T5
+    question: "Analyze common variants on chromosome 23 for Finnish and British populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [FIN, GBR]
+      chromosomes: null
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "chromosome 23"
+          reason: "Invalid chromosome number; chromosome 23 is conventionally referred to as chromosome X in the 1000 Genomes dataset"
+
+  - id: t5_22
+    tier: T5
+    question: "Study the TP53 region in Amazonian and Peruvian Lima populations for all variants"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [PEL]
+      chromosomes: null
+      regions:
+        - name: TP53
+          chromosome: "17"
+          start: 7668421
+          end: 7687490
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "Amazonian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_23
+    tier: T5
+    question: "Compare deleterious variants in the APEO gene between Sri Lankan Tamil and Indian Telugu populations"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: [STU, ITU]
+      chromosomes: null
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "APEO"
+          reason: "Misspelling of APOE; not an exact match to a known region name"
+
+  - id: t5_24
+    tier: T5
+    question: "Analyze rare variants in the KRAS region for African Caribbean and Gambian populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [ACB, GWD]
+      chromosomes: null
+      regions: null
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "KRAS region"
+          reason: "Not in the known genomic regions list"
+
+  - id: t5_25
+    tier: T5
+    question: "Study all variants in Siberian and East Asian populations on chromosome 26 in the HBB region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [EAS]
+      chromosomes: null
+      regions:
+        - name: HBB
+          chromosome: "11"
+          start: 5225464
+          end: 5229395
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "Siberian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+        - term: "chromosome 26"
+          reason: "Invalid chromosome; human chromosomes are 1-22, X, and Y"
+
+  - id: t5_26
+    tier: T5
+    question: "Identify both rare and common variants in EUR populations on chromosome 7"
+    ground_truth:
+      analysis_type: single_population
+      populations: [EUR]
+      chromosomes: ["7"]
+      regions: null
+      focus: all_variants
+      clarification_needed: true
+      invalid_terms:
+        - term: "both rare and common"
+          reason: "Contradictory focus: 'rare' and 'common' are mutually exclusive variant frequency categories"
+
+  - id: t5_27
+    tier: T5
+    question: "Compare Aboriginal Australian and South Asian populations for deleterious variants in the BRCA1 region"
+    ground_truth:
+      analysis_type: region_analysis
+      populations: [SAS]
+      chromosomes: null
+      regions:
+        - name: BRCA1
+          chromosome: "17"
+          start: 43044295
+          end: 43125483
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "Aboriginal Australian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+
+  - id: t5_28
+    tier: T5
+    question: "Analyze deleterious variants in the DMD gene region for African populations on chromosome X"
+    ground_truth:
+      analysis_type: single_population
+      populations: [AFR]
+      chromosomes: ["X"]
+      regions: null
+      focus: deleterious
+      clarification_needed: true
+      invalid_terms:
+        - term: "DMD gene"
+          reason: "Not in the known genomic regions list"
+
+  - id: t5_29
+    tier: T5
+    question: "Study rare variants in the HBP gene for Mende and Esan populations"
+    ground_truth:
+      analysis_type: multi_population
+      populations: [MSL, ESN]
+      chromosomes: null
+      regions: null
+      focus: rare
+      clarification_needed: true
+      invalid_terms:
+        - term: "HBP"
+          reason: "Misspelling of HBB; not an exact match to a known region name"
+
+  - id: t5_30
+    tier: T5
+    question: "Compare Scandinavian and Eastern European populations for common variants in the BRCA3 region on chromosome 17"
+    ground_truth:
+      analysis_type: population_comparison
+      populations: []
+      chromosomes: ["17"]
+      regions: null
+      focus: common
+      clarification_needed: true
+      invalid_terms:
+        - term: "Scandinavian"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+        - term: "Eastern European"
+          reason: "Not a valid 1000 Genomes population or super-population code"
+        - term: "BRCA3"
+          reason: "Not in the known genomic regions list; only BRCA1 and BRCA2 are valid"
