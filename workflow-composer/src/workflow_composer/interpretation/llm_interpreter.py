@@ -40,7 +40,7 @@ def get_client():
             "LLM dependencies not installed. "
             "Install with: pip install workflow-composer[llm]"
         )
-    return instructor.from_litellm(litellm.completion)
+    return instructor.from_litellm(litellm.completion, mode=instructor.Mode.JSON_SCHEMA)
 
 
 def interpret_research_question(
@@ -91,6 +91,12 @@ Based on the user's question, extract:
 IMPORTANT: When a gene name like BRCA1 or HLA is mentioned, you MUST populate
 the regions field with the corresponding coordinates from the genomic-regions
 table. Never leave regions as null when a known gene or region is referenced.
+
+6. clarification_needed: If the question is too vague, missing critical parameters
+   (e.g., no population specified, ambiguous scope), or contains invalid/unrecognizable
+   terms that cannot be mapped to valid 1000 Genomes codes, set clarification_needed=True
+   and explain what is missing or invalid in clarification_reason.
+   Still extract whatever parameters you CAN identify — but flag the gap.
 """
 
     return client.chat.completions.create(

@@ -29,6 +29,7 @@ all = [
 
 [project.scripts]
 g1kwf = "workflow_composer.cli:cli"
+workflow-composer = "workflow_composer.cli:cli"
 
 [build-system]
 requires = ["hatchling"]
