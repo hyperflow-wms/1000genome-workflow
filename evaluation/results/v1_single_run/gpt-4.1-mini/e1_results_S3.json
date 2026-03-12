@@ -33,6 +33,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -57,9 +58,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 10.38,
-    "cost_usd": 0.048505,
-    "num_turns": 2
+    "duration_seconds": 0.86
   },
   {
     "id": "t1_02",
@@ -103,6 +102,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -115,19 +115,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ],
       "gt_pops": [
         "GBR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ]
     },
-    "duration_seconds": 20.54,
-    "cost_usd": 0.0295095,
-    "num_turns": 3
+    "duration_seconds": 1.46
   },
   {
     "id": "t1_03",
@@ -161,6 +159,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -183,9 +182,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 8.3,
-    "cost_usd": 0.04953725,
-    "num_turns": 2
+    "duration_seconds": 0.89
   },
   {
     "id": "t1_04",
@@ -221,6 +218,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -245,9 +243,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 7.49,
-    "cost_usd": 0.014988999999999999,
-    "num_turns": 2
+    "duration_seconds": 1.39
   },
   {
     "id": "t1_05",
@@ -291,6 +287,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -303,19 +300,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "GIH"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 29.96,
-    "cost_usd": 0.05018725,
-    "num_turns": 5
+    "duration_seconds": 1.43
   },
   {
     "id": "t1_06",
@@ -351,6 +346,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -375,9 +371,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 18.99,
-    "cost_usd": 0.04228575,
-    "num_turns": 5
+    "duration_seconds": 0.87
   },
   {
     "id": "t1_07",
@@ -411,6 +405,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -433,9 +428,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 20.04,
-    "cost_usd": 0.032557499999999996,
-    "num_turns": 4
+    "duration_seconds": 0.86
   },
   {
     "id": "t1_08",
@@ -479,6 +472,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -491,19 +485,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "FIN"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 20.78,
-    "cost_usd": 0.040404499999999996,
-    "num_turns": 4
+    "duration_seconds": 1.49
   },
   {
     "id": "t1_09",
@@ -539,6 +531,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -563,9 +556,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.85,
-    "cost_usd": 0.014875000000000001,
-    "num_turns": 2
+    "duration_seconds": 1.87
   },
   {
     "id": "t1_10",
@@ -588,7 +579,7 @@
       "focus": "deleterious"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "LWK"
       ],
@@ -609,6 +600,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -621,19 +613,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "LWK"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 16.95,
-    "cost_usd": 0.014564500000000001,
-    "num_turns": 2
+    "duration_seconds": 2.15
   },
   {
     "id": "t1_11",
@@ -667,6 +657,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -689,9 +680,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.53,
-    "cost_usd": 0.0147745,
-    "num_turns": 2
+    "duration_seconds": 1.79
   },
   {
     "id": "t1_12",
@@ -727,6 +716,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -751,9 +741,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.51,
-    "cost_usd": 0.014988999999999999,
-    "num_turns": 2
+    "duration_seconds": 1.88
   },
   {
     "id": "t1_13",
@@ -797,6 +785,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -809,19 +798,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "MXL"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 20.61,
-    "cost_usd": 0.0405615,
-    "num_turns": 4
+    "duration_seconds": 2.52
   },
   {
     "id": "t1_14",
@@ -855,6 +842,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -877,9 +865,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 21.48,
-    "cost_usd": 0.034181750000000004,
-    "num_turns": 4
+    "duration_seconds": 2.8
   },
   {
     "id": "t1_15",
@@ -925,6 +911,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -938,7 +925,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "AFR",
@@ -946,12 +933,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 25.97,
-    "cost_usd": 0.05044024999999999,
-    "num_turns": 5
+    "duration_seconds": 2.61
   },
   {
     "id": "t1_16",
@@ -985,6 +970,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1007,9 +993,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 14.36,
-    "cost_usd": 0.01944425,
-    "num_turns": 2
+    "duration_seconds": 1.46
   },
   {
     "id": "t1_17",
@@ -1055,6 +1039,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1068,7 +1053,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [
         "AMR",
@@ -1076,12 +1061,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ]
     },
-    "duration_seconds": 12.94,
-    "cost_usd": 0.01621975,
-    "num_turns": 2
+    "duration_seconds": 2.33
   },
   {
     "id": "t1_18",
@@ -1115,6 +1098,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1137,9 +1121,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 22.67,
-    "cost_usd": 0.03255575,
-    "num_turns": 4
+    "duration_seconds": 1.77
   },
   {
     "id": "t1_19",
@@ -1175,6 +1157,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1199,9 +1182,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 10.0,
-    "cost_usd": 0.0131635,
-    "num_turns": 2
+    "duration_seconds": 3.78
   },
   {
     "id": "t1_20",
@@ -1239,6 +1220,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1265,9 +1247,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 11.88,
-    "cost_usd": 0.0188775,
-    "num_turns": 2
+    "duration_seconds": 1.92
   },
   {
     "id": "t1_21",
@@ -1290,7 +1270,7 @@
       "focus": "common"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "CHS"
       ],
@@ -1311,6 +1291,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1323,19 +1304,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "CHS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 12.54,
-    "cost_usd": 0.01854525,
-    "num_turns": 2
+    "duration_seconds": 2.29
   },
   {
     "id": "t1_22",
@@ -1371,6 +1350,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1395,9 +1375,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 7.59,
-    "cost_usd": 0.014963500000000001,
-    "num_turns": 2
+    "duration_seconds": 2.01
   },
   {
     "id": "t1_23",
@@ -1431,6 +1409,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1453,9 +1432,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 11.45,
-    "cost_usd": 0.0183,
-    "num_turns": 2
+    "duration_seconds": 2.1
   },
   {
     "id": "t1_24",
@@ -1493,6 +1470,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1519,9 +1497,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 8.82,
-    "cost_usd": 0.01337275,
-    "num_turns": 2
+    "duration_seconds": 2.1
   },
   {
     "id": "t1_25",
@@ -1567,6 +1543,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1580,7 +1557,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "IBS",
@@ -1588,12 +1565,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 10.02,
-    "cost_usd": 0.016276000000000002,
-    "num_turns": 2
+    "duration_seconds": 2.17
   },
   {
     "id": "t1_26",
@@ -1627,6 +1602,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1649,9 +1625,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 18.23,
-    "cost_usd": 0.032494499999999996,
-    "num_turns": 4
+    "duration_seconds": 2.08
   },
   {
     "id": "t1_27",
@@ -1693,6 +1667,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1723,9 +1698,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 17.26,
-    "cost_usd": 0.03420725,
-    "num_turns": 4
+    "duration_seconds": 2.22
   },
   {
     "id": "t1_28",
@@ -1769,6 +1742,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1781,19 +1755,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "KHV"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 28.09,
-    "cost_usd": 0.05005875,
-    "num_turns": 5
+    "duration_seconds": 2.33
   },
   {
     "id": "t1_29",
@@ -1829,6 +1801,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1853,9 +1826,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 19.41,
-    "cost_usd": 0.03427375,
-    "num_turns": 4
+    "duration_seconds": 1.92
   },
   {
     "id": "t1_30",
@@ -1899,6 +1870,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1911,19 +1883,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "ACB"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 29.75,
-    "cost_usd": 0.040750999999999996,
-    "num_turns": 4
+    "duration_seconds": 2.29
   },
   {
     "id": "t2_01",
@@ -1957,6 +1927,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -1979,9 +1950,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 18.82,
-    "cost_usd": 0.034222999999999996,
-    "num_turns": 4
+    "duration_seconds": 2.09
   },
   {
     "id": "t2_02",
@@ -2017,6 +1986,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2041,9 +2011,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 8.19,
-    "cost_usd": 0.01493175,
-    "num_turns": 2
+    "duration_seconds": 2.11
   },
   {
     "id": "t2_03",
@@ -2087,6 +2055,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2099,19 +2068,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "SAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 21.55,
-    "cost_usd": 0.04084575,
-    "num_turns": 4
+    "duration_seconds": 1.97
   },
   {
     "id": "t2_04",
@@ -2145,6 +2112,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2167,9 +2135,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 20.95,
-    "cost_usd": 0.033292999999999996,
-    "num_turns": 4
+    "duration_seconds": 1.83
   },
   {
     "id": "t2_05",
@@ -2205,6 +2171,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2229,9 +2196,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.17,
-    "cost_usd": 0.014994249999999999,
-    "num_turns": 2
+    "duration_seconds": 2.29
   },
   {
     "id": "t2_06",
@@ -2269,6 +2234,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2295,9 +2261,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.89,
-    "cost_usd": 0.01503375,
-    "num_turns": 2
+    "duration_seconds": 1.91
   },
   {
     "id": "t2_07",
@@ -2320,7 +2284,7 @@
       "focus": "deleterious"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "AMR"
       ],
@@ -2341,6 +2305,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2353,19 +2318,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ],
       "gt_pops": [
         "AMR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ]
     },
-    "duration_seconds": 8.65,
-    "cost_usd": 0.015003500000000001,
-    "num_turns": 2
+    "duration_seconds": 1.93
   },
   {
     "id": "t2_08",
@@ -2399,6 +2362,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2421,9 +2385,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 16.09,
-    "cost_usd": 0.020478000000000003,
-    "num_turns": 2
+    "duration_seconds": 1.69
   },
   {
     "id": "t2_09",
@@ -2459,6 +2421,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2483,9 +2446,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 17.98,
-    "cost_usd": 0.029433749999999998,
-    "num_turns": 3
+    "duration_seconds": 1.8
   },
   {
     "id": "t2_10",
@@ -2529,6 +2490,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2541,19 +2503,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "EUR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 8.26,
-    "cost_usd": 0.014963500000000001,
-    "num_turns": 2
+    "duration_seconds": 1.89
   },
   {
     "id": "t2_11",
@@ -2589,6 +2549,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2613,9 +2574,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.34,
-    "cost_usd": 0.01495775,
-    "num_turns": 2
+    "duration_seconds": 1.58
   },
   {
     "id": "t2_12",
@@ -2649,6 +2608,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2671,9 +2631,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 12.89,
-    "cost_usd": 0.0197385,
-    "num_turns": 2
+    "duration_seconds": 2.26
   },
   {
     "id": "t2_13",
@@ -2709,6 +2667,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2733,9 +2692,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 17.46,
-    "cost_usd": 0.03414175,
-    "num_turns": 4
+    "duration_seconds": 1.81
   },
   {
     "id": "t2_14",
@@ -2758,7 +2715,7 @@
       "focus": "all_variants"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "EAS"
       ],
@@ -2779,6 +2736,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2791,19 +2749,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "EAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 23.57,
-    "cost_usd": 0.04149625,
-    "num_turns": 4
+    "duration_seconds": 2.15
   },
   {
     "id": "t2_15",
@@ -2837,6 +2793,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2859,9 +2816,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 18.96,
-    "cost_usd": 0.03514475,
-    "num_turns": 4
+    "duration_seconds": 1.82
   },
   {
     "id": "t2_16",
@@ -2897,6 +2852,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2921,9 +2877,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.53,
-    "cost_usd": 0.015110750000000003,
-    "num_turns": 2
+    "duration_seconds": 1.7
   },
   {
     "id": "t2_17",
@@ -2967,6 +2921,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -2979,19 +2934,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "AFR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 23.6,
-    "cost_usd": 0.042929999999999996,
-    "num_turns": 4
+    "duration_seconds": 2.0
   },
   {
     "id": "t2_18",
@@ -3029,6 +2982,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3055,9 +3009,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 10.93,
-    "cost_usd": 0.01504725,
-    "num_turns": 2
+    "duration_seconds": 1.64
   },
   {
     "id": "t2_19",
@@ -3091,6 +3043,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3113,9 +3066,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 15.19,
-    "cost_usd": 0.02045875,
-    "num_turns": 2
+    "duration_seconds": 1.64
   },
   {
     "id": "t2_20",
@@ -3151,6 +3102,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3175,9 +3127,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 18.6,
-    "cost_usd": 0.03533825,
-    "num_turns": 4
+    "duration_seconds": 1.82
   },
   {
     "id": "t2_21",
@@ -3221,6 +3171,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3233,19 +3184,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [
         "EUR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ]
     },
-    "duration_seconds": 21.92,
-    "cost_usd": 0.040586750000000005,
-    "num_turns": 4
+    "duration_seconds": 2.93
   },
   {
     "id": "t2_22",
@@ -3281,6 +3230,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3305,9 +3255,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 18.23,
-    "cost_usd": 0.03540625,
-    "num_turns": 4
+    "duration_seconds": 2.02
   },
   {
     "id": "t2_23",
@@ -3341,6 +3289,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3363,9 +3312,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 9.03,
-    "cost_usd": 0.0148015,
-    "num_turns": 2
+    "duration_seconds": 2.46
   },
   {
     "id": "t2_24",
@@ -3401,6 +3348,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3425,9 +3373,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 21.74,
-    "cost_usd": 0.034791,
-    "num_turns": 4
+    "duration_seconds": 1.93
   },
   {
     "id": "t2_25",
@@ -3450,7 +3396,7 @@
       "focus": "deleterious"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "SAS"
       ],
@@ -3471,6 +3417,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3483,19 +3430,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "SAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 10.78,
-    "cost_usd": 0.0152045,
-    "num_turns": 2
+    "duration_seconds": 2.05
   },
   {
     "id": "t2_26",
@@ -3529,6 +3474,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3551,9 +3497,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 10.93,
-    "cost_usd": 0.01615725,
-    "num_turns": 2
+    "duration_seconds": 1.74
   },
   {
     "id": "t2_27",
@@ -3589,6 +3533,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3613,9 +3558,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 14.61,
-    "cost_usd": 0.0193405,
-    "num_turns": 2
+    "duration_seconds": 1.57
   },
   {
     "id": "t2_28",
@@ -3655,6 +3598,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3683,9 +3627,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 12.68,
-    "cost_usd": 0.0203415,
-    "num_turns": 2
+    "duration_seconds": 1.63
   },
   {
     "id": "t2_29",
@@ -3708,7 +3650,7 @@
       "focus": "deleterious"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "AMR"
       ],
@@ -3729,6 +3671,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3741,19 +3684,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "AMR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 10.38,
-    "cost_usd": 0.01499825,
-    "num_turns": 2
+    "duration_seconds": 2.15
   },
   {
     "id": "t2_30",
@@ -3789,6 +3730,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3813,9 +3755,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 20.9,
-    "cost_usd": 0.03511375,
-    "num_turns": 4
+    "duration_seconds": 2.18
   },
   {
     "id": "t3_01",
@@ -3867,6 +3807,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -3883,7 +3824,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "AFR",
@@ -3894,12 +3835,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 22.41,
-    "cost_usd": 0.03613675,
-    "num_turns": 3
+    "duration_seconds": 2.21
   },
   {
     "id": "t3_02",
@@ -3925,9 +3864,10 @@
       "focus": "deleterious"
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "YRI",
+        "LWK",
         "GWD",
         "MSL",
         "ESN"
@@ -3941,15 +3881,16 @@
           "end": 5229395
         }
       ],
-      "focus": "deleterious",
+      "focus": "all_variants",
       "clarification_needed": false,
       "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
       "clarification_reason_pred": null,
@@ -3959,12 +3900,13 @@
       "pred_pops": [
         "ESN",
         "GWD",
+        "LWK",
         "MSL",
         "YRI"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "ESN",
@@ -3974,12 +3916,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 16.61,
-    "cost_usd": 0.0266635,
-    "num_turns": 2
+    "duration_seconds": 2.54
   },
   {
     "id": "t3_03",
@@ -4035,6 +3975,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4047,21 +3988,19 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "EUR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 24.3,
-    "cost_usd": 0.04620875,
-    "num_turns": 4
+    "duration_seconds": 2.79
   },
   {
     "id": "t3_04",
@@ -4105,6 +4044,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4117,19 +4057,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "SAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 24.19,
-    "cost_usd": 0.03555375,
-    "num_turns": 3
+    "duration_seconds": 2.43
   },
   {
     "id": "t3_05",
@@ -4175,6 +4113,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4188,7 +4127,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "EAS",
@@ -4196,12 +4135,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 27.33,
-    "cost_usd": 0.044816,
-    "num_turns": 4
+    "duration_seconds": 2.16
   },
   {
     "id": "t3_06",
@@ -4228,7 +4165,9 @@
     "predicted": {
       "analysis_type": "region_analysis",
       "populations": [
-        "EUR"
+        "EUR",
+        "GBR",
+        "FIN"
       ],
       "chromosomes": null,
       "regions": [
@@ -4247,6 +4186,7 @@
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4255,11 +4195,13 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "EUR"
+        "EUR",
+        "FIN",
+        "GBR"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [
         "CEU",
@@ -4268,12 +4210,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ]
     },
-    "duration_seconds": 12.36,
-    "cost_usd": 0.020928500000000003,
-    "num_turns": 2
+    "duration_seconds": 2.06
   },
   {
     "id": "t3_07",
@@ -4296,7 +4236,7 @@
       "focus": "rare"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "JPT"
       ],
@@ -4317,6 +4257,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4329,19 +4270,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "JPT"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 11.67,
-    "cost_usd": 0.01744375,
-    "num_turns": 2
+    "duration_seconds": 2.25
   },
   {
     "id": "t3_08",
@@ -4370,11 +4309,7 @@
     "predicted": {
       "analysis_type": "multi_population",
       "populations": [
-        "YRI",
-        "LWK",
-        "GWD",
-        "MSL",
-        "ESN"
+        "AFR"
       ],
       "chromosomes": null,
       "regions": [
@@ -4390,10 +4325,11 @@
       "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
       "clarification_reason_pred": null,
@@ -4401,15 +4337,11 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "ESN",
-        "GWD",
-        "LWK",
-        "MSL",
-        "YRI"
+        "AFR"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "ESN",
@@ -4420,12 +4352,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 21.19,
-    "cost_usd": 0.028596249999999997,
-    "num_turns": 2
+    "duration_seconds": 2.53
   },
   {
     "id": "t3_09",
@@ -4452,7 +4382,7 @@
       "focus": "all_variants"
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "AFR",
         "AMR",
@@ -4477,6 +4407,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4493,7 +4424,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "AFR",
@@ -4504,12 +4435,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 13.21,
-    "cost_usd": 0.01988125,
-    "num_turns": 2
+    "duration_seconds": 2.41
   },
   {
     "id": "t3_10",
@@ -4568,6 +4497,7 @@
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4580,8 +4510,8 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "CLM",
@@ -4591,13 +4521,11 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 19.11,
-    "cost_usd": 0.027753,
-    "num_turns": 2
+    "duration_seconds": 3.66
   },
   {
     "id": "t3_11",
@@ -4643,6 +4571,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4656,7 +4585,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "CHB",
@@ -4664,12 +4593,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 11.88,
-    "cost_usd": 0.018763500000000002,
-    "num_turns": 2
+    "duration_seconds": 4.03
   },
   {
     "id": "t3_12",
@@ -4698,11 +4625,7 @@
     "predicted": {
       "analysis_type": "multi_population",
       "populations": [
-        "GIH",
-        "PJL",
-        "BEB",
-        "STU",
-        "ITU"
+        "SAS"
       ],
       "chromosomes": null,
       "regions": [
@@ -4718,10 +4641,11 @@
       "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
       "clarification_reason_pred": null,
@@ -4729,15 +4653,11 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "BEB",
-        "GIH",
-        "ITU",
-        "PJL",
-        "STU"
+        "SAS"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "BEB",
@@ -4748,12 +4668,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 22.28,
-    "cost_usd": 0.039256,
-    "num_turns": 3
+    "duration_seconds": 3.28
   },
   {
     "id": "t3_13",
@@ -4782,11 +4700,10 @@
       "focus": "common"
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "population_comparison",
       "populations": [
-        "TSI",
-        "IBS",
-        "SAS"
+        "SAS",
+        "EUR"
       ],
       "chromosomes": null,
       "regions": [
@@ -4805,6 +4722,7 @@
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4813,13 +4731,12 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "IBS",
-        "SAS",
-        "TSI"
+        "EUR",
+        "SAS"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "BEB",
@@ -4832,12 +4749,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 28.0,
-    "cost_usd": 0.0426205,
-    "num_turns": 3
+    "duration_seconds": 3.79
   },
   {
     "id": "t3_14",
@@ -4875,7 +4790,7 @@
           "end": 33448354
         }
       ],
-      "focus": "deleterious",
+      "focus": "all_variants",
       "clarification_needed": false,
       "clarification_reason": null
     },
@@ -4883,6 +4798,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4896,7 +4812,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "AFR",
@@ -4904,12 +4820,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 10.48,
-    "cost_usd": 0.017113999999999997,
-    "num_turns": 2
+    "duration_seconds": 2.85
   },
   {
     "id": "t3_15",
@@ -4961,6 +4875,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -4977,7 +4892,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "AFR",
@@ -4988,12 +4903,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 28.66,
-    "cost_usd": 0.04477199999999999,
-    "num_turns": 4
+    "duration_seconds": 2.66
   },
   {
     "id": "t3_16",
@@ -5055,6 +4968,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5067,22 +4981,20 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2",
-        "TP53"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)",
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "ACB"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 33.6,
-    "cost_usd": 0.057534,
-    "num_turns": 4
+    "duration_seconds": 3.72
   },
   {
     "id": "t3_17",
@@ -5126,6 +5038,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5138,19 +5051,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "EAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 17.39,
-    "cost_usd": 0.02553375,
-    "num_turns": 2
+    "duration_seconds": 2.42
   },
   {
     "id": "t3_18",
@@ -5196,6 +5107,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5209,7 +5121,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "BEB",
@@ -5217,12 +5129,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 28.6,
-    "cost_usd": 0.05508225,
-    "num_turns": 5
+    "duration_seconds": 3.43
   },
   {
     "id": "t3_19",
@@ -5266,6 +5176,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5278,19 +5189,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [
         "IBS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ]
     },
-    "duration_seconds": 22.31,
-    "cost_usd": 0.0373025,
-    "num_turns": 3
+    "duration_seconds": 3.36
   },
   {
     "id": "t3_20",
@@ -5319,7 +5228,7 @@
       "focus": "deleterious"
     },
     "predicted": {
-      "analysis_type": "region_analysis",
+      "analysis_type": "single_population",
       "populations": [
         "ASW"
       ],
@@ -5346,6 +5255,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5358,21 +5268,19 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "ASW"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 17.61,
-    "cost_usd": 0.02844725,
-    "num_turns": 2
+    "duration_seconds": 3.62
   },
   {
     "id": "t3_21",
@@ -5418,6 +5326,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5431,7 +5340,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "AFR",
@@ -5439,12 +5348,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 25.34,
-    "cost_usd": 0.044984500000000004,
-    "num_turns": 4
+    "duration_seconds": 5.33
   },
   {
     "id": "t3_22",
@@ -5468,7 +5375,7 @@
       "focus": "all_variants"
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "single_population",
       "populations": [
         "KHV",
         "CDX"
@@ -5490,6 +5397,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5503,7 +5411,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "CDX",
@@ -5511,12 +5419,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 17.67,
-    "cost_usd": 0.02741975,
-    "num_turns": 2
+    "duration_seconds": 3.02
   },
   {
     "id": "t3_23",
@@ -5568,6 +5474,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5584,7 +5491,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "AFR",
@@ -5595,12 +5502,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 27.37,
-    "cost_usd": 0.046517249999999996,
-    "num_turns": 4
+    "duration_seconds": 3.33
   },
   {
     "id": "t3_24",
@@ -5623,7 +5528,7 @@
       "focus": "all_variants"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "FIN"
       ],
@@ -5644,6 +5549,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5656,19 +5562,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "FIN"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 11.14,
-    "cost_usd": 0.01615625,
-    "num_turns": 2
+    "duration_seconds": 3.26
   },
   {
     "id": "t3_25",
@@ -5697,7 +5601,7 @@
       "focus": "common"
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "GBR"
       ],
@@ -5724,6 +5628,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5736,21 +5641,19 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "GBR"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 17.81,
-    "cost_usd": 0.018876,
-    "num_turns": 2
+    "duration_seconds": 2.81
   },
   {
     "id": "t3_26",
@@ -5796,6 +5699,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -5809,7 +5713,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "MXL",
@@ -5817,12 +5721,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 10.6,
-    "cost_usd": 0.017765500000000004,
-    "num_turns": 2
+    "duration_seconds": 2.61
   },
   {
     "id": "t3_27",
@@ -5847,7 +5749,7 @@
     "predicted": {
       "analysis_type": "single_population",
       "populations": [
-        "TSI"
+        "IBS"
       ],
       "chromosomes": null,
       "regions": [
@@ -5858,15 +5760,16 @@
           "end": 117308718
         }
       ],
-      "focus": "deleterious",
+      "focus": "all_variants",
       "clarification_needed": false,
       "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
       "clarification_reason_pred": null,
@@ -5874,23 +5777,21 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "TSI"
+        "IBS"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [
         "TSI"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ]
     },
-    "duration_seconds": 22.09,
-    "cost_usd": 0.042696,
-    "num_turns": 4
+    "duration_seconds": 2.59
   },
   {
     "id": "t3_28",
@@ -5926,19 +5827,20 @@
           "end": 44909393
         }
       ],
-      "focus": "deleterious",
-      "clarification_needed": true,
-      "clarification_reason": "Cardiovascular disease is a broad phenotype influenced by many genomic loci beyond APOE (e.g., 9p21/CDKN2A-CDKN2B, LDLR, PCSK9, LPA, SORT1). The 1000 Genomes workflow currently has APOE as a pre-defined region relevant to cardiovascular risk, but the question may warrant additional regions. Please clarify: (1) Are you specifically interested in APOE, or would you like to supply custom coordinates for other known CAD GWAS loci (e.g., 9p21)? (2) Would you also like a population comparison (e.g., GIH vs. EUR or GIH vs. other SAS sub-populations) to assess enrichment, since 'enrichment' implies a reference group?"
+      "focus": "all_variants",
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "Cardiovascular disease is a broad phenotype influenced by many genomic loci beyond APOE (e.g., 9p21/CDKN2A-CDKN2B, LDLR, PCSK9, LPA, SORT1). The 1000 Genomes workflow currently has APOE as a pre-defined region relevant to cardiovascular risk, but the question may warrant additional regions. Please clarify: (1) Are you specifically interested in APOE, or would you like to supply custom coordinates for other known CAD GWAS loci (e.g., 9p21)? (2) Would you also like a population comparison (e.g., GIH vs. EUR or GIH vs. other SAS sub-populations) to assess enrichment, since 'enrichment' implies a reference group?",
-      "clarification_correct": false,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -5946,19 +5848,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "GIH"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 32.65,
-    "cost_usd": 0.04647375000000001,
-    "num_turns": 3
+    "duration_seconds": 2.59
   },
   {
     "id": "t3_29",
@@ -5983,11 +5883,10 @@
       "focus": "all_variants"
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "multi_population",
       "populations": [
         "LWK",
-        "YRI",
-        "ESN"
+        "YRI"
       ],
       "chromosomes": null,
       "regions": [
@@ -6003,10 +5902,11 @@
       "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
       "clarification_reason_pred": null,
@@ -6014,13 +5914,12 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "ESN",
         "LWK",
         "YRI"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "ESN",
@@ -6029,12 +5928,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 27.34,
-    "cost_usd": 0.03128325,
-    "num_turns": 2
+    "duration_seconds": 2.81
   },
   {
     "id": "t3_30",
@@ -6080,6 +5977,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": false,
       "clarification_needed_pred": false,
@@ -6093,7 +5991,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "EAS",
@@ -6101,12 +5999,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 13.67,
-    "cost_usd": 0.019089000000000002,
-    "num_turns": 2
+    "duration_seconds": 2.65
   },
   {
     "id": "t4_01",
@@ -6129,7 +6025,13 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "EUR",
+        "AFR",
+        "EAS",
+        "SAS",
+        "AMR"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -6140,34 +6042,39 @@
         }
       ],
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). You can also say 'all populations' for a multi-population analysis."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). You can also say 'all populations' for a multi-population analysis.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 26.76,
-    "cost_usd": 0.059212,
-    "num_turns": 5
+    "duration_seconds": 3.31
   },
   {
     "id": "t4_02",
@@ -6191,18 +6098,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "The question is very broad. Could you clarify: (1) Are you interested in a specific genomic region or gene (e.g., HLA, BRCA1, APOE), a specific chromosome, or genome-wide analysis? (2) Are you comparing European sub-populations (e.g., GBR vs FIN vs TSI) or analyzing EUR as a whole? (3) Do you want to focus on a particular variant type (common, rare, deleterious) or all variants? A genome-wide analysis of all variants would be very large \u2014 narrowing the scope will make the workflow more practical."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "The question is very broad. Could you clarify: (1) Are you interested in a specific genomic region or gene (e.g., HLA, BRCA1, APOE), a specific chromosome, or genome-wide analysis? (2) Are you comparing European sub-populations (e.g., GBR vs FIN vs TSI) or analyzing EUR as a whole? (3) Do you want to focus on a particular variant type (common, rare, deleterious) or all variants? A genome-wide analysis of all variants would be very large \u2014 narrowing the scope will make the workflow more practical.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -6216,9 +6124,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 16.72,
-    "cost_usd": 0.0268845,
-    "num_turns": 2
+    "duration_seconds": 2.33
   },
   {
     "id": "t4_03",
@@ -6233,7 +6139,7 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "population_comparison",
       "populations": [
         "AFR",
         "AMR",
@@ -6244,18 +6150,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "Your request to compare all 5 super-populations across all chromosomes with all variants would produce an extremely large workflow. Could you clarify: (1) Is there a specific genomic region or chromosome you'd like to focus on (e.g., HLA, BRCA1, chromosome 22)? (2) Are you interested in a particular variant type (common, rare, deleterious)? (3) Did you mean all 5 continental super-populations (AFR, AMR, EAS, EUR, SAS), or specific sub-populations? Narrowing the scope will make the analysis more feasible."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "Your request to compare all 5 super-populations across all chromosomes with all variants would produce an extremely large workflow. Could you clarify: (1) Is there a specific genomic region or chromosome you'd like to focus on (e.g., HLA, BRCA1, chromosome 22)? (2) Are you interested in a particular variant type (common, rare, deleterious)? (3) Did you mean all 5 continental super-populations (AFR, AMR, EAS, EUR, SAS), or specific sub-populations? Narrowing the scope will make the analysis more feasible.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -6271,9 +6178,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 27.38,
-    "cost_usd": 0.055249000000000006,
-    "num_turns": 4
+    "duration_seconds": 2.46
   },
   {
     "id": "t4_04",
@@ -6291,27 +6196,40 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "chromosomes": [
         "6"
       ],
       "regions": null,
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "Your request is too vague to build a meaningful workflow. Please clarify: (1) Which population(s) do you want to analyze? (e.g., European/EUR, African/AFR, a specific sub-population like GBR or YRI, or all populations); (2) What is the goal of your analysis? (e.g., compare populations, look for deleterious variants, study a specific region like HLA); (3) Are you interested in the entire chromosome 6 or a specific region/gene on it (e.g., the HLA/MHC region)?"
+      "clarification_reason": "The request specifies chromosome 6 data but does not specify populations, analysis type, or focus of variants."
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Your request is too vague to build a meaningful workflow. Please clarify: (1) Which population(s) do you want to analyze? (e.g., European/EUR, African/AFR, a specific sub-population like GBR or YRI, or all populations); (2) What is the goal of your analysis? (e.g., compare populations, look for deleterious variants, study a specific region like HLA); (3) Are you interested in the entire chromosome 6 or a specific region/gene on it (e.g., the HLA/MHC region)?",
+      "clarification_reason_pred": "The request specifies chromosome 6 data but does not specify populations, analysis type, or focus of variants.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [
         "6"
       ],
@@ -6322,9 +6240,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 28.9,
-    "cost_usd": 0.053808,
-    "num_turns": 4
+    "duration_seconds": 2.76
   },
   {
     "id": "t4_05",
@@ -6348,18 +6264,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "The question is too broad to generate a practical workflow. 'Interesting mutations' is ambiguous. Could you clarify: (1) Are you interested in a specific genomic region or gene (e.g., HBB for sickle cell/malaria resistance, HLA for immune diversity, APOE for Alzheimer's, BRCA1/BRCA2 for cancer)? (2) What type of variants \u2014 deleterious/damaging, rare, or common? (3) Should this be genome-wide (all 22 autosomes) or focused on specific chromosomes? A genome-wide scan of all variants for AFR (661 samples) would be very large. A narrower scope (e.g., deleterious variants in the HBB region relevant to sickle cell disease in African populations) would be much more feasible."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "The question is too broad to generate a practical workflow. 'Interesting mutations' is ambiguous. Could you clarify: (1) Are you interested in a specific genomic region or gene (e.g., HBB for sickle cell/malaria resistance, HLA for immune diversity, APOE for Alzheimer's, BRCA1/BRCA2 for cancer)? (2) What type of variants \u2014 deleterious/damaging, rare, or common? (3) Should this be genome-wide (all 22 autosomes) or focused on specific chromosomes? A genome-wide scan of all variants for AFR (661 samples) would be very large. A narrower scope (e.g., deleterious variants in the HBB region relevant to sickle cell disease in African populations) would be much more feasible.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -6373,9 +6290,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 33.36,
-    "cost_usd": 0.05885975,
-    "num_turns": 4
+    "duration_seconds": 2.27
   },
   {
     "id": "t4_06",
@@ -6434,6 +6349,7 @@
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -6450,19 +6366,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 31.63,
-    "cost_usd": 0.04916925,
-    "num_turns": 4
+    "duration_seconds": 4.39
   },
   {
     "id": "t4_07",
@@ -6486,18 +6400,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "The request is very broad \u2014 analyzing all variants across all chromosomes for South Asians (SAS) would be an extremely large workload. Could you narrow the scope? For example: (1) a specific chromosome (e.g., chromosome 22), (2) a specific genomic region or gene (e.g., HLA, BRCA1, APOE, CYP2D6), (3) a disease context (e.g., Alzheimer's, pharmacogenomics, sickle cell), or (4) a variant focus (e.g., common variants, rare variants, deleterious variants)?"
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "The request is very broad \u2014 analyzing all variants across all chromosomes for South Asians (SAS) would be an extremely large workload. Could you narrow the scope? For example: (1) a specific chromosome (e.g., chromosome 22), (2) a specific genomic region or gene (e.g., HLA, BRCA1, APOE, CYP2D6), (3) a disease context (e.g., Alzheimer's, pharmacogenomics, sickle cell), or (4) a variant focus (e.g., common variants, rare variants, deleterious variants)?",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -6511,9 +6426,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 27.91,
-    "cost_usd": 0.054037749999999996,
-    "num_turns": 4
+    "duration_seconds": 2.46
   },
   {
     "id": "t4_08",
@@ -6538,18 +6451,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "rare",
-      "clarification_needed": true,
-      "clarification_reason": "1) 'Asian groups' was interpreted as East Asian (EAS) vs South Asian (SAS) super-populations. If you meant specific sub-populations (e.g., CHB, JPT, CHS, CDX, KHV for East Asian; GIH, PJL, BEB, STU, ITU for South Asian), please specify. 2) No genomic region or chromosome was specified \u2014 this defaults to a genome-wide analysis across all autosomes, which is very large. Consider specifying a chromosome or region of interest to reduce scope."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "1) 'Asian groups' was interpreted as East Asian (EAS) vs South Asian (SAS) super-populations. If you meant specific sub-populations (e.g., CHB, JPT, CHS, CDX, KHV for East Asian; GIH, PJL, BEB, STU, ITU for South Asian), please specify. 2) No genomic region or chromosome was specified \u2014 this defaults to a genome-wide analysis across all autosomes, which is very large. Consider specifying a chromosome or region of interest to reduce scope.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -6564,9 +6478,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 19.0,
-    "cost_usd": 0.029722,
-    "num_turns": 2
+    "duration_seconds": 2.46
   },
   {
     "id": "t4_09",
@@ -6588,8 +6500,10 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "region_analysis",
-      "populations": [],
+      "analysis_type": "single_population",
+      "populations": [
+        "EUR"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -6601,33 +6515,34 @@
       ],
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "No population specified. Which population(s) would you like to analyze? Options include super-populations (AFR, AMR, EAS, EUR, SAS) or specific sub-populations (e.g., GBR, YRI, CHB). You could also compare populations or analyze across all of them."
+      "clarification_reason": "Population is not specified. Assuming European (EUR) by default, please clarify population(s) for accurate analysis."
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Which population(s) would you like to analyze? Options include super-populations (AFR, AMR, EAS, EUR, SAS) or specific sub-populations (e.g., GBR, YRI, CHB). You could also compare populations or analyze across all of them.",
+      "clarification_reason_pred": "Population is not specified. Assuming European (EUR) by default, please clarify population(s) for accurate analysis.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "EUR"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 31.61,
-    "cost_usd": 0.06228399999999999,
-    "num_turns": 5
+    "duration_seconds": 2.36
   },
   {
     "id": "t4_10",
@@ -6644,28 +6559,41 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "region_analysis",
-      "populations": [],
+      "analysis_type": "multi_population",
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "chromosomes": [
         "17"
       ],
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "Your request is missing several key details needed to plan a workflow: (1) Population(s): Which population(s) do you want to analyze? For example, European (EUR), African (AFR), East Asian (EAS), or a specific sub-population like GBR or YRI. (2) Region or scope: Do you want the entire chromosome 17, or a specific gene/region on it (e.g., BRCA1, TP53)? Narrowing to a region would significantly reduce data transfer and compute time. (3) Analysis goal: Are you comparing populations, looking at a single population, or something else? (4) Variant focus: All variants, common, rare, or deleterious?"
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "Your request is missing several key details needed to plan a workflow: (1) Population(s): Which population(s) do you want to analyze? For example, European (EUR), African (AFR), East Asian (EAS), or a specific sub-population like GBR or YRI. (2) Region or scope: Do you want the entire chromosome 17, or a specific gene/region on it (e.g., BRCA1, TP53)? Narrowing to a region would significantly reduce data transfer and compute time. (3) Analysis goal: Are you comparing populations, looking at a single population, or something else? (4) Variant focus: All variants, common, rare, or deleterious?",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [
         "17"
       ],
@@ -6676,9 +6604,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 35.53,
-    "cost_usd": 0.07033325,
-    "num_turns": 5
+    "duration_seconds": 2.04
   },
   {
     "id": "t4_11",
@@ -6701,7 +6627,13 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -6712,34 +6644,39 @@
         }
       ],
       "focus": "deleterious",
-      "clarification_needed": true,
-      "clarification_reason": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). Alternatively, say 'all populations' for a multi-population analysis."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). Alternatively, say 'all populations' for a multi-population analysis.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 24.53,
-    "cost_usd": 0.047806999999999995,
-    "num_turns": 4
+    "duration_seconds": 2.38
   },
   {
     "id": "t4_12",
@@ -6764,16 +6701,17 @@
       "regions": null,
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "Your question about the Japanese (JPT) population is too broad to generate a specific workflow. Could you clarify: (1) What genomic region(s) or chromosome(s) are you interested in? (e.g., HLA region, BRCA1, whole genome, a specific chromosome) (2) What is the research goal? (e.g., identifying rare variants, comparing with another population, studying a disease context like pharmacogenomics or Alzheimer's) (3) What type of variants are you focused on? (e.g., all variants, common, rare, deleterious). For reference, JPT (Japanese in Tokyo) has 104 samples in the 1000 Genomes Project and belongs to the East Asian (EAS) super-population."
+      "clarification_reason": "The research question is too vague about specific analysis goals, regions, or variant types; please specify what kind of analysis or genomic focus is desired for the Japanese population."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Your question about the Japanese (JPT) population is too broad to generate a specific workflow. Could you clarify: (1) What genomic region(s) or chromosome(s) are you interested in? (e.g., HLA region, BRCA1, whole genome, a specific chromosome) (2) What is the research goal? (e.g., identifying rare variants, comparing with another population, studying a disease context like pharmacogenomics or Alzheimer's) (3) What type of variants are you focused on? (e.g., all variants, common, rare, deleterious). For reference, JPT (Japanese in Tokyo) has 104 samples in the 1000 Genomes Project and belongs to the East Asian (EAS) super-population.",
+      "clarification_reason_pred": "The research question is too vague about specific analysis goals, regions, or variant types; please specify what kind of analysis or genomic focus is desired for the Japanese population.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
@@ -6788,9 +6726,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 37.35,
-    "cost_usd": 0.055841,
-    "num_turns": 4
+    "duration_seconds": 2.5
   },
   {
     "id": "t4_13",
@@ -6807,35 +6743,30 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "population_comparison",
       "populations": [
-        "MXL",
-        "PUR",
-        "CLM",
-        "PEL"
+        "AMR"
       ],
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "The request to compare Ad Mixed American (AMR) sub-populations (MXL, PUR, CLM, PEL) is understood, but the scope is very broad \u2014 it would default to all autosomes (1\u201322) with all variant types. Could you narrow the analysis by specifying: (1) a genomic region or gene of interest (e.g., HLA, BRCA1, APOE), (2) specific chromosomes, or (3) a variant focus (common, rare, or deleterious)? This would significantly reduce computation time and data transfer."
+      "clarification_reason": "The request is to compare American populations, but only one super-population code 'AMR' was identified. Please specify which American sub-populations (e.g., MXL, PUR, CLM, PEL) to compare, or clarify if you mean a comparison of multiple sub-populations within AMR."
     },
     "scores": {
-      "pops_match": false,
+      "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": false,
+      "region_names_match": true,
+      "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "The request to compare Ad Mixed American (AMR) sub-populations (MXL, PUR, CLM, PEL) is understood, but the scope is very broad \u2014 it would default to all autosomes (1\u201322) with all variant types. Could you narrow the analysis by specifying: (1) a genomic region or gene of interest (e.g., HLA, BRCA1, APOE), (2) specific chromosomes, or (3) a variant focus (common, rare, or deleterious)? This would significantly reduce computation time and data transfer.",
+      "clarification_reason_pred": "The request is to compare American populations, but only one super-population code 'AMR' was identified. Please specify which American sub-populations (e.g., MXL, PUR, CLM, PEL) to compare, or clarify if you mean a comparison of multiple sub-populations within AMR.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "CLM",
-        "MXL",
-        "PEL",
-        "PUR"
+        "AMR"
       ],
       "pred_chroms": [],
       "pred_regions": [],
@@ -6845,9 +6776,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 32.47,
-    "cost_usd": 0.05876899999999999,
-    "num_turns": 4
+    "duration_seconds": 2.75
   },
   {
     "id": "t4_14",
@@ -6870,7 +6799,9 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "AFR"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -6880,35 +6811,36 @@
           "end": 5229395
         }
       ],
-      "focus": "deleterious",
+      "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "No population specified. Sickle cell disease is particularly relevant to African (AFR) populations due to the protective effect of sickle cell trait against malaria, but it can be studied across multiple populations. Please specify which population(s) you'd like to analyze \u2014 e.g., AFR, EUR, or all populations."
+      "clarification_reason": "No specific population specified; defaulting to African ancestry (AFR) due to disease context. Please specify populations if different."
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Sickle cell disease is particularly relevant to African (AFR) populations due to the protective effect of sickle cell trait against malaria, but it can be studied across multiple populations. Please specify which population(s) you'd like to analyze \u2014 e.g., AFR, EUR, or all populations.",
+      "clarification_reason_pred": "No specific population specified; defaulting to African ancestry (AFR) due to disease context. Please specify populations if different.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 29.17,
-    "cost_usd": 0.05104924999999999,
-    "num_turns": 4
+    "duration_seconds": 3.01
   },
   {
     "id": "t4_15",
@@ -6932,18 +6864,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "The request is very broad \u2014 \"genetic data for East Asians\" could mean all 22 autosomes plus sex chromosomes, which is a very large dataset (~15+ GB). Could you clarify: (1) Are you interested in a specific chromosome (e.g., chromosome 6, 22)? (2) A specific genomic region or gene (e.g., HLA, BRCA1, APOE)? (3) A particular research context (e.g., drug metabolism, disease risk)? (4) A variant focus (e.g., common variants, rare variants, deleterious)? This will help scope the workflow to a manageable and meaningful analysis."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "The request is very broad \u2014 \"genetic data for East Asians\" could mean all 22 autosomes plus sex chromosomes, which is a very large dataset (~15+ GB). Could you clarify: (1) Are you interested in a specific chromosome (e.g., chromosome 6, 22)? (2) A specific genomic region or gene (e.g., HLA, BRCA1, APOE)? (3) A particular research context (e.g., drug metabolism, disease risk)? (4) A variant focus (e.g., common variants, rare variants, deleterious)? This will help scope the workflow to a manageable and meaningful analysis.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -6957,9 +6890,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 20.96,
-    "cost_usd": 0.0302615,
-    "num_turns": 2
+    "duration_seconds": 2.22
   },
   {
     "id": "t4_16",
@@ -6991,18 +6922,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "No genomic region, chromosome, or research context was specified. Analyzing all five European subpopulations (CEU, TSI, FIN, GBR, IBS) across all 22 autosomes would be a very large workflow. Could you narrow the scope by specifying: (1) a chromosome (e.g., chromosome 22), (2) a genomic region or gene (e.g., HLA, BRCA1, APOE), (3) a research context (e.g., Alzheimer's, drug metabolism), or (4) a variant focus (e.g., rare variants, deleterious variants)?"
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No genomic region, chromosome, or research context was specified. Analyzing all five European subpopulations (CEU, TSI, FIN, GBR, IBS) across all 22 autosomes would be a very large workflow. Could you narrow the scope by specifying: (1) a chromosome (e.g., chromosome 22), (2) a genomic region or gene (e.g., HLA, BRCA1, APOE), (3) a research context (e.g., Alzheimer's, drug metabolism), or (4) a variant focus (e.g., rare variants, deleterious variants)?",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -7024,9 +6956,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 34.19,
-    "cost_usd": 0.059761249999999995,
-    "num_turns": 4
+    "duration_seconds": 2.37
   },
   {
     "id": "t4_17",
@@ -7049,7 +6979,13 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -7060,34 +6996,39 @@
         }
       ],
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "Your request is too vague to generate a meaningful workflow. I identified the CFTR gene region (chr7:117,120,017-117,308,718), but I need more details: (1) Which population(s) should be analyzed? (e.g., European, African, all populations, etc.) (2) What kind of analysis do you want? (e.g., single population survey, comparison between populations, etc.) (3) Any specific variant focus? (e.g., rare variants, deleterious/pathogenic variants, common variants, or all?) Please clarify so I can build a proper workflow plan."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "Your request is too vague to generate a meaningful workflow. I identified the CFTR gene region (chr7:117,120,017-117,308,718), but I need more details: (1) Which population(s) should be analyzed? (e.g., European, African, all populations, etc.) (2) What kind of analysis do you want? (e.g., single population survey, comparison between populations, etc.) (3) Any specific variant focus? (e.g., rare variants, deleterious/pathogenic variants, common variants, or all?) Please clarify so I can build a proper workflow plan.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ]
     },
-    "duration_seconds": 29.1,
-    "cost_usd": 0.0549765,
-    "num_turns": 4
+    "duration_seconds": 2.6
   },
   {
     "id": "t4_18",
@@ -7110,7 +7051,13 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -7120,35 +7067,40 @@
           "end": 7687490
         }
       ],
-      "focus": "deleterious",
-      "clarification_needed": true,
-      "clarification_reason": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). Would you like to analyze all populations or a specific subset?"
+      "focus": "all_variants",
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). Would you like to analyze all populations or a specific subset?",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 25.16,
-    "cost_usd": 0.048940750000000005,
-    "num_turns": 4
+    "duration_seconds": 2.92
   },
   {
     "id": "t4_19",
@@ -7172,18 +7124,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "The request to analyze the AMR (Ad Mixed American) population is clear, but the scope is very broad. No specific genomic region, gene, chromosome, or disease context was mentioned, which would default to a genome-wide analysis across all autosomes \u2014 a very large computation. Could you clarify: (1) Is there a specific gene or genomic region of interest (e.g., HLA, BRCA1, APOE)? (2) A specific chromosome? (3) A disease or research context (e.g., pharmacogenomics, cancer risk)? (4) Should the focus be on a specific variant type (e.g., rare, common, or deleterious mutations)?"
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "The request to analyze the AMR (Ad Mixed American) population is clear, but the scope is very broad. No specific genomic region, gene, chromosome, or disease context was mentioned, which would default to a genome-wide analysis across all autosomes \u2014 a very large computation. Could you clarify: (1) Is there a specific gene or genomic region of interest (e.g., HLA, BRCA1, APOE)? (2) A specific chromosome? (3) A disease or research context (e.g., pharmacogenomics, cancer risk)? (4) Should the focus be on a specific variant type (e.g., rare, common, or deleterious mutations)?",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -7197,9 +7150,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 24.45,
-    "cost_usd": 0.03171725,
-    "num_turns": 2
+    "duration_seconds": 2.31
   },
   {
     "id": "t4_20",
@@ -7230,6 +7181,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -7248,9 +7200,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 9.73,
-    "cost_usd": 0.01331775,
-    "num_turns": 2
+    "duration_seconds": 3.1
   },
   {
     "id": "t4_21",
@@ -7265,7 +7215,7 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "population_comparison",
       "populations": [
         "YRI",
         "LWK",
@@ -7278,18 +7228,19 @@
       "chromosomes": null,
       "regions": null,
       "focus": "deleterious",
-      "clarification_needed": true,
-      "clarification_reason": "You mentioned 'some' African subpopulations but did not specify which ones. The available African (AFR) subpopulations are: YRI (Yoruba, Nigeria), LWK (Luhya, Kenya), GWD (Gambian), MSL (Mende, Sierra Leone), ESN (Esan, Nigeria), ASW (African Ancestry in SW USA), and ACB (African Caribbean in Barbados). All 7 have been included by default \u2014 please confirm which you'd like to compare. Additionally, no genomic region or chromosome was specified; running genome-wide with deleterious focus across all 7 subpopulations would be very large. Consider narrowing to specific chromosomes or regions of interest."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "You mentioned 'some' African subpopulations but did not specify which ones. The available African (AFR) subpopulations are: YRI (Yoruba, Nigeria), LWK (Luhya, Kenya), GWD (Gambian), MSL (Mende, Sierra Leone), ESN (Esan, Nigeria), ASW (African Ancestry in SW USA), and ACB (African Caribbean in Barbados). All 7 have been included by default \u2014 please confirm which you'd like to compare. Additionally, no genomic region or chromosome was specified; running genome-wide with deleterious focus across all 7 subpopulations would be very large. Consider narrowing to specific chromosomes or regions of interest.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
@@ -7307,9 +7258,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 31.98,
-    "cost_usd": 0.06325675,
-    "num_turns": 4
+    "duration_seconds": 3.29
   },
   {
     "id": "t4_22",
@@ -7323,10 +7272,47 @@
       "focus": "rare",
       "clarification_needed": true
     },
-    "predicted": null,
-    "scores": null,
-    "error": "claude -p exited with code 1: ",
-    "duration_seconds": 31.27
+    "predicted": {
+      "analysis_type": "multi_population",
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
+      "chromosomes": null,
+      "regions": null,
+      "focus": "rare",
+      "clarification_needed": true,
+      "clarification_reason": "No populations specified. The request is for rare variants genome-wide, but needs specification of populations or ancestry groups for the analysis."
+    },
+    "scores": {
+      "pops_match": false,
+      "chroms_match": true,
+      "regions_match": true,
+      "region_names_match": true,
+      "full_match": false,
+      "clarification_needed_gt": true,
+      "clarification_needed_pred": true,
+      "clarification_reason_pred": "No populations specified. The request is for rare variants genome-wide, but needs specification of populations or ancestry groups for the analysis.",
+      "clarification_correct": true,
+      "invalid_terms": [],
+      "invalid_avoided": true,
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
+      "pred_chroms": [],
+      "pred_regions": [],
+      "gt_pops": [],
+      "gt_chroms": [],
+      "gt_regions": []
+    },
+    "duration_seconds": 2.54
   },
   {
     "id": "t4_23",
@@ -7343,7 +7329,7 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "region_analysis",
       "populations": [],
       "chromosomes": [
         "11"
@@ -7351,16 +7337,17 @@
       "regions": null,
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "No population(s) specified. Please indicate which population(s) you want to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, CHB, etc.). Additionally: (1) Are you interested in all variants, common variants, rare variants, or deleterious variants? (2) Is this focused on a specific region of chromosome 11 (e.g., the HBB gene for sickle cell/thalassemia research), or the entire chromosome?"
+      "clarification_reason": "No population specified for the analysis; populations are required."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population(s) specified. Please indicate which population(s) you want to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, CHB, etc.). Additionally: (1) Are you interested in all variants, common variants, rare variants, or deleterious variants? (2) Is this focused on a specific region of chromosome 11 (e.g., the HBB gene for sickle cell/thalassemia research), or the entire chromosome?",
+      "clarification_reason_pred": "No population specified for the analysis; populations are required.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
@@ -7375,9 +7362,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 26.48,
-    "cost_usd": 0.05108025,
-    "num_turns": 4
+    "duration_seconds": 2.31
   },
   {
     "id": "t4_24",
@@ -7400,7 +7385,9 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "ALL"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -7411,34 +7398,35 @@
         }
       ],
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "No population specified. Please indicate which population(s) to analyze \u2014 for example, a single population (e.g., EUR, EAS), a comparison (e.g., EUR vs AFR), or all populations (multi_population). Available super-populations: AFR, AMR, EAS, EUR, SAS."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Please indicate which population(s) to analyze \u2014 for example, a single population (e.g., EUR, EAS), a comparison (e.g., EUR vs AFR), or all populations (multi_population). Available super-populations: AFR, AMR, EAS, EUR, SAS.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "ALL"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 25.68,
-    "cost_usd": 0.050164,
-    "num_turns": 4
+    "duration_seconds": 2.62
   },
   {
     "id": "t4_25",
@@ -7455,28 +7443,41 @@
       "clarification_needed": true
     },
     "predicted": {
-      "analysis_type": "multi_population",
-      "populations": [],
+      "analysis_type": "population_comparison",
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "chromosomes": [
         "1"
       ],
       "regions": null,
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "No specific populations were mentioned. Please specify which populations you'd like to compare. Options include super-populations (AFR, AMR, EAS, EUR, SAS) or sub-populations (e.g., GBR, YRI, CHB, JPT, etc.). For example: 'Compare Europeans and East Asians on chromosome 1' or 'Compare all five super-populations on chromosome 1'."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No specific populations were mentioned. Please specify which populations you'd like to compare. Options include super-populations (AFR, AMR, EAS, EUR, SAS) or sub-populations (e.g., GBR, YRI, CHB, JPT, etc.). For example: 'Compare Europeans and East Asians on chromosome 1' or 'Compare all five super-populations on chromosome 1'.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
       "pred_chroms": [
         "1"
       ],
@@ -7487,9 +7488,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 28.18,
-    "cost_usd": 0.05903125,
-    "num_turns": 5
+    "duration_seconds": 2.22
   },
   {
     "id": "t4_26",
@@ -7520,6 +7519,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -7538,9 +7538,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 14.53,
-    "cost_usd": 0.018854750000000003,
-    "num_turns": 2
+    "duration_seconds": 1.93
   },
   {
     "id": "t4_27",
@@ -7599,37 +7597,36 @@
       ],
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "You mentioned \"a few populations\" but didn't specify which ones. Please indicate which populations you'd like to include. Available options include super-populations (AFR, AMR, EAS, EUR, SAS) or specific sub-populations (e.g., GBR, YRI, CHB, JPT, etc.). Also, would you like to focus on a specific variant type (e.g., deleterious/harmful variants, common variants, or rare variants)?"
+      "clarification_reason": "No specific populations mentioned; please specify which populations to include in the cancer genetics study."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "You mentioned \"a few populations\" but didn't specify which ones. Please indicate which populations you'd like to include. Available options include super-populations (AFR, AMR, EAS, EUR, SAS) or specific sub-populations (e.g., GBR, YRI, CHB, JPT, etc.). Also, would you like to focus on a specific variant type (e.g., deleterious/harmful variants, common variants, or rare variants)?",
+      "clarification_reason_pred": "No specific populations mentioned; please specify which populations to include in the cancer genetics study.",
       "clarification_correct": true,
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1",
-        "BRCA2",
-        "TP53"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)",
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1",
-        "BRCA2",
-        "TP53"
+        "('BRCA1', '17', 43044295, 43125483)",
+        "('BRCA2', '13', 32315086, 32400266)",
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 20.64,
-    "cost_usd": 0.034547499999999995,
-    "num_turns": 2
+    "duration_seconds": 4.06
   },
   {
     "id": "t4_28",
@@ -7652,7 +7649,9 @@
     },
     "predicted": {
       "analysis_type": "region_analysis",
-      "populations": [],
+      "populations": [
+        "EUR"
+      ],
       "chromosomes": null,
       "regions": [
         {
@@ -7663,34 +7662,35 @@
         }
       ],
       "focus": "rare",
-      "clarification_needed": true,
-      "clarification_reason": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). Alternatively, specify 'all populations' for a multi-population analysis."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "No population specified. Please indicate which population(s) to analyze (e.g., EUR, AFR, EAS, SAS, AMR, or specific sub-populations like GBR, YRI, etc.). Alternatively, specify 'all populations' for a multi-population analysis.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [],
       "invalid_avoided": true,
-      "pred_pops": [],
+      "pred_pops": [
+        "EUR"
+      ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 24.7,
-    "cost_usd": 0.04750125,
-    "num_turns": 4
+    "duration_seconds": 2.49
   },
   {
     "id": "t4_29",
@@ -7713,11 +7713,7 @@
     "predicted": {
       "analysis_type": "multi_population",
       "populations": [
-        "GIH",
-        "PJL",
-        "BEB",
-        "STU",
-        "ITU"
+        "SAS"
       ],
       "chromosomes": null,
       "regions": null,
@@ -7726,9 +7722,10 @@
       "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -7737,11 +7734,7 @@
       "invalid_terms": [],
       "invalid_avoided": true,
       "pred_pops": [
-        "BEB",
-        "GIH",
-        "ITU",
-        "PJL",
-        "STU"
+        "SAS"
       ],
       "pred_chroms": [],
       "pred_regions": [],
@@ -7755,9 +7748,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 25.24,
-    "cost_usd": 0.01821825,
-    "num_turns": 2
+    "duration_seconds": 2.39
   },
   {
     "id": "t4_30",
@@ -7771,10 +7762,47 @@
       "focus": "all_variants",
       "clarification_needed": true
     },
-    "predicted": null,
-    "scores": null,
-    "error": "claude -p exited with code 1: ",
-    "duration_seconds": 36.52
+    "predicted": {
+      "analysis_type": "multi_population",
+      "populations": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
+      "chromosomes": null,
+      "regions": null,
+      "focus": "all_variants",
+      "clarification_needed": true,
+      "clarification_reason": "Research question is too vague; no population, specific regions, chromosomes, or variant focus provided. Please specify populations, regions or chromosomes, and variant focus to enable precise workflow planning."
+    },
+    "scores": {
+      "pops_match": false,
+      "chroms_match": true,
+      "regions_match": true,
+      "region_names_match": true,
+      "full_match": false,
+      "clarification_needed_gt": true,
+      "clarification_needed_pred": true,
+      "clarification_reason_pred": "Research question is too vague; no population, specific regions, chromosomes, or variant focus provided. Please specify populations, regions or chromosomes, and variant focus to enable precise workflow planning.",
+      "clarification_correct": true,
+      "invalid_terms": [],
+      "invalid_avoided": true,
+      "pred_pops": [
+        "AFR",
+        "AMR",
+        "EAS",
+        "EUR",
+        "SAS"
+      ],
+      "pred_chroms": [],
+      "pred_regions": [],
+      "gt_pops": [],
+      "gt_chroms": [],
+      "gt_regions": []
+    },
+    "duration_seconds": 2.41
   },
   {
     "id": "t5_01",
@@ -7804,7 +7832,7 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "region_analysis",
       "populations": [
         "SAS"
       ],
@@ -7819,16 +7847,17 @@
       ],
       "focus": "rare",
       "clarification_needed": true,
-      "clarification_reason": "\"Central Asian\" is not a recognized population or super-population in the 1000 Genomes Project. Available populations with potential relevance include: South Asian (SAS) sub-populations such as GIH (Gujarati Indians in Houston), PJL (Punjabi in Lahore), BEB (Bengali in Bangladesh), STU (Sri Lankan Tamil in UK), ITU (Indian Telugu in UK). There is no Central Asian population in the dataset. Please clarify which available population you would like to use in place of \"Central Asian,\" or confirm if you intended one of the existing groups (e.g., EAS for East Asian)."
+      "clarification_reason": "Central Asian population is not a recognized 1000 Genomes population code; please specify which sub-population or use South Asian (SAS) only."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "\"Central Asian\" is not a recognized population or super-population in the 1000 Genomes Project. Available populations with potential relevance include: South Asian (SAS) sub-populations such as GIH (Gujarati Indians in Houston), PJL (Punjabi in Lahore), BEB (Bengali in Bangladesh), STU (Sri Lankan Tamil in UK), ITU (Indian Telugu in UK). There is no Central Asian population in the dataset. Please clarify which available population you would like to use in place of \"Central Asian,\" or confirm if you intended one of the existing groups (e.g., EAS for East Asian).",
+      "clarification_reason_pred": "Central Asian population is not a recognized 1000 Genomes population code; please specify which sub-population or use South Asian (SAS) only.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -7842,19 +7871,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "SAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ]
     },
-    "duration_seconds": 20.25,
-    "cost_usd": 0.032115000000000005,
-    "num_turns": 2
+    "duration_seconds": 2.5
   },
   {
     "id": "t5_02",
@@ -7878,7 +7905,7 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "single_population",
       "populations": [
         "FIN",
         "GBR"
@@ -7887,16 +7914,17 @@
       "regions": null,
       "focus": "common",
       "clarification_needed": true,
-      "clarification_reason": "Chromosome 25 does not exist in the human genome. Human autosomes are numbered 1-22, plus sex chromosomes X and Y. The 1000 Genomes Project provides data for chromosomes 1-22, X, and Y. Please specify a valid chromosome number."
+      "clarification_reason": "Chromosome 25 does not exist in human genome; please specify a valid chromosome number between 1-22 or X."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Chromosome 25 does not exist in the human genome. Human autosomes are numbered 1-22, plus sex chromosomes X and Y. The 1000 Genomes Project provides data for chromosomes 1-22, X, and Y. Please specify a valid chromosome number.",
+      "clarification_reason_pred": "Chromosome 25 does not exist in human genome; please specify a valid chromosome number between 1-22 or X.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -7918,9 +7946,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 24.82,
-    "cost_usd": 0.05192575000000001,
-    "num_turns": 5
+    "duration_seconds": 2.17
   },
   {
     "id": "t5_03",
@@ -7944,7 +7970,7 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "region_analysis",
       "populations": [
         "AFR",
         "EAS"
@@ -7952,24 +7978,25 @@
       "chromosomes": null,
       "regions": [
         {
-          "name": "FOXP2",
+          "name": "custom",
           "chromosome": "7",
-          "start": 114086327,
-          "end": 114693772
+          "start": 113700000,
+          "end": 114100000
         }
       ],
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "FOXP2 is not in the pre-defined genomic regions table. The coordinates provided (chr7:114,086,327-114,693,772, GRCh37/hg19) are based on general knowledge and should be verified before running the workflow. Please confirm these coordinates are acceptable or provide exact boundaries for your region of interest."
+      "clarification_reason": "FOXP2 gene coordinates are not specified in the known regions; a custom region around FOXP2 must be defined or clarified with exact coordinates."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "FOXP2 is not in the pre-defined genomic regions table. The coordinates provided (chr7:114,086,327-114,693,772, GRCh37/hg19) are based on general knowledge and should be verified before running the workflow. Please confirm these coordinates are acceptable or provide exact boundaries for your region of interest.",
+      "clarification_reason_pred": "FOXP2 gene coordinates are not specified in the known regions; a custom region around FOXP2 must be defined or clarified with exact coordinates.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -7984,7 +8011,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "FOXP2"
+        "('custom', '7', 113700000, 114100000)"
       ],
       "gt_pops": [
         "AFR",
@@ -7993,9 +8020,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 29.32,
-    "cost_usd": 0.04252425,
-    "num_turns": 3
+    "duration_seconds": 4.0
   },
   {
     "id": "t5_04",
@@ -8039,6 +8064,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -8056,7 +8082,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ],
       "gt_pops": [
         "YRI"
@@ -8064,9 +8090,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 23.34,
-    "cost_usd": 0.0461255,
-    "num_turns": 4
+    "duration_seconds": 3.52
   },
   {
     "id": "t5_05",
@@ -8092,30 +8116,29 @@
       ]
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "population_comparison",
       "populations": [
         "EAS",
         "CHB",
         "JPT",
-        "CHS",
-        "CDX",
-        "KHV"
+        "CHS"
       ],
       "chromosomes": null,
       "regions": null,
       "focus": "common",
-      "clarification_needed": true,
-      "clarification_reason": "You mentioned \"all East Asian sub-populations including CHB, JPT, and CHS.\" The full set of EAS sub-populations in the 1000 Genomes Project is CHB, JPT, CHS, CDX, and KHV. I have included all five. Please confirm this is correct, or specify if you only want the three you listed. Additionally, no genomic region or chromosome was specified, so this will default to a genome-wide analysis across all autosomes, which is computationally intensive. If you'd like to narrow the scope to specific chromosomes or regions, please let me know."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": false,
+      "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "You mentioned \"all East Asian sub-populations including CHB, JPT, and CHS.\" The full set of EAS sub-populations in the 1000 Genomes Project is CHB, JPT, CHS, CDX, and KHV. I have included all five. Please confirm this is correct, or specify if you only want the three you listed. Additionally, no genomic region or chromosome was specified, so this will default to a genome-wide analysis across all autosomes, which is computationally intensive. If you'd like to narrow the scope to specific chromosomes or regions, please let me know.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [
         {
           "term": "Compare EAS with all East Asian sub-populations",
@@ -8124,12 +8147,10 @@
       ],
       "invalid_avoided": true,
       "pred_pops": [
-        "CDX",
         "CHB",
         "CHS",
         "EAS",
-        "JPT",
-        "KHV"
+        "JPT"
       ],
       "pred_chroms": [],
       "pred_regions": [],
@@ -8142,9 +8163,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 25.18,
-    "cost_usd": 0.038981,
-    "num_turns": 2
+    "duration_seconds": 6.29
   },
   {
     "id": "t5_06",
@@ -8179,16 +8198,17 @@
       "regions": null,
       "focus": "rare",
       "clarification_needed": true,
-      "clarification_reason": "The 1000 Genomes Project does not include an \"Oceanian\" population. There is no valid population code for Oceanian, Melanesian, Polynesian, or similar groups in the available dataset. Available super-populations are: AFR (African), AMR (Ad Mixed American), EAS (East Asian), EUR (European), and SAS (South Asian). Please specify a valid population to compare with Puerto Rican (PUR), or clarify which population you intended."
+      "clarification_reason": "Oceanian populations are not represented in 1000 Genomes Project population codes; please specify populations with available codes."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "The 1000 Genomes Project does not include an \"Oceanian\" population. There is no valid population code for Oceanian, Melanesian, Polynesian, or similar groups in the available dataset. Available super-populations are: AFR (African), AMR (Ad Mixed American), EAS (East Asian), EUR (European), and SAS (South Asian). Please specify a valid population to compare with Puerto Rican (PUR), or clarify which population you intended.",
+      "clarification_reason_pred": "Oceanian populations are not represented in 1000 Genomes Project population codes; please specify populations with available codes.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8212,9 +8232,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 16.81,
-    "cost_usd": 0.027254,
-    "num_turns": 2
+    "duration_seconds": 2.98
   },
   {
     "id": "t5_07",
@@ -8259,16 +8277,17 @@
       ],
       "focus": "deleterious",
       "clarification_needed": true,
-      "clarification_reason": "You specified 'chromosome 0', which is not a valid chromosome. CYP2D6 is located on chromosome 22 (coordinates 22:42518900-42528000). Did you mean chromosome 22, or was 'chromosome 0' a typo? If you confirm, the workflow will proceed using CYP2D6's known location on chromosome 22."
+      "clarification_reason": "Chromosome 0 is invalid; CYP2D6 is on chromosome 22, so chromosome should not be set or corrected to 22."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "You specified 'chromosome 0', which is not a valid chromosome. CYP2D6 is located on chromosome 22 (coordinates 22:42518900-42528000). Did you mean chromosome 22, or was 'chromosome 0' a typo? If you confirm, the workflow will proceed using CYP2D6's known location on chromosome 22.",
+      "clarification_reason_pred": "Chromosome 0 is invalid; CYP2D6 is on chromosome 22, so chromosome should not be set or corrected to 22.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8282,19 +8301,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ],
       "gt_pops": [
         "GIH"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "CYP2D6"
+        "('CYP2D6', '22', 42518900, 42528000)"
       ]
     },
-    "duration_seconds": 27.94,
-    "cost_usd": 0.05689925,
-    "num_turns": 4
+    "duration_seconds": 3.74
   },
   {
     "id": "t5_08",
@@ -8324,26 +8341,20 @@
         "CEU"
       ],
       "chromosomes": null,
-      "regions": [
-        {
-          "name": "INS",
-          "chromosome": "11",
-          "start": 2159779,
-          "end": 2161209
-        }
-      ],
+      "regions": null,
       "focus": "common",
       "clarification_needed": true,
-      "clarification_reason": "The insulin gene (INS) is not one of the pre-defined known regions in the workflow system. I've used approximate GRCh37/hg19 coordinates for the INS gene on chromosome 11 (11:2,159,779-2,161,209, ~1.4 kb), but please confirm: (1) Are these coordinates correct for your intended region? (2) Did you mean the broader INS-IGF2 locus or just the INS gene itself? A wider region (e.g., 11:2,100,000-2,250,000) might capture relevant regulatory elements and neighboring variants. Please specify exact coordinates or confirm the scope."
+      "clarification_reason": "The 'insulin region' on chromosome 11 is mentioned but no specific coordinates provided. Please provide exact genomic coordinates or a known region name for the insulin gene area."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": false,
-      "regions_match": false,
+      "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "The insulin gene (INS) is not one of the pre-defined known regions in the workflow system. I've used approximate GRCh37/hg19 coordinates for the INS gene on chromosome 11 (11:2,159,779-2,161,209, ~1.4 kb), but please confirm: (1) Are these coordinates correct for your intended region? (2) Did you mean the broader INS-IGF2 locus or just the INS gene itself? A wider region (e.g., 11:2,100,000-2,250,000) might capture relevant regulatory elements and neighboring variants. Please specify exact coordinates or confirm the scope.",
+      "clarification_reason_pred": "The 'insulin region' on chromosome 11 is mentioned but no specific coordinates provided. Please provide exact genomic coordinates or a known region name for the insulin gene area.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8356,9 +8367,7 @@
         "CEU"
       ],
       "pred_chroms": [],
-      "pred_regions": [
-        "INS"
-      ],
+      "pred_regions": [],
       "gt_pops": [
         "CEU"
       ],
@@ -8367,9 +8376,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 32.72,
-    "cost_usd": 0.04805825,
-    "num_turns": 3
+    "duration_seconds": 4.03
   },
   {
     "id": "t5_09",
@@ -8411,6 +8418,7 @@
       "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -8439,9 +8447,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 23.26,
-    "cost_usd": 0.0362175,
-    "num_turns": 4
+    "duration_seconds": 3.0
   },
   {
     "id": "t5_10",
@@ -8471,8 +8477,9 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "region_analysis",
       "populations": [
+        "ASW",
         "LWK"
       ],
       "chromosomes": null,
@@ -8485,18 +8492,19 @@
         }
       ],
       "focus": "rare",
-      "clarification_needed": true,
-      "clarification_reason": "\"Northern African\" does not correspond to any available 1000 Genomes population. The African (AFR) super-population includes only sub-Saharan groups: YRI (Yoruba, Nigeria), LWK (Luhya, Kenya), GWD (Gambian), MSL (Mende, Sierra Leone), ESN (Esan, Nigeria), ASW (African Ancestry in SW USA), and ACB (African Caribbean in Barbados). North African populations are not represented in the 1000 Genomes Project. Did you mean one of these sub-Saharan populations, or the AFR super-population as a whole?"
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "\"Northern African\" does not correspond to any available 1000 Genomes population. The African (AFR) super-population includes only sub-Saharan groups: YRI (Yoruba, Nigeria), LWK (Luhya, Kenya), GWD (Gambian), MSL (Mende, Sierra Leone), ESN (Esan, Nigeria), ASW (African Ancestry in SW USA), and ACB (African Caribbean in Barbados). North African populations are not represented in the 1000 Genomes Project. Did you mean one of these sub-Saharan populations, or the AFR super-population as a whole?",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [
         {
           "term": "Northern African",
@@ -8505,23 +8513,22 @@
       ],
       "invalid_avoided": true,
       "pred_pops": [
+        "ASW",
         "LWK"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "LWK"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 26.04,
-    "cost_usd": 0.04689825,
-    "num_turns": 3
+    "duration_seconds": 3.78
   },
   {
     "id": "t5_11",
@@ -8556,16 +8563,17 @@
       "regions": null,
       "focus": "common",
       "clarification_needed": true,
-      "clarification_reason": "The 1000 Genomes Project does not include a Korean population. Available East Asian (EAS) sub-populations are: CHB (Han Chinese in Beijing), JPT (Japanese in Tokyo), CHS (Han Chinese South), CDX (Chinese Dai in Xishuangbanna), and KHV (Kinh in Ho Chi Minh City). Please select a valid second population for comparison, or consider using the full EAS super-population or another East Asian sub-population as a proxy."
+      "clarification_reason": "The Japanese population (JPT) is recognized, but the Korean population is not represented in the 1000 Genomes populations. Please clarify or provide an alternative population available in the 1000 Genomes Project."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "The 1000 Genomes Project does not include a Korean population. Available East Asian (EAS) sub-populations are: CHB (Han Chinese in Beijing), JPT (Japanese in Tokyo), CHS (Han Chinese South), CDX (Chinese Dai in Xishuangbanna), and KHV (Kinh in Ho Chi Minh City). Please select a valid second population for comparison, or consider using the full EAS super-population or another East Asian sub-population as a proxy.",
+      "clarification_reason_pred": "The Japanese population (JPT) is recognized, but the Korean population is not represented in the 1000 Genomes populations. Please clarify or provide an alternative population available in the 1000 Genomes Project.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8589,9 +8597,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 22.93,
-    "cost_usd": 0.03906375,
-    "num_turns": 3
+    "duration_seconds": 4.05
   },
   {
     "id": "t5_12",
@@ -8619,19 +8625,27 @@
         "CHB"
       ],
       "chromosomes": null,
-      "regions": null,
+      "regions": [
+        {
+          "name": "custom",
+          "chromosome": "17",
+          "start": 43044295,
+          "end": 43125483
+        }
+      ],
       "focus": "deleterious",
       "clarification_needed": true,
-      "clarification_reason": "The \"HGH\" gene (Human Growth Hormone, also known as GH1) is not one of the predefined genomic regions in our reference table (which includes HLA, BRCA1, BRCA2, APOE, CYP2D6, HBB, CFTR, TP53). To proceed, please provide the GRCh37/hg19 genomic coordinates (chromosome, start, end) for the HGH/GH1 region, or confirm you mean the GH1 gene on chromosome 17 so we can look up exact coordinates. The GH1 gene is commonly cited at approximately chr17:61,995,213-61,996,904 (GRCh37) \u2014 would you like us to use those coordinates?"
+      "clarification_reason": "The user mentioned the HGH gene, but HGH is not in the known genomic regions list. Closest breast cancer gene region coordinates were used (BRCA1 on chromosome 17), but correct coordinates for HGH gene are needed or user must clarify."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
-      "regions_match": true,
-      "full_match": true,
+      "regions_match": false,
+      "region_names_match": false,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "The \"HGH\" gene (Human Growth Hormone, also known as GH1) is not one of the predefined genomic regions in our reference table (which includes HLA, BRCA1, BRCA2, APOE, CYP2D6, HBB, CFTR, TP53). To proceed, please provide the GRCh37/hg19 genomic coordinates (chromosome, start, end) for the HGH/GH1 region, or confirm you mean the GH1 gene on chromosome 17 so we can look up exact coordinates. The GH1 gene is commonly cited at approximately chr17:61,995,213-61,996,904 (GRCh37) \u2014 would you like us to use those coordinates?",
+      "clarification_reason_pred": "The user mentioned the HGH gene, but HGH is not in the known genomic regions list. Closest breast cancer gene region coordinates were used (BRCA1 on chromosome 17), but correct coordinates for HGH gene are needed or user must clarify.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8644,16 +8658,16 @@
         "CHB"
       ],
       "pred_chroms": [],
-      "pred_regions": [],
+      "pred_regions": [
+        "('custom', '17', 43044295, 43125483)"
+      ],
       "gt_pops": [
         "CHB"
       ],
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 30.35,
-    "cost_usd": 0.045217999999999994,
-    "num_turns": 3
+    "duration_seconds": 3.86
   },
   {
     "id": "t5_13",
@@ -8677,25 +8691,28 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "single_population",
       "populations": [
         "BEB",
         "SAS"
       ],
-      "chromosomes": null,
+      "chromosomes": [
+        "W"
+      ],
       "regions": null,
       "focus": "deleterious",
       "clarification_needed": true,
-      "clarification_reason": "Chromosome W does not exist in the human genome or the 1000 Genomes Project. Human autosomes are numbered 1\u201322, with sex chromosomes X and Y. Did you mean a specific chromosome number (e.g., chromosome 2, chromosome 22, or chromosome X)? Please clarify which chromosome you intended."
+      "clarification_reason": "Chromosome 'W' is invalid; human chromosomes are 1-22, X, or Y. Please specify a valid chromosome."
     },
     "scores": {
       "pops_match": true,
-      "chroms_match": true,
+      "chroms_match": false,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Chromosome W does not exist in the human genome or the 1000 Genomes Project. Human autosomes are numbered 1\u201322, with sex chromosomes X and Y. Did you mean a specific chromosome number (e.g., chromosome 2, chromosome 22, or chromosome X)? Please clarify which chromosome you intended.",
+      "clarification_reason_pred": "Chromosome 'W' is invalid; human chromosomes are 1-22, X, or Y. Please specify a valid chromosome.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8708,7 +8725,9 @@
         "BEB",
         "SAS"
       ],
-      "pred_chroms": [],
+      "pred_chroms": [
+        "W"
+      ],
       "pred_regions": [],
       "gt_pops": [
         "BEB",
@@ -8717,9 +8736,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 26.17,
-    "cost_usd": 0.0465795,
-    "num_turns": 4
+    "duration_seconds": 3.65
   },
   {
     "id": "t5_14",
@@ -8744,8 +8761,9 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "multi_population",
       "populations": [
+        "EAS",
         "AMR"
       ],
       "chromosomes": [
@@ -8753,18 +8771,19 @@
       ],
       "regions": null,
       "focus": "common",
-      "clarification_needed": true,
-      "clarification_reason": "The population code \"EAAS\" is not recognized. Did you mean \"EAS\" (East Asian)? Valid super-population codes are: AFR, AMR, EAS, EUR, SAS. Please confirm so the correct population can be included in the analysis."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "The population code \"EAAS\" is not recognized. Did you mean \"EAS\" (East Asian)? Valid super-population codes are: AFR, AMR, EAS, EUR, SAS. Please confirm so the correct population can be included in the analysis.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [
         {
           "term": "EAAS",
@@ -8773,7 +8792,8 @@
       ],
       "invalid_avoided": true,
       "pred_pops": [
-        "AMR"
+        "AMR",
+        "EAS"
       ],
       "pred_chroms": [
         "9"
@@ -8787,9 +8807,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 15.29,
-    "cost_usd": 0.023716,
-    "num_turns": 2
+    "duration_seconds": 2.81
   },
   {
     "id": "t5_15",
@@ -8842,6 +8860,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -8860,7 +8879,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ],
       "gt_pops": [
         "IBS",
@@ -8868,12 +8887,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA2"
+        "('BRCA2', '13', 32315086, 32400266)"
       ]
     },
-    "duration_seconds": 11.31,
-    "cost_usd": 0.0151165,
-    "num_turns": 2
+    "duration_seconds": 3.7
   },
   {
     "id": "t5_16",
@@ -8900,20 +8917,23 @@
       "populations": [
         "PJL"
       ],
-      "chromosomes": null,
+      "chromosomes": [
+        "30"
+      ],
       "regions": null,
       "focus": "deleterious",
       "clarification_needed": true,
-      "clarification_reason": "Chromosome 30 does not exist in the human genome. Humans have chromosomes 1-22, X, and Y. The 1000 Genomes Project provides data for these chromosomes only. Please specify a valid chromosome number (1-22, X, or Y)."
+      "clarification_reason": "Chromosome 30 does not exist; human chromosomes are 1-22, X, Y. Please specify a valid chromosome number."
     },
     "scores": {
       "pops_match": true,
-      "chroms_match": true,
+      "chroms_match": false,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Chromosome 30 does not exist in the human genome. Humans have chromosomes 1-22, X, and Y. The 1000 Genomes Project provides data for these chromosomes only. Please specify a valid chromosome number (1-22, X, or Y).",
+      "clarification_reason_pred": "Chromosome 30 does not exist; human chromosomes are 1-22, X, Y. Please specify a valid chromosome number.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -8925,7 +8945,9 @@
       "pred_pops": [
         "PJL"
       ],
-      "pred_chroms": [],
+      "pred_chroms": [
+        "30"
+      ],
       "pred_regions": [],
       "gt_pops": [
         "PJL"
@@ -8933,9 +8955,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 25.83,
-    "cost_usd": 0.05326375,
-    "num_turns": 5
+    "duration_seconds": 4.13
   },
   {
     "id": "t5_17",
@@ -8967,25 +8987,26 @@
       "chromosomes": null,
       "regions": [
         {
-          "name": "EGFR",
+          "name": "custom",
           "chromosome": "7",
-          "start": 55086714,
-          "end": 55275031
+          "start": 55019017,
+          "end": 55211628
         }
       ],
       "focus": "all_variants",
-      "clarification_needed": false,
-      "clarification_reason": null
+      "clarification_needed": true,
+      "clarification_reason": "EGFR gene region coordinates not provided in genomic-regions.md; region coordinates need to be specified explicitly."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": false,
-      "clarification_reason_pred": null,
-      "clarification_correct": false,
+      "clarification_needed_pred": true,
+      "clarification_reason_pred": "EGFR gene region coordinates not provided in genomic-regions.md; region coordinates need to be specified explicitly.",
+      "clarification_correct": true,
       "invalid_terms": [
         {
           "term": "EGFR region",
@@ -8999,7 +9020,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "EGFR"
+        "('custom', '7', 55019017, 55211628)"
       ],
       "gt_pops": [
         "AFR",
@@ -9008,9 +9029,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 25.95,
-    "cost_usd": 0.038322999999999996,
-    "num_turns": 3
+    "duration_seconds": 3.45
   },
   {
     "id": "t5_18",
@@ -9033,7 +9052,7 @@
       ]
     },
     "predicted": {
-      "analysis_type": "single_population",
+      "analysis_type": "region_analysis",
       "populations": [
         "MXL"
       ],
@@ -9047,18 +9066,19 @@
         }
       ],
       "focus": "rare",
-      "clarification_needed": true,
-      "clarification_reason": "You wrote 'CFRT' \u2014 did you mean 'CFTR' (Cystic Fibrosis Transmembrane Conductance Regulator, chromosome 7)? Proceeding with CFTR assuming a typo."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "You wrote 'CFRT' \u2014 did you mean 'CFTR' (Cystic Fibrosis Transmembrane Conductance Regulator, chromosome 7)? Proceeding with CFTR assuming a typo.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [
         {
           "term": "CFRT",
@@ -9071,7 +9091,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "CFTR"
+        "('CFTR', '7', 117120017, 117308718)"
       ],
       "gt_pops": [
         "MXL"
@@ -9079,9 +9099,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 25.27,
-    "cost_usd": 0.047362249999999995,
-    "num_turns": 4
+    "duration_seconds": 2.46
   },
   {
     "id": "t5_19",
@@ -9113,7 +9131,7 @@
       ]
     },
     "predicted": {
-      "analysis_type": "multi_population",
+      "analysis_type": "population_comparison",
       "populations": [
         "AFR",
         "YRI",
@@ -9136,6 +9154,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -9155,7 +9174,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ],
       "gt_pops": [
         "AFR",
@@ -9164,12 +9183,10 @@
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HLA"
+        "('HLA', '6', 28477797, 33448354)"
       ]
     },
-    "duration_seconds": 23.32,
-    "cost_usd": 0.04219874999999999,
-    "num_turns": 4
+    "duration_seconds": 3.05
   },
   {
     "id": "t5_20",
@@ -9204,16 +9221,17 @@
       "regions": null,
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "\"Polynesian\" is not a recognized population in the 1000 Genomes Project. Available super-populations are: AFR (African), AMR (Ad Mixed American), EAS (East Asian), EUR (European), and SAS (South Asian). Sub-populations include groups like CHB, JPT, GBR, YRI, etc., but none represent Polynesian ancestry. Please specify a valid population code or clarify which available population you'd like to use instead. South Asian (SAS) was successfully identified."
+      "clarification_reason": "The Polynesian population is not covered by the 1000 Genomes Project populations. Only South Asian populations are recognized. Please specify a valid 1000 Genomes population code or a recognized super-population."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "\"Polynesian\" is not a recognized population in the 1000 Genomes Project. Available super-populations are: AFR (African), AMR (Ad Mixed American), EAS (East Asian), EUR (European), and SAS (South Asian). Sub-populations include groups like CHB, JPT, GBR, YRI, etc., but none represent Polynesian ancestry. Please specify a valid population code or clarify which available population you'd like to use instead. South Asian (SAS) was successfully identified.",
+      "clarification_reason_pred": "The Polynesian population is not covered by the 1000 Genomes Project populations. Only South Asian populations are recognized. Please specify a valid 1000 Genomes population code or a recognized super-population.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9237,9 +9255,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 30.09,
-    "cost_usd": 0.05427425,
-    "num_turns": 4
+    "duration_seconds": 3.32
   },
   {
     "id": "t5_21",
@@ -9268,20 +9284,23 @@
         "FIN",
         "GBR"
       ],
-      "chromosomes": null,
+      "chromosomes": [
+        "X"
+      ],
       "regions": null,
       "focus": "common",
       "clarification_needed": true,
-      "clarification_reason": "Chromosome 23 is not a valid autosome number (1-22). In human genetics, 'chromosome 23' typically refers to the sex chromosomes. Did you mean chromosome X (sometimes called the 23rd chromosome) or chromosome Y? In the 1000 Genomes Project, these are labeled as 'X' and 'Y' respectively. Please clarify which sex chromosome you intended, or if you meant a different autosome."
+      "clarification_reason": "Chromosome 23 was requested, but in human genome chromosome 23 is typically referred to as chromosome X. Confirm if analysis of chromosome X is intended or specify the chromosome number."
     },
     "scores": {
       "pops_match": true,
-      "chroms_match": true,
+      "chroms_match": false,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Chromosome 23 is not a valid autosome number (1-22). In human genetics, 'chromosome 23' typically refers to the sex chromosomes. Did you mean chromosome X (sometimes called the 23rd chromosome) or chromosome Y? In the 1000 Genomes Project, these are labeled as 'X' and 'Y' respectively. Please clarify which sex chromosome you intended, or if you meant a different autosome.",
+      "clarification_reason_pred": "Chromosome 23 was requested, but in human genome chromosome 23 is typically referred to as chromosome X. Confirm if analysis of chromosome X is intended or specify the chromosome number.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9294,7 +9313,9 @@
         "FIN",
         "GBR"
       ],
-      "pred_chroms": [],
+      "pred_chroms": [
+        "X"
+      ],
       "pred_regions": [],
       "gt_pops": [
         "FIN",
@@ -9303,9 +9324,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 17.54,
-    "cost_usd": 0.027301,
-    "num_turns": 2
+    "duration_seconds": 3.47
   },
   {
     "id": "t5_22",
@@ -9335,8 +9354,9 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "region_analysis",
       "populations": [
+        "AMR",
         "PEL"
       ],
       "chromosomes": null,
@@ -9349,18 +9369,19 @@
         }
       ],
       "focus": "all_variants",
-      "clarification_needed": true,
-      "clarification_reason": "\"Amazonian\" does not map to any recognized 1000 Genomes population or sub-population code. The 1000 Genomes Project does not include a distinct Amazonian population. Available Americas (AMR) sub-populations are: MXL (Mexican Ancestry in Los Angeles), PUR (Puerto Rican in Puerto Rico), CLM (Colombian in Medell\u00edn), or PEL (Peruvian in Lima). PEL has been included based on your mention of 'Peruvian Lima'. Please clarify which population you intended by 'Amazonian'."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
-      "pops_match": true,
+      "pops_match": false,
       "chroms_match": true,
       "regions_match": true,
-      "full_match": true,
+      "region_names_match": true,
+      "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "\"Amazonian\" does not map to any recognized 1000 Genomes population or sub-population code. The 1000 Genomes Project does not include a distinct Amazonian population. Available Americas (AMR) sub-populations are: MXL (Mexican Ancestry in Los Angeles), PUR (Puerto Rican in Puerto Rico), CLM (Colombian in Medell\u00edn), or PEL (Peruvian in Lima). PEL has been included based on your mention of 'Peruvian Lima'. Please clarify which population you intended by 'Amazonian'.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [
         {
           "term": "Amazonian",
@@ -9369,23 +9390,22 @@
       ],
       "invalid_avoided": true,
       "pred_pops": [
+        "AMR",
         "PEL"
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ],
       "gt_pops": [
         "PEL"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "TP53"
+        "('TP53', '17', 7668421, 7687490)"
       ]
     },
-    "duration_seconds": 26.19,
-    "cost_usd": 0.04528625,
-    "num_turns": 3
+    "duration_seconds": 2.79
   },
   {
     "id": "t5_23",
@@ -9424,18 +9444,19 @@
         }
       ],
       "focus": "deleterious",
-      "clarification_needed": true,
-      "clarification_reason": "You wrote 'APEO' which is not a recognized gene name. Did you mean 'APOE' (Apolipoprotein E, chromosome 19)? I've proceeded assuming APOE. Please confirm so the workflow can be generated."
+      "clarification_needed": false,
+      "clarification_reason": null
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": true,
-      "clarification_reason_pred": "You wrote 'APEO' which is not a recognized gene name. Did you mean 'APOE' (Apolipoprotein E, chromosome 19)? I've proceeded assuming APOE. Please confirm so the workflow can be generated.",
-      "clarification_correct": true,
+      "clarification_needed_pred": false,
+      "clarification_reason_pred": null,
+      "clarification_correct": false,
       "invalid_terms": [
         {
           "term": "APEO",
@@ -9449,7 +9470,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "APOE"
+        "('APOE', '19', 44905796, 44909393)"
       ],
       "gt_pops": [
         "ITU",
@@ -9458,9 +9479,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 22.78,
-    "cost_usd": 0.04213725,
-    "num_turns": 3
+    "duration_seconds": 3.21
   },
   {
     "id": "t5_24",
@@ -9484,7 +9503,7 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "region_analysis",
       "populations": [
         "ACB",
         "GWD"
@@ -9492,25 +9511,26 @@
       "chromosomes": null,
       "regions": [
         {
-          "name": "KRAS",
+          "name": "custom",
           "chromosome": "12",
-          "start": 25358180,
-          "end": 25403854
+          "start": 25245350,
+          "end": 25250900
         }
       ],
       "focus": "rare",
-      "clarification_needed": false,
-      "clarification_reason": null
+      "clarification_needed": true,
+      "clarification_reason": "KRAS region coordinates not in known regions table; custom region coordinates required for accurate extraction."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
-      "clarification_needed_pred": false,
-      "clarification_reason_pred": null,
-      "clarification_correct": false,
+      "clarification_needed_pred": true,
+      "clarification_reason_pred": "KRAS region coordinates not in known regions table; custom region coordinates required for accurate extraction.",
+      "clarification_correct": true,
       "invalid_terms": [
         {
           "term": "KRAS region",
@@ -9524,7 +9544,7 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "KRAS"
+        "('custom', '12', 25245350, 25250900)"
       ],
       "gt_pops": [
         "ACB",
@@ -9533,9 +9553,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 25.59,
-    "cost_usd": 0.039870249999999996,
-    "num_turns": 3
+    "duration_seconds": 3.3
   },
   {
     "id": "t5_25",
@@ -9584,16 +9602,17 @@
       ],
       "focus": "all_variants",
       "clarification_needed": true,
-      "clarification_reason": "Two issues require clarification: (1) 'Siberian' is not a valid 1000 Genomes population code or recognized mapping. There is no Siberian population in the 1000 Genomes Project. Did you mean a specific East Asian sub-population (e.g., CHB, JPT, CDX, KHV, CHS) or another population? (2) 'Chromosome 26' does not exist \u2014 humans have chromosomes 1\u201322, X, and Y. The HBB region is located on chromosome 11. Did you intend chromosome 11 (where HBB resides), or did you mean a different region? I have provisionally set the region to HBB on chromosome 11 and included only EAS as the identifiable population."
+      "clarification_reason": "Chromosome 26 does not exist; possibly a mistake. The HBB region is on chromosome 11, which conflicts with the mentioned chromosome 26. Also, Siberian population is not defined in 1000 Genomes; closest relevant population is East Asian (EAS). Please clarify the correct chromosome and population."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Two issues require clarification: (1) 'Siberian' is not a valid 1000 Genomes population code or recognized mapping. There is no Siberian population in the 1000 Genomes Project. Did you mean a specific East Asian sub-population (e.g., CHB, JPT, CDX, KHV, CHS) or another population? (2) 'Chromosome 26' does not exist \u2014 humans have chromosomes 1\u201322, X, and Y. The HBB region is located on chromosome 11. Did you intend chromosome 11 (where HBB resides), or did you mean a different region? I have provisionally set the region to HBB on chromosome 11 and included only EAS as the identifiable population.",
+      "clarification_reason_pred": "Chromosome 26 does not exist; possibly a mistake. The HBB region is on chromosome 11, which conflicts with the mentioned chromosome 26. Also, Siberian population is not defined in 1000 Genomes; closest relevant population is East Asian (EAS). Please clarify the correct chromosome and population.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9611,19 +9630,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ],
       "gt_pops": [
         "EAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "HBB"
+        "('HBB', '11', 5225464, 5229395)"
       ]
     },
-    "duration_seconds": 36.27,
-    "cost_usd": 0.06335725,
-    "num_turns": 4
+    "duration_seconds": 4.52
   },
   {
     "id": "t5_26",
@@ -9664,6 +9681,7 @@
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": false,
@@ -9691,9 +9709,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 17.43,
-    "cost_usd": 0.024876000000000002,
-    "num_turns": 2
+    "duration_seconds": 2.34
   },
   {
     "id": "t5_27",
@@ -9738,16 +9754,17 @@
       ],
       "focus": "deleterious",
       "clarification_needed": true,
-      "clarification_reason": "Aboriginal Australian is not available as a population in the 1000 Genomes Project. The available populations are: AFR (African), AMR (Ad Mixed American), EAS (East Asian), EUR (European), SAS (South Asian), and their sub-populations (e.g., YRI, GBR, CHB, JPT, GIH, PJL, BEB, STU, ITU, etc.). Please select a valid 1000 Genomes population to compare against South Asian (SAS)."
+      "clarification_reason": "The Aboriginal Australian population is not part of the 1000 Genomes populations; please clarify or specify relevant population codes."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
       "regions_match": true,
+      "region_names_match": true,
       "full_match": true,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Aboriginal Australian is not available as a population in the 1000 Genomes Project. The available populations are: AFR (African), AMR (Ad Mixed American), EAS (East Asian), EUR (European), SAS (South Asian), and their sub-populations (e.g., YRI, GBR, CHB, JPT, GIH, PJL, BEB, STU, ITU, etc.). Please select a valid 1000 Genomes population to compare against South Asian (SAS).",
+      "clarification_reason_pred": "The Aboriginal Australian population is not part of the 1000 Genomes populations; please clarify or specify relevant population codes.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9761,19 +9778,17 @@
       ],
       "pred_chroms": [],
       "pred_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ],
       "gt_pops": [
         "SAS"
       ],
       "gt_chroms": [],
       "gt_regions": [
-        "BRCA1"
+        "('BRCA1', '17', 43044295, 43125483)"
       ]
     },
-    "duration_seconds": 29.79,
-    "cost_usd": 0.058825749999999996,
-    "num_turns": 4
+    "duration_seconds": 3.21
   },
   {
     "id": "t5_28",
@@ -9802,29 +9817,21 @@
       "populations": [
         "AFR"
       ],
-      "chromosomes": [
-        "X"
-      ],
-      "regions": [
-        {
-          "name": "DMD",
-          "chromosome": "X",
-          "start": 31137345,
-          "end": 33357726
-        }
-      ],
+      "chromosomes": null,
+      "regions": null,
       "focus": "deleterious",
       "clarification_needed": true,
-      "clarification_reason": "DMD is not in the predefined genomic regions table. The coordinates provided (chrX:31,137,345-33,357,726, GRCh37/hg19) are based on common reference annotations for the dystrophin gene but should be verified before proceeding. Also note that chrX data in 1000 Genomes Phase 3 uses a different VCF file (ALL.chrX.phase3_shapeit2_mvncall_integrated_v1b) and may have different genotype handling for males (hemizygous) vs females."
+      "clarification_reason": "DMD gene region coordinates on chromosome X are not known. Please provide the chromosome start and end positions for the DMD gene to proceed."
     },
     "scores": {
       "pops_match": true,
-      "chroms_match": true,
-      "regions_match": false,
+      "chroms_match": false,
+      "regions_match": true,
+      "region_names_match": true,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "DMD is not in the predefined genomic regions table. The coordinates provided (chrX:31,137,345-33,357,726, GRCh37/hg19) are based on common reference annotations for the dystrophin gene but should be verified before proceeding. Also note that chrX data in 1000 Genomes Phase 3 uses a different VCF file (ALL.chrX.phase3_shapeit2_mvncall_integrated_v1b) and may have different genotype handling for males (hemizygous) vs females.",
+      "clarification_reason_pred": "DMD gene region coordinates on chromosome X are not known. Please provide the chromosome start and end positions for the DMD gene to proceed.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9836,12 +9843,8 @@
       "pred_pops": [
         "AFR"
       ],
-      "pred_chroms": [
-        "X"
-      ],
-      "pred_regions": [
-        "DMD"
-      ],
+      "pred_chroms": [],
+      "pred_regions": [],
       "gt_pops": [
         "AFR"
       ],
@@ -9850,9 +9853,7 @@
       ],
       "gt_regions": []
     },
-    "duration_seconds": 34.27,
-    "cost_usd": 0.059157749999999995,
-    "num_turns": 4
+    "duration_seconds": 4.54
   },
   {
     "id": "t5_29",
@@ -9876,25 +9877,33 @@
       ]
     },
     "predicted": {
-      "analysis_type": "population_comparison",
+      "analysis_type": "region_analysis",
       "populations": [
         "MSL",
         "ESN"
       ],
       "chromosomes": null,
-      "regions": null,
+      "regions": [
+        {
+          "name": "HBB",
+          "chromosome": "11",
+          "start": 5225464,
+          "end": 5229395
+        }
+      ],
       "focus": "rare",
       "clarification_needed": true,
-      "clarification_reason": "The gene name 'HBP' is not recognized in the known genomic regions. Did you mean HBB (Hemoglobin Subunit Beta, chr11:5225464-5229395), which is associated with sickle cell disease and beta-thalassemia? If so, please confirm and I will include the HBB region coordinates. Otherwise, please provide the correct gene name or genomic coordinates."
+      "clarification_reason": "The gene name 'HBP' is unrecognized; interpreted as 'HBB' related to hemoglobin due to similar context. Please confirm if 'HBP' was intended or specify correct gene."
     },
     "scores": {
       "pops_match": true,
       "chroms_match": true,
-      "regions_match": true,
-      "full_match": true,
+      "regions_match": false,
+      "region_names_match": false,
+      "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "The gene name 'HBP' is not recognized in the known genomic regions. Did you mean HBB (Hemoglobin Subunit Beta, chr11:5225464-5229395), which is associated with sickle cell disease and beta-thalassemia? If so, please confirm and I will include the HBB region coordinates. Otherwise, please provide the correct gene name or genomic coordinates.",
+      "clarification_reason_pred": "The gene name 'HBP' is unrecognized; interpreted as 'HBB' related to hemoglobin due to similar context. Please confirm if 'HBP' was intended or specify correct gene.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9908,7 +9917,9 @@
         "MSL"
       ],
       "pred_chroms": [],
-      "pred_regions": [],
+      "pred_regions": [
+        "('HBB', '11', 5225464, 5229395)"
+      ],
       "gt_pops": [
         "ESN",
         "MSL"
@@ -9916,9 +9927,7 @@
       "gt_chroms": [],
       "gt_regions": []
     },
-    "duration_seconds": 30.79,
-    "cost_usd": 0.05190875,
-    "num_turns": 4
+    "duration_seconds": 3.33
   },
   {
     "id": "t5_30",
@@ -9951,22 +9960,37 @@
     "predicted": {
       "analysis_type": "population_comparison",
       "populations": [
-        "FIN"
+        "TSI",
+        "FIN",
+        "CEU",
+        "PJL",
+        "GIH",
+        "BEB",
+        "STU",
+        "ITU"
       ],
       "chromosomes": null,
-      "regions": null,
+      "regions": [
+        {
+          "name": "BRCA3",
+          "chromosome": "17",
+          "start": 43044295,
+          "end": 43125483
+        }
+      ],
       "focus": "common",
       "clarification_needed": true,
-      "clarification_reason": "Several issues require clarification:\n\n1. **BRCA3 is not a recognized gene.** There is no known gene called BRCA3. Did you mean **BRCA1** (chromosome 17, 43044295\u201343125483) or **BRCA2** (chromosome 13, 32315086\u201332400266)? BRCA1 is on chromosome 17, which matches your request, so that may be what you intended.\n\n2. **\"Scandinavian\" population:** The 1000 Genomes Project does not have a specific Scandinavian cohort. The closest available sub-population is **FIN** (Finnish in Finland, n=99). Alternatively, you could use the broader **EUR** (European) super-population or other European sub-populations like **GBR** (British) or **CEU** (Northern/Western European ancestry). Please confirm which population to use.\n\n3. **\"Eastern European\" population:** There is no Eastern European population in the 1000 Genomes Project. No available sub-population maps well to Eastern Europe. The closest options might be **CEU** (Northern/Western European ancestry), **TSI** (Toscani in Italy), **IBS** (Iberian), or the broad **EUR** super-population. Please specify which population(s) you'd like to compare against.\n\nPlease clarify: (a) which gene/region you intended (likely BRCA1?), (b) which specific 1000 Genomes populations to use for each group."
+      "clarification_reason": "The region BRCA3 is not a recognized genomic region in the known regions table. Scandinavian populations are not explicitly defined in the populations list; Finnish (FIN) is included as part of Europe but Eastern European populations are not explicitly listed. The user may need to clarify the populations and confirm the genomic region of interest."
     },
     "scores": {
       "pops_match": false,
       "chroms_match": false,
-      "regions_match": true,
+      "regions_match": false,
+      "region_names_match": false,
       "full_match": false,
       "clarification_needed_gt": true,
       "clarification_needed_pred": true,
-      "clarification_reason_pred": "Several issues require clarification:\n\n1. **BRCA3 is not a recognized gene.** There is no known gene called BRCA3. Did you mean **BRCA1** (chromosome 17, 43044295\u201343125483) or **BRCA2** (chromosome 13, 32315086\u201332400266)? BRCA1 is on chromosome 17, which matches your request, so that may be what you intended.\n\n2. **\"Scandinavian\" population:** The 1000 Genomes Project does not have a specific Scandinavian cohort. The closest available sub-population is **FIN** (Finnish in Finland, n=99). Alternatively, you could use the broader **EUR** (European) super-population or other European sub-populations like **GBR** (British) or **CEU** (Northern/Western European ancestry). Please confirm which population to use.\n\n3. **\"Eastern European\" population:** There is no Eastern European population in the 1000 Genomes Project. No available sub-population maps well to Eastern Europe. The closest options might be **CEU** (Northern/Western European ancestry), **TSI** (Toscani in Italy), **IBS** (Iberian), or the broad **EUR** super-population. Please specify which population(s) you'd like to compare against.\n\nPlease clarify: (a) which gene/region you intended (likely BRCA1?), (b) which specific 1000 Genomes populations to use for each group.",
+      "clarification_reason_pred": "The region BRCA3 is not a recognized genomic region in the known regions table. Scandinavian populations are not explicitly defined in the populations list; Finnish (FIN) is included as part of Europe but Eastern European populations are not explicitly listed. The user may need to clarify the populations and confirm the genomic region of interest.",
       "clarification_correct": true,
       "invalid_terms": [
         {
@@ -9984,18 +10008,25 @@
       ],
       "invalid_avoided": true,
       "pred_pops": [
-        "FIN"
+        "BEB",
+        "CEU",
+        "FIN",
+        "GIH",
+        "ITU",
+        "PJL",
+        "STU",
+        "TSI"
       ],
       "pred_chroms": [],
-      "pred_regions": [],
+      "pred_regions": [
+        "('BRCA3', '17', 43044295, 43125483)"
+      ],
       "gt_pops": [],
       "gt_chroms": [
         "17"
       ],
       "gt_regions": []
     },
-    "duration_seconds": 24.9,
-    "cost_usd": 0.0411435,
-    "num_turns": 2
+    "duration_seconds": 3.99
   }
 ]
