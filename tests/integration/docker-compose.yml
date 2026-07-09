@@ -20,7 +20,7 @@ services:
 
   # HyperFlow workflow engine
   hyperflow:
-    image: hyperflowwms/hyperflow:latest
+    image: hyperflowwms/hyperflow:v1.9.1
     container_name: hyperflow-engine
     depends_on:
       redis:
@@ -32,11 +32,14 @@ services:
       - REDIS_URL=redis://redis:6379
 
       # HyperFlow configuration
-      - HF_VAR_WORKER_CONTAINER=hyperflowwms/1000genome-worker:1.0-je1.3.4
+      - HF_VAR_WORKER_CONTAINER=hyperflowwms/1000genome-worker:1.1-je1.4.0
       - HF_VAR_WORK_DIR=${WORKFLOW_DIR}
       - HF_VAR_HFLOW_IN_CONTAINER=true
       - HF_VAR_function=redisCommand
       - HF_VAR_REDIS_CMD_MAX_PARALLELISM=${MAX_PARALLELISM:-20}
+
+      # Completion-notification transport: Redis Streams (job-executor >= 1.4.0)
+      - HF_VAR_COMPLETION_TRANSPORT=stream
 
       # Run workers as current user to avoid root-owned files
       - USER_ID=${USER_ID}

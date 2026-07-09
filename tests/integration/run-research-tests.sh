@@ -427,6 +427,11 @@ for TEST_ID in "${TEST_IDS[@]}"; do
             cut -f1-39 columns.txt > columns_30.txt && mv columns_30.txt columns.txt
             head -n 10001 ALL.chr1.250000.vcf > ALL.chr1.10000.vcf && mv ALL.chr1.10000.vcf ALL.chr1.250000.vcf
 
+            # Stage the data manifest where GENERATE expects it. skip_extract
+            # bypasses extraction (which would otherwise produce data.csv), so
+            # copy the micro manifest the case ships as data-micro.csv.
+            cp "$SCRIPT_DIR/data-micro.csv" "$WORKFLOW_DIR/data.csv"
+
             log_success "Micro test data prepared"
         fi
     else
