@@ -145,6 +145,64 @@ done <<< "$COMMANDS"
 log_ok "Executed $EXTRACT_COUNT extraction commands"
 
 # ============================================================================
+# Step 2.5: Annotate genotype VCFs with rs IDs
+# ============================================================================
+# The 1000 Genomes phase3 genotype VCFs carry '.' in the ID column; rs numbers
+# live only in the sites annotation files, keyed by position. The analysis
+# (mutation_overlap.py, frequency.py) matches variants to individuals by rs
+# number, so the genotype VCF's ID column must hold rs numbers. Transfer them
+# from the annotation file by matching CHROM+POS+REF+ALT.
+log_info "Annotating genotype VCFs with rs IDs..."
+
+cd "$OUTPUT_DIR"
+for vcf_file in ALL.chr*.vcf; do
+    [ -f "$vcf_file" ] || continue
+    [[ "$vcf_file" == *annotation* ]] && continue
+
+    CHROM=$(echo "$vcf_file" | sed -n 's/.*chr\([0-9XY]*\).*/\1/p')
+    ANNOTATION_FILE=$(ls ALL.chr${CHROM}*.annotation.vcf 2>/dev/null | head -1)
+    if [ -z "$ANNOTATION_FILE" ]; then
+        log_info "  $vcf_file: no annotation file found, skipping"
+        continue
+    fi
+
+    python3 - "$vcf_file" "$ANNOTATION_FILE" <<'PYEOF'
+import os, sys
+geno, annot = sys.argv[1], sys.argv[2]
+
+ids = {}
+with open(annot) as f:
+    for line in f:
+        if line.startswith('#'):
+            continue
+        c = line.rstrip('\n').split('\t')
+        if len(c) < 5:
+            continue
+        rsid = c[2]
+        if rsid and rsid != '.':
+            ids[(c[0], c[1], c[3], c[4])] = rsid
+
+n_tot = n_ann = 0
+tmp = geno + '.tmp'
+with open(geno) as fin, open(tmp, 'w') as fout:
+    for line in fin:
+        if line.startswith('#'):
+            fout.write(line)
+            continue
+        c = line.rstrip('\n').split('\t')
+        if len(c) >= 5:
+            n_tot += 1
+            rsid = ids.get((c[0], c[1], c[3], c[4]))
+            if rsid:
+                c[2] = rsid
+                n_ann += 1
+        fout.write('\t'.join(c) + '\n')
+os.replace(tmp, geno)
+print("  %s: %d/%d variants annotated with rs IDs" % (geno, n_ann, n_tot))
+PYEOF
+done
+
+# ============================================================================
 # Step 3: Build data.csv
 # ============================================================================
 log_info "Building data.csv..."
