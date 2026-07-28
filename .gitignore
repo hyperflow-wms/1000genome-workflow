@@ -10,3 +10,7 @@ __pycache__/
 .pytest_cache/
 .env
 node_modules
+
+# Integration test run outputs (WORKFLOW_DIR="$SCRIPT_DIR/workflow-$TEST_ID")
+tests/integration/workflow-*/
+tests/integration/workflow-*.tar.gz
