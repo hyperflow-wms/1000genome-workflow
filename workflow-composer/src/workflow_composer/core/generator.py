@@ -209,7 +209,10 @@ class HyperFlowGenerator:
 
             # Validate and adjust ind_jobs
             actual_ind_jobs = validate_ind_jobs(ind_jobs, threshold, chrom.vcf_file)
-            step = threshold // actual_ind_jobs
+            # Round the step up so ind_jobs tasks cover the whole file. Rounding
+            # down leaves a remainder that spawns an extra task for a handful of
+            # rows, and that task still scans the file up to its offset.
+            step = -(-threshold // actual_ind_jobs)
 
             # VCF input signal (reused across all individuals jobs for this chromosome)
             vcf_signal = self._get_or_create_signal(chrom.vcf_file, is_input=True)

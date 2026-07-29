@@ -367,11 +367,13 @@ class TestRemainderHandling:
     """Test that non-divisible row counts are handled correctly."""
 
     def test_remainder_creates_extra_task(self):
-        """Non-divisible row counts should create an extra task for remainder."""
+        """Non-divisible row counts are absorbed into ind_jobs tasks, not an extra one."""
         from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData
 
-        # 2487 rows with ind_jobs=10 → step=248, remainder=7
-        # Should create 11 tasks: 10 full + 1 partial
+        # 2487 rows with ind_jobs=10 → step=ceil(2487/10)=249, so 10 tasks cover
+        # the file and the last one simply stops early at `total`. Rounding the
+        # step down instead would emit an 11th task for the few trailing rows,
+        # and that task still scans the input up to its offset.
         chromosomes = [
             ChromosomeData(
                 vcf_file="ALL.chr6.test.vcf",
@@ -391,18 +393,25 @@ class TestRemainderHandling:
 
         # Count individuals tasks
         ind_tasks = [p for p in workflow["processes"] if p["name"] == "individuals"]
-        assert len(ind_tasks) == 11, "Should have 11 individuals tasks (10 full + 1 partial)"
+        assert len(ind_tasks) == 10, "Should have exactly ind_jobs tasks, no remainder task"
 
-        # Verify last task covers remainder rows
-        last_args = ind_tasks[-1]["config"]["executor"]["args"]
         # Args are: [vcf_file, chromosome, start, stop, total]
-        start = int(last_args[2])
-        stop = int(last_args[3])
-        total = int(last_args[4])
-
-        assert start == 2481, "Last task should start at 2481"
+        ranges = [
+            (int(p["config"]["executor"]["args"][2]), int(p["config"]["executor"]["args"][3]))
+            for p in ind_tasks
+        ]
+        total = int(ind_tasks[-1]["config"]["executor"]["args"][4])
         assert total == 2487, "Total should be 2487"
-        # Worker will process min(stop, total) = min(2729, 2487) = 2487
+
+        # Ranges are contiguous and every task has rows to process
+        assert ranges[0][0] == 1, "First task should start at 1"
+        for (_, prev_stop), (start, _) in zip(ranges, ranges[1:]):
+            assert start == prev_stop, f"Gap or overlap at {prev_stop} -> {start}"
+        for start, stop in ranges:
+            assert min(stop, total) > start, f"Task [{start}, {stop}) processes no rows"
+
+        # The last task runs to the end of the file
+        assert ranges[-1][1] >= total, "Last task should cover through total"
 
     def test_exact_division_no_extra_task(self):
         """Exactly divisible row counts should not create extra tasks."""
