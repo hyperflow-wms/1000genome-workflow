@@ -1,6 +1,6 @@
 REPO_NAME = 1000genome-worker-base
 PREFIX = hyperflowwms
-VERSION = 1.2
+VERSION = 1.3
 TAG = $(VERSION)
 
 all: push

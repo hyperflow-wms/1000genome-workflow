@@ -2,7 +2,7 @@
 
 import os
 import sys
-import re
+import itertools
 import time
 import tarfile
 import shutil
@@ -34,31 +34,16 @@ def processing(inputfile, columfile, c, counter, stop, total):
     # if not os.path.exists(unzipped):
     #     decompress(inputfile, unzipped)
 
-    rawdata = readfile(inputfile)
-
-    # Self-discover total if -1 sentinel is passed
-    if total == -1:
-        total = len(rawdata)
-        print("== Auto-discovered total lines: {}".format(total), flush=True)
-
-    ending = min(stop, total)
+    # This job handles the line range [counter, ending). When total == -1 the
+    # range simply runs to EOF (matching the original min(stop, len(file))).
+    ending = stop if total == -1 else min(stop, total)
 
     ### step 2
     ## Giving a different directory name (chromosome no-counter) for each individuals job
     ndir = 'chr{}n-{}/'.format(c, counter)
     os.makedirs(ndir, exist_ok=True)
 
-    ### step 3
-    # In the bash version, counter started at 1 but in Python we start at 0. 
-    # counter = max(0, counter - 1)  # The max ensure that we don't do -1 if the user set counter 0 directly
-    print("== Total number of lines: {}".format(total), flush=True)
     print("== Processing {} from line {} to {}".format(unzipped, counter, stop), flush=True)
-
-    # We consider the line from counter to stop and we don't over total, then we remove lines starting with '#'
-    #sed -n "$counter"','"$stop"'p;'"$total"'q' $unzipped | grep -ve "#" > cc
-    regex = re.compile('(?!#)')
-    data = list(filter(regex.match, rawdata[counter:ending]))
-    data = [x.rstrip('\n') for x in data] # Remove \n from words 
 
     columndata = readfile(columfile)[0].rstrip('\n').split('\t')
 
@@ -68,41 +53,42 @@ def processing(inputfile, columfile, c, counter, stop, total):
     end_data = len(columndata) - start_data
     print("== Number of columns {}".format(end_data), flush=True)
 
-    # Precompute per-line invariants once, then fill per-individual buffers in a
-    # single pass. Each line is split a single time and its POS/ID/REF/ALT/AF are
-    # computed once, instead of re-splitting and re-parsing every line once per
-    # individual.
-    kept = []  # (row_text, af_hi, genotype_columns) per line that parses
-    for line in data:
-        fields = line.split('\t')
-        try:
-            af_value = fields[7].split(';')[8].split('=')[1]
-            # Keep only the first value if more than one (matches the awk logic)
-            af_f = float(af_value.split(',')[0]) if ',' in af_value else float(af_value)
-        except (ValueError, IndexError):
-            continue
-        row = "{0}        {1}    {2}    {3}    {4}\n".format(
-            fields[1], fields[2], fields[3], fields[4], af_value)
-        kept.append((row, af_f >= 0.5, fields[start_data:]))
-
-    print("== Precomputed {} lines, filling {} individuals".format(len(kept), end_data), flush=True)
+    # Stream the input VCF over this job's line range [counter, ending), filling
+    # per-individual output buffers in a single pass. Each line is read, split
+    # once, used to append its row to the matching individuals' buffers, then
+    # discarded. Memory stays proportional to the (small) output rather than to
+    # the whole VCF, which lets many jobs run in parallel without exhausting RAM.
     tic_fill = time.perf_counter()
-
     buffers = [[] for _ in range(end_data)]
-    for row, hi, gts in kept:
-        for i in range(end_data):
-            # We keep the mutation for an individual depending on the allele and AF
-            allele = gts[i].split('|')[0]
-            if (hi and allele == '0') or (not hi and allele == '1'):
-                buffers[i].append(row)
+    n_lines = 0
+    with open(inputfile) as f:
+        for line in itertools.islice(f, counter, ending):
+            if line.startswith('#'):
+                continue
+            fields = line.rstrip('\n').split('\t')
+            try:
+                af_value = fields[7].split(';')[8].split('=')[1]
+                # Keep only the first value if more than one (matches the awk logic)
+                af_f = float(af_value.split(',')[0]) if ',' in af_value else float(af_value)
+            except (ValueError, IndexError):
+                continue
+            row = "{0}        {1}    {2}    {3}    {4}\n".format(
+                fields[1], fields[2], fields[3], fields[4], af_value)
+            want = '0' if af_f >= 0.5 else '1'
+            for i in range(end_data):
+                # We keep the mutation for an individual depending on the allele and AF
+                if fields[start_data + i].split('|')[0] == want:
+                    buffers[i].append(row)
+            n_lines += 1
+
+    print("== Streamed {} lines, filled {} individuals in {:0.2f} sec".format(
+        n_lines, end_data, time.perf_counter() - tic_fill), flush=True)
 
     for i in range(0, end_data):
         name = columndata[i + start_data]
         filename = "{}/chr{}.{}".format(ndir, c, name)
         with open(filename, 'w') as f:
             f.write(''.join(buffers[i]))
-
-    print("== Filled {} files in {:0.2f} sec".format(end_data, time.perf_counter()-tic_fill), flush=True)
 
     outputfile = "chr{}n-{}-{}.tar.gz".format(c, counter, stop)
     print("== Done. Zipping {} files into {}.".format(end_data, outputfile), flush=True)
