@@ -60,7 +60,6 @@ def processing(inputfile, columfile, c, counter, stop, total):
     data = list(filter(regex.match, rawdata[counter:ending]))
     data = [x.rstrip('\n') for x in data] # Remove \n from words 
 
-    chrp_data = {}
     columndata = readfile(columfile)[0].rstrip('\n').split('\t')
 
     start_data = 9  # where the real data start, the first 0|1, 1|1, 1|0 or 0|0
@@ -69,49 +68,41 @@ def processing(inputfile, columfile, c, counter, stop, total):
     end_data = len(columndata) - start_data
     print("== Number of columns {}".format(end_data), flush=True)
 
+    # Precompute per-line invariants once, then fill per-individual buffers in a
+    # single pass. Each line is split a single time and its POS/ID/REF/ALT/AF are
+    # computed once, instead of re-splitting and re-parsing every line once per
+    # individual.
+    kept = []  # (row_text, af_hi, genotype_columns) per line that parses
+    for line in data:
+        fields = line.split('\t')
+        try:
+            af_value = fields[7].split(';')[8].split('=')[1]
+            # Keep only the first value if more than one (matches the awk logic)
+            af_f = float(af_value.split(',')[0]) if ',' in af_value else float(af_value)
+        except (ValueError, IndexError):
+            continue
+        row = "{0}        {1}    {2}    {3}    {4}\n".format(
+            fields[1], fields[2], fields[3], fields[4], af_value)
+        kept.append((row, af_f >= 0.5, fields[start_data:]))
+
+    print("== Precomputed {} lines, filling {} individuals".format(len(kept), end_data), flush=True)
+    tic_fill = time.perf_counter()
+
+    buffers = [[] for _ in range(end_data)]
+    for row, hi, gts in kept:
+        for i in range(end_data):
+            # We keep the mutation for an individual depending on the allele and AF
+            allele = gts[i].split('|')[0]
+            if (hi and allele == '0') or (not hi and allele == '1'):
+                buffers[i].append(row)
+
     for i in range(0, end_data):
-        col = i + start_data
-        name = columndata[col]
-
+        name = columndata[i + start_data]
         filename = "{}/chr{}.{}".format(ndir, c, name)
-        print("=== Writing file {}".format(filename), end=" => ", flush=True)
-        tic_iter = time.perf_counter()
-        chrp_data[i] = []
-
         with open(filename, 'w') as f:
-            for line in data:
-                #print(i, line.split('\t'))
-                first = line.split('\t')[col]  # first =`echo $l | cut -d -f$i`
-                #second =`echo $l | cut -d -f 2, 3, 4, 5, 8 --output-delimiter = '   '`
-                second = line.split('\t')[0:8]
-                # We select the one we want
-                second = [elem for id, elem in enumerate(second) if id in [1, 2, 3, 4, 7]]
-                af_value = second[4].split(';')[8].split('=')[1]
-                # We replace with AF_Value
-                second[4] = af_value
-                try:
-                    if ',' in af_value:
-                        # We only keep the first value if more than one (that's what awk is doing)
-                        af_value = float(af_value.split(',')[0])
-                    else:
-                        af_value = float(af_value)
+            f.write(''.join(buffers[i]))
 
-                    elem = first.split('|')
-                    # We skip some lines that do not meet these conditions
-                    if af_value >= 0.5 and elem[0] == '0':
-                        chrp_data[i].append(second)
-                    elif af_value < 0.5 and elem[0] == '1':
-                        chrp_data[i].append(second)
-                    else:
-                        continue
-
-                    f.write("{0}        {1}    {2}    {3}    {4}\n".format(
-                        second[0], second[1], second[2], second[3], second[4])
-                    )
-                except ValueError:
-                    continue
-
-        print("processed in {:0.2f} sec".format(time.perf_counter()-tic_iter), flush=True)
+    print("== Filled {} files in {:0.2f} sec".format(end_data, time.perf_counter()-tic_fill), flush=True)
 
     outputfile = "chr{}n-{}-{}.tar.gz".format(c, counter, stop)
     print("== Done. Zipping {} files into {}.".format(end_data, outputfile), flush=True)

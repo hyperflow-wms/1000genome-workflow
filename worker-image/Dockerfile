@@ -1,4 +1,4 @@
-FROM hyperflowwms/1000genome-worker-base:1.1
+FROM hyperflowwms/1000genome-worker-base:1.2
 
 # Version of the job executor should be passed via docker build, e.g.:
 # docker build --build-arg hf_job_executor_version="1.3.4"
