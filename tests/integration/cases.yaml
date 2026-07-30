@@ -3,14 +3,23 @@
 # Each test case represents a research question that exercises the 5-phase pipeline:
 #   INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE
 #
-# Volume thresholds (estimated_transfer_mb):
-#   - < 50 MB: Safe to run end-to-end by default
-#   - 50-500 MB: Stop before execution by default
-#   - > 500 MB: Stop after plan by default
+# A case never declares its own transfer volume. The PLAN phase estimates it and
+# reports it as data_preparation.estimated_transfer_mb in plan.json; the harness
+# compares that against volume_thresholds below to decide where to stop.
+#
+# Those thresholds weigh download size only. They say nothing about disk
+# footprint or compute cost, and the three diverge sharply: the HLA region
+# transfers ~25 MB compressed but expands to ~1.6 GB on disk. Treat a case
+# passing the "run end-to-end" gate as "cheap to fetch", not "cheap to run".
 
 version: "1.0"
 
 defaults:
+  # Per-task memory ceiling, not a task count: small=256MB, medium=512MB,
+  # large=1024MB. It bounds how much work one individuals task may hold, so it
+  # only changes the task count for memory-bound workloads (whole chromosomes).
+  # Region-sized cases are bounded by core count instead, and pick the same
+  # ind_jobs under all three presets.
   parallelism: small
   populations_dir: "${REPO_ROOT}/workflow-generator/data/populations"
   compute_environment: local
@@ -90,8 +99,9 @@ test_cases:
     name: "East Asian HLA region autoimmune susceptibility"
     description: |
       Tests region-based analysis with the well-known HLA region.
-      The HLA region is ~5MB (25MB transfer), making this suitable for
-      end-to-end testing.
+      The HLA region spans ~5 Mb and transfers ~25 MB compressed, which keeps it
+      under the run-end-to-end threshold. It expands to ~1.6 GB on disk, so the
+      run is cheap to fetch but not free to execute.
 
     prompt: |
       Do East Asian populations show distinct mutation sharing patterns in the
@@ -152,6 +162,13 @@ test_cases:
       - "chr1-EUR.tar.gz"
       - "chr1-GBR.tar.gz"
       - "chr1-SAS.tar.gz"
+      - "chr1-AFR-freq.tar.gz"
+      - "chr1-ALL-freq.tar.gz"
+      - "chr1-AMR-freq.tar.gz"
+      - "chr1-EAS-freq.tar.gz"
+      - "chr1-EUR-freq.tar.gz"
+      - "chr1-GBR-freq.tar.gz"
+      - "chr1-SAS-freq.tar.gz"
 
   # ============================================================================
   # Case 5: EUR vs AFR in HLA region (SMALL - good for full testing)
@@ -246,6 +263,16 @@ test_cases:
       - "chr13-EAS.tar.gz"
       - "chr13-SAS.tar.gz"
       - "chr13-AMR.tar.gz"
+      - "chr17-AFR-freq.tar.gz"
+      - "chr17-EUR-freq.tar.gz"
+      - "chr17-EAS-freq.tar.gz"
+      - "chr17-SAS-freq.tar.gz"
+      - "chr17-AMR-freq.tar.gz"
+      - "chr13-AFR-freq.tar.gz"
+      - "chr13-EUR-freq.tar.gz"
+      - "chr13-EAS-freq.tar.gz"
+      - "chr13-SAS-freq.tar.gz"
+      - "chr13-AMR-freq.tar.gz"
 
   # ============================================================================
   # Case 7: BRCA1 British - minimal fast test (TINY)
