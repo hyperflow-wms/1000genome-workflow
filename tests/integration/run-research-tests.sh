@@ -112,6 +112,7 @@ IND_JOBS=""
 VERBOSE=false
 LIST_ONLY=false
 EXECUTE_ONLY=false
+DEV_IMAGES=false
 TEST_IDS=()
 
 usage() {
@@ -144,7 +145,12 @@ Sampling Options:
   --max-samples-per-pop N    Cap individuals per population in columns.txt
 
 General Options:
-  -v, --verbose        Verbose output
+  --dev-images         Use locally built engine/worker images
+                       (hyperflowwms/hyperflow:dev and
+                       hyperflowwms/1000genome-worker:dev; build them with
+                       ./build-dev-images.sh)
+  -v, --verbose        Verbose output (also sets workflow console log
+                       level to debug)
   -h, --help           Show this help message
 
 Examples:
@@ -202,6 +208,10 @@ while [[ $# -gt 0 ]]; do
         --max-samples-per-pop)
             MAX_SAMPLES_PER_POP="$2"
             shift 2
+            ;;
+        --dev-images)
+            DEV_IMAGES=true
+            shift
             ;;
         -v|--verbose)
             VERBOSE=true
@@ -723,6 +733,22 @@ for p in json.load(sys.stdin)['problems']:
     export USER_ID=$(id -u)
     export USER_GID=$(id -g)
     export MAX_PARALLELISM=$MAX_PARALLELISM_VALUE
+
+    if [ "$DEV_IMAGES" = true ]; then
+        export HF_ENGINE_IMAGE=hyperflowwms/hyperflow:dev
+        export HF_VAR_WORKER_CONTAINER=hyperflowwms/1000genome-worker:dev
+    fi
+    if [ "$VERBOSE" = true ]; then
+        export HF_VAR_CONSOLE_LOG_LEVEL=debug
+    else
+        export HF_VAR_CONSOLE_LOG_LEVEL=${HF_VAR_CONSOLE_LOG_LEVEL:-info}
+    fi
+
+    # The engine writes to a pipe inside its container, so tell it whether the
+    # far end of that pipe (this script's stdout) is a terminal
+    if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+        export FORCE_COLOR=${FORCE_COLOR:-1}
+    fi
 
     cd "$SCRIPT_DIR"
 
