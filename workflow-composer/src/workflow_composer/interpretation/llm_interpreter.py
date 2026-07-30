@@ -25,8 +25,15 @@ from .skill_loader import load_skill_context
 
 
 class LLMConfig(BaseSettings if HAS_LLM_DEPS else object):
-    """LLM configuration from environment."""
-    model: str = "gemini/gemini-2.0-flash"
+    """LLM configuration from environment.
+
+    Override the model with ``WORKFLOW_COMPOSER_MODEL`` (see the ``env_prefix``
+    below), or per-invocation with ``--model``. The default is a floating alias
+    rather than a pinned version: Google retires dated Gemini models, and a
+    retired default fails every interpretation with a 404 until someone edits
+    this line.
+    """
+    model: str = "gemini/gemini-flash-latest"
 
     if HAS_LLM_DEPS:
         class Config:
