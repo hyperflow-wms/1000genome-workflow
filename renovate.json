@@ -8,6 +8,12 @@
   "enabledManagers": [
     "custom.regex"
   ],
+  "description": [
+    "The default ignorePaths includes **/tests/**, which hides tests/integration/docker-compose.yml. That file pins the engine and worker images the integration test runs, so it has to stay visible."
+  ],
+  "ignorePaths": [
+    "**/node_modules/**"
+  ],
   "labels": [
     "dependencies",
     "release-chain"
