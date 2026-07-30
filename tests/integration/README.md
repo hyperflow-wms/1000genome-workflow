@@ -177,11 +177,16 @@ After GENERATE the harness checks that the two differ **only** in the individual
 stage, whose task count is derived from the row count:
 
 ```
-[OK]   Estimate held: individuals 11 -> 15, other stages unchanged
+[OK]   Estimate held: individuals 11 -> 15, variants 176,606 -> 166,052 (+6.4%), other stages unchanged
 ```
 
 A different population set, or a missing merge or sifting step, fails the test —
 it means the workflow that was reviewed is not the workflow that will run.
+
+The variant percentage is reported, not asserted. It reads high because the
+estimator carries a safety margin, and it is worth watching: that same estimate
+decides where a run auto-stops, so drift in it misroutes those decisions with
+nothing else to reveal them.
 
 ---
 

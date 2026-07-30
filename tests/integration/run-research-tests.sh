@@ -603,9 +603,18 @@ for TEST_ID in "${TEST_IDS[@]}"; do
             --estimated "$WORKFLOW_DIR/workflow-estimated.json" \
             --final "$WORKFLOW_DIR/workflow.json")
         if echo "$CMP_RESULT" | python3 -c "import sys,json; sys.exit(0 if json.load(sys.stdin)['ok'] else 1)"; then
-            EST_IND=$(echo "$CMP_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['estimated_individuals'])")
-            GEN_IND=$(echo "$CMP_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['final_individuals'])")
-            log_success "  Estimate held: individuals $EST_IND -> $GEN_IND, other stages unchanged"
+            CMP_SUMMARY=$(echo "$CMP_RESULT" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+parts = [f\"individuals {d['estimated_individuals']} -> {d['final_individuals']}\"]
+if d.get('variant_diff_pct') is not None:
+    parts.append(
+        f\"variants {d['estimated_variants']:,} -> {d['final_variants']:,} \"
+        f\"({d['variant_diff_pct']:+}%)\"
+    )
+parts.append('other stages unchanged')
+print(', '.join(parts))")
+            log_success "  Estimate held: $CMP_SUMMARY"
         else
             echo "$CMP_RESULT" | python3 -c "
 import sys, json

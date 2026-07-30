@@ -504,8 +504,15 @@ def compare_estimated_to_final(estimated: dict, final: dict) -> dict:
     analysed, or dropped the merge or sifting step, the estimate was not a
     preview of the same workflow and reviewing it proved nothing.
 
-    Returns a dict with ``ok``, the per-stage task counts of both workflows, and
-    ``problems`` -- an empty list when the only differing stage is individuals.
+    Also reports how far the estimated variant count fell from the exact one.
+    That estimate decides where a run auto-stops and how large the previewed
+    workflow is, so a drift in it misroutes those decisions silently; the
+    percentage is the only place it becomes visible. It is reported, never
+    asserted -- the estimator deliberately carries a safety margin.
+
+    Returns a dict with ``ok``, the per-stage task counts of both workflows,
+    the two variant counts with their percentage difference, and ``problems``
+    -- an empty list when the only differing stage is individuals.
     """
     def stage_counts(wf: dict) -> dict[str, int]:
         counts: dict[str, int] = {}
@@ -514,7 +521,24 @@ def compare_estimated_to_final(estimated: dict, final: dict) -> dict:
             counts[name] = counts.get(name, 0) + 1
         return counts
 
+    def variant_count(wf: dict) -> int | None:
+        """The row count an individuals task was told to span, or None."""
+        for proc in wf.get("processes", []):
+            if proc.get("name") != "individuals":
+                continue
+            args = proc.get("config", {}).get("executor", {}).get("args", [])
+            if len(args) >= 5:
+                try:
+                    return int(args[4])
+                except (TypeError, ValueError):
+                    return None
+        return None
+
     est, fin = stage_counts(estimated), stage_counts(final)
+    est_variants, fin_variants = variant_count(estimated), variant_count(final)
+    variant_diff_pct = None
+    if est_variants is not None and fin_variants:
+        variant_diff_pct = round((est_variants - fin_variants) / fin_variants * 100, 1)
     problems = []
 
     for stage in sorted(set(est) | set(fin)):
@@ -535,6 +559,9 @@ def compare_estimated_to_final(estimated: dict, final: dict) -> dict:
         "final_stages": fin,
         "estimated_individuals": est.get("individuals", 0),
         "final_individuals": fin.get("individuals", 0),
+        "estimated_variants": est_variants,
+        "final_variants": fin_variants,
+        "variant_diff_pct": variant_diff_pct,
         "problems": problems,
     }
 

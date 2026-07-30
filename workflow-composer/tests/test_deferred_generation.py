@@ -17,11 +17,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "tests" / "integrat
 from test_framework import compare_estimated_to_final
 
 
-def wf(**stages):
-    """Build a minimal workflow with the given per-stage task counts."""
+def wf(variants=None, **stages):
+    """Build a minimal workflow with the given per-stage task counts.
+
+    When ``variants`` is given, individuals tasks carry it as their 5th
+    argument, matching what the generator emits.
+    """
     procs = []
     for name, count in stages.items():
-        procs.extend({"name": name} for _ in range(count))
+        for _ in range(count):
+            proc = {"name": name}
+            if name == "individuals" and variants is not None:
+                proc["config"] = {
+                    "executor": {"args": ["f.vcf", "6", "1", "100", str(variants)]}
+                }
+            procs.append(proc)
     return {"processes": procs}
 
 
@@ -110,3 +120,54 @@ def test_any_individuals_count_pair_is_accepted(est, fin):
         wf(individuals=fin, **TWO_POPULATIONS),
     )
     assert r["ok"], r["problems"]
+
+
+# ---------------------------------------------------------------------------
+# Estimation accuracy: reported, never asserted
+# ---------------------------------------------------------------------------
+
+def test_overestimate_reports_positive_percentage():
+    """The estimator carries a safety margin, so it normally reads high."""
+    r = compare_estimated_to_final(
+        wf(variants=176606, individuals=11, **TWO_POPULATIONS),
+        wf(variants=166052, individuals=15, **TWO_POPULATIONS),
+    )
+    assert (r["estimated_variants"], r["final_variants"]) == (176606, 166052)
+    assert r["variant_diff_pct"] == pytest.approx(6.4, abs=0.05)
+    assert r["ok"], "an inaccurate estimate is reported, not failed"
+
+
+def test_underestimate_reports_negative_percentage():
+    r = compare_estimated_to_final(
+        wf(variants=900, individuals=11, **TWO_POPULATIONS),
+        wf(variants=1000, individuals=11, **TWO_POPULATIONS),
+    )
+    assert r["variant_diff_pct"] == pytest.approx(-10.0)
+    assert r["ok"]
+
+
+def test_exact_estimate_reports_zero():
+    r = compare_estimated_to_final(
+        wf(variants=2369, individuals=1, **TWO_POPULATIONS),
+        wf(variants=2369, individuals=1, **TWO_POPULATIONS),
+    )
+    assert r["variant_diff_pct"] == 0.0
+
+
+def test_missing_counts_report_none_rather_than_failing():
+    """Workflows without the task args still compare on stage counts."""
+    r = compare_estimated_to_final(
+        wf(individuals=11, **TWO_POPULATIONS),
+        wf(individuals=15, **TWO_POPULATIONS),
+    )
+    assert r["ok"]
+    assert r["estimated_variants"] is None
+    assert r["variant_diff_pct"] is None
+
+
+def test_unparseable_count_does_not_raise():
+    bad = {"processes": [{"name": "individuals",
+                          "config": {"executor": {"args": ["f", "6", "1", "2", "not-a-number"]}}}]}
+    r = compare_estimated_to_final(bad, wf(variants=100, individuals=1))
+    assert r["estimated_variants"] is None
+    assert r["variant_diff_pct"] is None
