@@ -57,6 +57,17 @@ the `g1kwf generate` command to run after data extraction.
   - `"aws"`: Use S3 URLs (requires AWS credentials/htslib S3 plugin)
   - `"gcp"`: Use GCS URLs (requires GCS configuration)
 
+- `parallelism`: Per-task memory budget preset — `"small"`, `"medium"`,
+  `"large"` (see resource-policy.md for the MB values each name resolves
+  to). `ind_jobs` is computed from this budget plus the estimated
+  variant/individual counts, not looked up from the preset name (default:
+  `"medium"`)
+
+- `ind_jobs`: Explicit task-count override (overrides the computed
+  recommendation)
+
+- `vcpus`: Override the compute environment's vCPU count
+
 ### generate_workflow
 
 Generate HyperFlow workflow JSON from chromosome data. Returns `workflow.json`,
@@ -70,9 +81,14 @@ Generate HyperFlow workflow JSON from chromosome data. Returns `workflow.json`,
 
 - `populations`: Population codes to include (default: all 7)
 
-- `parallelism`: Preset — `"small"` (10), `"medium"` (50), `"large"` (250) ind_jobs
+- `parallelism`: Per-task memory budget preset — `"small"`, `"medium"`,
+  `"large"` (see resource-policy.md for the MB values each name resolves
+  to, and who owns choosing them). `ind_jobs` is computed from this budget
+  plus the actual variant/individual counts, not looked up from the preset
+  name — see "Choosing individuals parallelism" below (default: `"medium"`)
 
-- `ind_jobs`: Explicit ind_jobs value (overrides parallelism preset)
+- `ind_jobs`: Explicit ind_jobs value (overrides parallelism preset; still
+  clamped to the memory-safe range, see below)
 
 - `max_samples_per_pop`: Cap individuals per population in columns.txt
 
@@ -120,6 +136,40 @@ bash extract-data.sh --plan plan.json --output-dir /path/to/workdir [--docker-im
 2. Runs the commands (natively or via Docker)
 3. Builds `data.csv` from extracted VCF files
 4. Prints the `g1kwf generate` command to run next
+
+## Choosing individuals parallelism
+
+This is domain policy — how much work is worth giving one task — not
+resource policy. Resource policy (per-environment memory budgets, vCPU
+counts, who owns those numbers) lives in resource-policy.md; this section
+assumes whatever that file's compute environment supplies.
+
+- **Aim to keep every available core busy.** An `ind_jobs` well below the
+  target environment's vCPU count leaves cores idle for no benefit.
+- **Give each task at least ~10,000 variants for a cohort of ~1,000
+  individuals.** A task carries a few seconds of fixed cost — container
+  start, input scan, output compression — that a smaller chunk cannot
+  amortise, so slicing thinner than this floor only adds overhead without
+  adding useful work.
+- **That floor scales inversely with cohort size.** Cost follows variants ×
+  individuals, not variants alone, so a larger cohort needs fewer variants
+  per task to reach the same fixed-cost floor: a cohort of ~2,000
+  individuals only needs roughly half the variants per task — ~5,000 — to
+  clear the same fixed-cost floor that ~10,000 variants clears for ~1,000
+  individuals.
+- **Keep each task under the configured per-task memory budget** — 512 MB
+  for the `"medium"` preset (see resource-policy.md), the ceiling the cost
+  model behind `recommend_parallelism` is calibrated against.
+- **Call `recommend_parallelism` with the variant count and the target
+  environment; do not compute the value by hand.** It is the one mechanism
+  behind both `plan_workflow`'s and `generate_workflow`'s parallelism
+  recommendation, so a value worked out by hand can disagree with what the
+  tool would have produced for the same inputs.
+- **Whatever `ind_jobs` you propose is only a hint.** `generate_workflow`
+  clamps it to the memory- and core-safe range before it takes effect, so a
+  proposed value that turns out too high costs throughput, not host
+  stability — the clamp is unconditional and does not depend on getting the
+  proposal right.
 
 ## Interpretation Guidelines
 

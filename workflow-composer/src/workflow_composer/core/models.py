@@ -86,11 +86,25 @@ class OutputFormat(str, Enum):
 # ============================================================================
 
 class ExecutionHints(BaseModel):
-    """Structured guidance for execution agents."""
+    """Structured guidance for execution agents.
+
+    ``max_parallelism``, ``est_peak_mb``, and ``parallelism_reason`` come
+    straight from ``core.parallelism.recommend_parallelism`` (RFC-003
+    section 4.3/section 5): the global concurrency dial
+    (``HF_VAR_REDIS_CMD_MAX_PARALLELISM``), the per-task memory estimate it
+    was sized against, and the one-line explanation of which constraint
+    bound. Recording all three next to ``recommended_parallelism`` is what
+    keeps a plan self-describing -- RFC-003 section 1.1 documents a run
+    where ``plan.json`` recorded one parallelism value while the harness
+    used another, and nothing in the plan surfaced the mismatch.
+    """
     prefer_remote_extraction: bool = True
     parallel_population_analysis: bool = True
     estimated_memory_per_task_gb: float = 2.0
     recommended_parallelism: int = 10
+    max_parallelism: int = 10
+    est_peak_mb: int = 0
+    parallelism_reason: str = ""
 
 
 # ============================================================================

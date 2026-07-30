@@ -8,24 +8,19 @@ See implementation plan for validation strategy and known differences.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, replace
 from pathlib import Path
 import csv
 import shutil
 
+from .environment import ComputeEnvironment
+from .parallelism import Parallelism, format_parallelism_reason, recommend_parallelism
+
+logger = logging.getLogger(__name__)
+
 # Bundled population files directory
 BUNDLED_POPULATIONS_DIR = Path(__file__).parent.parent / "data" / "populations"
-
-# Parallelism presets: ind_jobs = parallel individuals tasks per chromosome
-# - small: Quick testing or limited resources
-# - medium: Sensible default for most clusters
-# - large: Production scale (matches original daxgen default)
-PARALLELISM_PRESETS = {
-    "small": 10,
-    "medium": 50,
-    "large": 250,
-}
-DEFAULT_PARALLELISM = "medium"
 
 
 @dataclass
@@ -93,6 +88,75 @@ def validate_ind_jobs(ind_jobs: int, threshold: int, vcf_file: str) -> int:
 
     ind_jobs = min(ind_jobs, threshold)
     return ind_jobs
+
+
+def _resolve_clamp_environment(
+    compute_environment: str | ComputeEnvironment | None,
+    mem_budget_mb: int | None,
+) -> ComputeEnvironment:
+    """Resolve the environment ``clamp_ind_jobs`` clamps against.
+
+    ``compute_environment`` may be a named profile ("local", "aws", "gcp"),
+    an already-resolved ``ComputeEnvironment``, or ``None`` (defaults to
+    "local", the RFC-003 section 4.4 worked-examples profile). A separately
+    supplied ``mem_budget_mb`` overrides the profile's default regardless of
+    which form ``compute_environment`` took.
+    """
+    if isinstance(compute_environment, ComputeEnvironment):
+        env = compute_environment
+        if mem_budget_mb is not None:
+            env = replace(env, mem_budget_mb=mem_budget_mb)
+        return env
+
+    overrides: dict[str, int] = {}
+    if mem_budget_mb is not None:
+        overrides["mem_budget_mb"] = mem_budget_mb
+    return ComputeEnvironment.resolve(compute_environment or "local", **overrides)
+
+
+def clamp_ind_jobs(
+    ind_jobs_hint: int,
+    row_count: int,
+    individuals: int,
+    env: ComputeEnvironment,
+    chromosomes: int = 1,
+) -> tuple[int, Parallelism]:
+    """Clamp an ``ind_jobs`` hint to the memory-safe range for one chromosome.
+
+    RFC-003 section 3.3 "trust but clamp": whatever ``ind_jobs`` arrives --
+    agent-proposed, preset-derived, or CLI flag -- ``generate_workflow``
+    treats it as a hint and clamps it to the range ``recommend_parallelism``
+    computes, so an agent that ignores the prose guidance in ``SKILL.md``
+    costs throughput but cannot cost a host.
+
+    The clamp is per chromosome and uses that chromosome's *exact*
+    ``row_count`` as V (section 7 item 4): the generator reads the real
+    count from ``data.csv``, so unlike ``planner._estimate_max_variants_per_
+    chromosome`` (which has to estimate and take the max across chromosomes
+    touched by an intent) no estimate is needed here.
+
+    Two-sided: never exceed the memory-safe ``ind_jobs`` from
+    ``recommend_parallelism``, and never fall below 1. The pre-existing
+    ``validate_ind_jobs`` threshold rule (never exceed ``row_count``) is
+    applied separately, by the caller, exactly as before.
+
+    Returns:
+        A tuple of the clamped ``ind_jobs`` and the ``Parallelism`` computed
+        for this chromosome, so the caller can report ``max_parallelism``,
+        ``est_peak_mb``, and ``reason`` alongside it.
+    """
+    recommended = recommend_parallelism(
+        variants=row_count,
+        individuals=individuals,
+        vcpus=env.vcpus,
+        host_mem_mb=env.host_mem_mb,
+        chromosomes=chromosomes,
+        mem_budget_mb=env.mem_budget_mb,
+        engine_reserve=env.engine_reserve,
+        host_reserve_mb=env.host_reserve_mb,
+    )
+    clamped = max(1, min(ind_jobs_hint, recommended.ind_jobs))
+    return clamped, recommended
 
 
 class HyperFlowGenerator:
@@ -178,11 +242,23 @@ class HyperFlowGenerator:
         populations: list[str],
         ind_jobs: int,
         name: str = "1000genome",
-        version: str = "1.0.0"
+        version: str = "1.0.0",
+        individuals: int | None = None,
+        compute_environment: ComputeEnvironment | None = None,
     ) -> dict:
         """Generate complete HyperFlow workflow.
 
         Algorithm mirrors daxgen.py exactly.
+
+        Args:
+            individuals: I, the individual count used to clamp ``ind_jobs``
+                (RFC-003 section 3.3 "trust but clamp"). ``None`` (the
+                default) skips clamping entirely, preserving the exact
+                pre-clamp behaviour -- ``ind_jobs`` is used as given, subject
+                only to the pre-existing ``validate_ind_jobs`` threshold
+                rule.
+            compute_environment: resolved ``ComputeEnvironment`` to clamp
+                against. Ignored when ``individuals`` is ``None``.
         """
 
         # Shared input: columns.txt
@@ -197,6 +273,7 @@ class HyperFlowGenerator:
         c_nums = []
         individuals_merged_signals = []
         sifted_signals = []
+        parallelism_metadata = []
 
         # ============================================================
         # PER-CHROMOSOME PROCESSING
@@ -207,8 +284,59 @@ class HyperFlowGenerator:
             c_num = chrom.chromosome
             threshold = chrom.row_count
 
-            # Validate and adjust ind_jobs
-            actual_ind_jobs = validate_ind_jobs(ind_jobs, threshold, chrom.vcf_file)
+            # RFC-003 section 3.3 "trust but clamp": ind_jobs is a hint. When
+            # a caller supplies individuals/compute_environment, clamp it to
+            # the memory-safe range for this chromosome's exact row_count
+            # before the pre-existing threshold clamp below ever sees it.
+            ind_jobs_for_chrom = ind_jobs
+            recommended: Parallelism | None = None
+            if individuals is not None and compute_environment is not None:
+                ind_jobs_for_chrom, recommended = clamp_ind_jobs(
+                    ind_jobs,
+                    threshold,
+                    individuals,
+                    compute_environment,
+                    chromosomes=len(chromosomes),
+                )
+
+            # Validate and adjust ind_jobs (never exceed row_count)
+            actual_ind_jobs = validate_ind_jobs(ind_jobs_for_chrom, threshold, chrom.vcf_file)
+
+            if recommended is not None:
+                # RFC-003 section 5/7 item 5: emit both dials and the reason
+                # for the *effective* (post-clamp) ind_jobs, and log both the
+                # hint and the effective value when they differ -- never
+                # just the hint, and never a reason naming a different
+                # ind_jobs than the one that actually ran.
+                reason = recommended.reason
+                if actual_ind_jobs != recommended.ind_jobs:
+                    # recommended.reason names recommended.ind_jobs (the
+                    # memory/core-safe recommendation); the hint clamped
+                    # tighter than that (or the pre-existing row_count cap
+                    # bound), so actual_ind_jobs differs -- rebuild through
+                    # the single format_parallelism_reason helper rather
+                    # than let the reason state a value nothing ran with.
+                    reason = format_parallelism_reason(
+                        ind_jobs=actual_ind_jobs,
+                        max_parallelism=recommended.max_parallelism,
+                        binding=recommended.binding,
+                        variants=threshold,
+                        individuals=individuals,
+                        cores=max(1, compute_environment.vcpus - compute_environment.engine_reserve),
+                        est_peak_mb=recommended.est_peak_mb,
+                    )
+                if ind_jobs != actual_ind_jobs:
+                    reason = f"{reason} [hint ind_jobs={ind_jobs} clamped to {actual_ind_jobs}]"
+                logger.info("chr%s: %s", c_num, reason)
+                parallelism_metadata.append({
+                    "chromosome": c_num,
+                    "ind_jobs_hint": ind_jobs,
+                    "ind_jobs": actual_ind_jobs,
+                    "max_parallelism": recommended.max_parallelism,
+                    "est_peak_mb": recommended.est_peak_mb,
+                    "binding": recommended.binding,
+                    "reason": reason,
+                })
             # Round the step up so ind_jobs tasks cover the whole file. Rounding
             # down leaves a remainder that spawns an extra task for a handful of
             # rows, and that task still scans the file up to its offset.
@@ -322,7 +450,7 @@ class HyperFlowGenerator:
                     outs=[freq_out_signal]
                 )
 
-        return {
+        workflow = {
             "name": name,
             "version": version,
             "processes": self.processes,
@@ -330,6 +458,16 @@ class HyperFlowGenerator:
             "ins": self.workflow_ins,
             "outs": self.workflow_outs
         }
+
+        # RFC-003 section 7 item 4: return the effective dials alongside the
+        # workflow rather than only logging them, so a caller cannot see one
+        # dial without the other (section 5). Only added when clamping ran
+        # (individuals/compute_environment supplied) -- otherwise the
+        # workflow dict is byte-identical to the pre-clamp shape.
+        if parallelism_metadata:
+            workflow["metadata"] = {"parallelism": parallelism_metadata}
+
+        return workflow
 
 
 def generate_columns_txt(
@@ -435,21 +573,46 @@ def generate_workflow(
     name: str = "1000genome",
     version: str = "1.0.0",
     chromosome_filter: list[str] | None = None,
-    population_filter: list[str] | None = None
+    population_filter: list[str] | None = None,
+    individuals: int | None = None,
+    compute_environment: str | ComputeEnvironment | None = None,
+    mem_budget_mb: int | None = None,
 ) -> dict:
     """Main entry point for workflow generation.
 
     Args:
         data_csv: Path to data.csv
         populations_dir: Path to populations/ directory
-        ind_jobs: Number of individuals jobs per chromosome
+        ind_jobs: Number of individuals jobs per chromosome. Treated as a
+            hint (RFC-003 section 3.3 "trust but clamp") whenever
+            ``individuals`` is supplied -- see below.
         name: Workflow name
         version: Workflow version
         chromosome_filter: If provided, only process these chromosomes (e.g., ["6"] for HLA)
         population_filter: If provided, only use these populations (e.g., ["EUR", "AFR"])
+        individuals: I, the individual count after population filtering
+            (e.g. the real ``columns.txt`` sample count). When given,
+            ``ind_jobs`` is clamped per chromosome to the memory-safe range
+            ``recommend_parallelism`` computes for that chromosome's exact
+            ``row_count`` (RFC-003 section 7 item 4). ``None`` (the default)
+            skips clamping entirely -- ``ind_jobs`` is used exactly as given,
+            subject only to the pre-existing ``validate_ind_jobs`` threshold
+            rule, and the returned workflow carries no ``metadata`` key.
+        compute_environment: named ``ComputeEnvironment`` profile ("local",
+            "aws", "gcp") or an already-resolved ``ComputeEnvironment`` to
+            clamp against. Ignored when ``individuals`` is ``None``; defaults
+            to the "local" profile when ``individuals`` is given but this is
+            not.
+        mem_budget_mb: per-task memory ceiling overriding the resolved
+            environment's default. Ignored when ``individuals`` is ``None``.
 
     Returns:
-        HyperFlow workflow as dict (ready for json.dumps)
+        HyperFlow workflow as dict (ready for json.dumps). When clamping ran
+        (``individuals`` given), also carries
+        ``workflow["metadata"]["parallelism"]``: one entry per chromosome
+        with the effective ``ind_jobs``, ``max_parallelism``, ``est_peak_mb``,
+        and ``reason`` (RFC-003 section 5) -- returned together so a caller
+        cannot see one dial without the other.
     """
     chromosomes = load_data_csv(data_csv)
     populations = load_populations(populations_dir)
@@ -474,11 +637,17 @@ def generate_workflow(
             )
         populations = filtered_pops
 
+    resolved_env = None
+    if individuals is not None:
+        resolved_env = _resolve_clamp_environment(compute_environment, mem_budget_mb)
+
     generator = HyperFlowGenerator()
     return generator.generate(
         chromosomes=chromosomes,
         populations=populations,
         ind_jobs=ind_jobs,
         name=name,
-        version=version
+        version=version,
+        individuals=individuals,
+        compute_environment=resolved_env,
     )

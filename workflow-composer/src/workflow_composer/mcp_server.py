@@ -23,9 +23,11 @@ from .core.data_resolver import (
     compute_optimal_ind_jobs
 )
 from .core.generator import (
-    HyperFlowGenerator, ChromosomeData, PARALLELISM_PRESETS,
+    HyperFlowGenerator, ChromosomeData,
     BUNDLED_POPULATIONS_DIR, load_populations,
 )
+from .core.environment import ComputeEnvironment, MEMORY_BUDGET_PRESETS
+from .core.parallelism import recommend_parallelism
 
 SCRIPTS_DIR = Path(__file__).parent / "scripts"
 
@@ -200,12 +202,25 @@ Population files are bundled in the package (no external data container needed).
                         "parallelism": {
                             "type": "string",
                             "enum": ["small", "medium", "large"],
-                            "description": "Parallelism preset: small=10, medium=50, large=250 ind_jobs",
+                            "description": "Per-task memory budget preset (small=256MB, medium=512MB, "
+                                           "large=1024MB). ind_jobs is computed from this budget plus the "
+                                           "actual variant/individual counts, not looked up directly.",
                             "default": "medium"
                         },
                         "ind_jobs": {
                             "type": "integer",
-                            "description": "Explicit individuals jobs per chromosome (overrides parallelism preset)"
+                            "description": "Explicit individuals jobs per chromosome "
+                                           "(overrides the computed recommendation)"
+                        },
+                        "compute_environment": {
+                            "type": "string",
+                            "enum": ["local", "aws", "gcp"],
+                            "description": "Target environment, used to size the parallelism recommendation",
+                            "default": "local"
+                        },
+                        "vcpus": {
+                            "type": "integer",
+                            "description": "Override vCPUs for the compute environment"
                         },
                         "max_samples_per_pop": {
                             "type": "integer",
@@ -337,6 +352,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 ### Execution Hints
 - Parallel population analysis: {plan.execution_hints.parallel_population_analysis}
 - Recommended parallelism: {plan.execution_hints.recommended_parallelism}
+- {plan.execution_hints.parallelism_reason}
 
 ---
 
@@ -394,15 +410,67 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
             if not populations:
                 populations = load_populations(BUNDLED_POPULATIONS_DIR)
 
-            parallelism = arguments.get("parallelism", "medium")
+            parallelism = arguments.get("parallelism")
             workflow_name = arguments.get("name", "1000genome")
             max_samples_per_pop = arguments.get("max_samples_per_pop")
             vcf_header = arguments.get("vcf_header")
+            compute_environment = arguments.get("compute_environment", "local")
+            vcpus_override = arguments.get("vcpus")
 
-            # Resolve ind_jobs: explicit > preset
+            # Resolve the compute environment and real individuals count up
+            # front -- always, not only when ind_jobs is omitted -- so the
+            # generator below can clamp any hint (RFC-003 section 3.3 "trust
+            # but clamp") and so the human-readable summary always shows
+            # both dials and the reason for the effective (post-clamp)
+            # value, never just the ind_jobs that was requested.
+            env_overrides: dict[str, int] = {}
+            if vcpus_override is not None:
+                env_overrides["vcpus"] = vcpus_override
+            if parallelism is not None:
+                if parallelism not in MEMORY_BUDGET_PRESETS:
+                    return [TextContent(type="text",
+                        text=f"Error: Unknown parallelism preset '{parallelism}'. "
+                             f"Valid options: {sorted(MEMORY_BUDGET_PRESETS)}")]
+                env_overrides["mem_budget_mb"] = MEMORY_BUDGET_PRESETS[parallelism]
+
+            try:
+                env = ComputeEnvironment.resolve(compute_environment, **env_overrides)
+            except ValueError as e:
+                return [TextContent(type="text", text=f"Error: {e}")]
+
+            total_individuals = sum(
+                len((BUNDLED_POPULATIONS_DIR / pop).read_text().split())
+                for pop in populations if (BUNDLED_POPULATIONS_DIR / pop).exists()
+            )
+
+            # Resolve ind_jobs: explicit override > recommend_parallelism, computed
+            # from the actual variant/individual counts and the target environment
+            # (RFC-003 section 7 item 2) -- never a preset name looked up directly.
             ind_jobs = arguments.get("ind_jobs")
             if ind_jobs is None:
-                ind_jobs = PARALLELISM_PRESETS.get(parallelism, 50)
+                # recommend_parallelism's ind_jobs is per chromosome (RFC-003
+                # section 4.3/4.5) and the workflow below applies the single
+                # resulting value identically to every chromosome in
+                # chromosome_data. Driving off the sum across chromosomes
+                # would size ind_jobs for a workload that belongs to no
+                # single chromosome and silently violate the min_work floor
+                # on every chromosome smaller than the sum; take the largest
+                # single chromosome's row_count instead so ind_jobs is
+                # memory-safe by construction and every smaller chromosome
+                # does less (never more) real work per task under the same
+                # ind_jobs.
+                total_variants = max(c["row_count"] for c in chromosome_data)
+                resolved = recommend_parallelism(
+                    variants=total_variants,
+                    individuals=total_individuals,
+                    vcpus=env.vcpus,
+                    host_mem_mb=env.host_mem_mb,
+                    chromosomes=max(1, len(chromosome_data)),
+                    mem_budget_mb=env.mem_budget_mb,
+                    engine_reserve=env.engine_reserve,
+                    host_reserve_mb=env.host_reserve_mb,
+                )
+                ind_jobs = resolved.ind_jobs
 
             # Convert input to ChromosomeData objects
             chromosomes = []
@@ -436,19 +504,33 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
                     chromosome=c_num
                 ))
 
-            # Generate workflow
+            # Generate workflow. individuals/compute_environment clamp
+            # ind_jobs to the memory-safe range per chromosome (RFC-003
+            # section 3.3 "trust but clamp") and populate
+            # workflow["metadata"]["parallelism"] with the effective dials
+            # and reason for each -- always, so the human-readable summary
+            # below can report them even when ind_jobs was given explicitly.
             generator = HyperFlowGenerator()
             workflow = generator.generate(
                 chromosomes=chromosomes,
                 populations=populations,
                 ind_jobs=ind_jobs,
                 name=workflow_name,
-                version="1.0.0"
+                version="1.0.0",
+                individuals=total_individuals,
+                compute_environment=env,
             )
 
             # Format response
             task_count = len(workflow["processes"])
             file_count = len(workflow["signals"])
+
+            # RFC-003 section 5/7 item 5: both dials and the reason for
+            # every chromosome, never one dial without the other.
+            parallelism_lines = "\n".join(
+                f"- chr{entry['chromosome']}: {entry['reason']}"
+                for entry in workflow.get("metadata", {}).get("parallelism", [])
+            )
 
             response = f"""## Generated Workflow
 
@@ -457,7 +539,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 - Files: {file_count}
 - Chromosomes: {len(chromosomes)}
 - Populations: {', '.join(populations)}
-- Parallelism: ind_jobs={ind_jobs}
+{parallelism_lines}
 
 ### Chromosome Data
 | VCF File | Rows | Annotation |

@@ -11,7 +11,8 @@ SKILL_FILES = [
     "populations.md",
     "genomic-regions.md",
     "research-contexts.md",
-    "data-sources.md"
+    "data-sources.md",
+    "resource-policy.md",
 ]
 
 

@@ -343,14 +343,18 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     echo -e "${CYAN}  Rationale:${NC} $RATIONALE"
     echo ""
 
-    # Show adaptive parallelism calculation if using --vcpus
+    # Show both parallelism dials and the reason (RFC-003 section 5: reporting
+    # one dial without the other hides an unsafe concurrency) if using --vcpus,
+    # computed by the same recommend_parallelism tool the composer uses
+    # (RFC-003 section 7 item 3).
     if [ -n "$VCPUS" ]; then
         ADAPTIVE_INFO=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
             --intent-json "$INTENT_JSON" \
             --vcpus "$VCPUS")
         COMPUTED_IND_JOBS=$(echo "$ADAPTIVE_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin)['ind_jobs'])")
-        ESTIMATED_VARIANTS=$(echo "$ADAPTIVE_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin)['estimated_variants'])")
-        log_info "  Adaptive parallelism: $COMPUTED_IND_JOBS ind_jobs (for $VCPUS vCPUs, ~$ESTIMATED_VARIANTS variants)"
+        COMPUTED_MAX_PARALLELISM=$(echo "$ADAPTIVE_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
+        PARALLELISM_REASON=$(echo "$ADAPTIVE_INFO" | python3 -c "import sys,json; print(json.load(sys.stdin)['reason'])")
+        log_info "  Adaptive parallelism: $PARALLELISM_REASON"
     fi
 
     # Save formatted JSON files
@@ -469,20 +473,37 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         continue
     fi
 
-    # Determine parallelism for CLI
+    # Determine parallelism for CLI, and resolve MAX_PARALLELISM (the
+    # HF_VAR_REDIS_CMD_MAX_PARALLELISM concurrency dial, RFC-003 section 4.2)
+    # from the same recommend_parallelism tool instead of a hardcoded
+    # constant (RFC-003 section 7 item 3).
     CLI_PARALLELISM=""
+    MAX_PARALLELISM_VALUE=""
     if [ -n "$IND_JOBS" ]; then
         CLI_PARALLELISM="--ind-jobs $IND_JOBS"
     elif [ -n "$VCPUS" ]; then
-        # Compute adaptive parallelism using the framework
+        # Compute both dials using the framework
         ADAPTIVE_RESULT=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
             --intent-json "$INTENT_JSON" \
             --vcpus "$VCPUS")
         ADAPTIVE_JOBS=$(echo "$ADAPTIVE_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['ind_jobs'])")
+        MAX_PARALLELISM_VALUE=$(echo "$ADAPTIVE_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
+        ADAPTIVE_REASON=$(echo "$ADAPTIVE_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['reason'])")
         CLI_PARALLELISM="--ind-jobs $ADAPTIVE_JOBS"
-        log_info "Adaptive parallelism: $ADAPTIVE_JOBS ind_jobs"
+        log_info "Adaptive parallelism: $ADAPTIVE_REASON"
     elif [ -n "$PARALLELISM" ]; then
         CLI_PARALLELISM="--parallelism $PARALLELISM"
+    fi
+
+    if [ -z "$MAX_PARALLELISM_VALUE" ]; then
+        # --parallelism/--ind-jobs runs don't name a vCPU count. Fall back to
+        # the same tool with the "aws" environment's default vCPUs
+        # (workflow_composer.core.environment's "aws" profile) rather than
+        # reintroducing a second, hand-picked constant.
+        FALLBACK_RESULT=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
+            --intent-json "$INTENT_JSON" \
+            --vcpus 8)
+        MAX_PARALLELISM_VALUE=$(echo "$FALLBACK_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
     fi
 
     # Pass intent populations to generator
@@ -546,7 +567,7 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     export WORKFLOW_DIR
     export USER_ID=$(id -u)
     export USER_GID=$(id -g)
-    export MAX_PARALLELISM=20
+    export MAX_PARALLELISM=$MAX_PARALLELISM_VALUE
 
     cd "$SCRIPT_DIR"
 

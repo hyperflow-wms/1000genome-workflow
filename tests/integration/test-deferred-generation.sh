@@ -146,8 +146,10 @@ log_info "Step 1.2: Generating ESTIMATED workflow (for planning)..."
 
 python3 << PYEOF
 import json
-from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData
-from workflow_composer.core.generator import PARALLELISM_PRESETS
+from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData, BUNDLED_POPULATIONS_DIR
+from workflow_composer.core.environment import ComputeEnvironment, MEMORY_BUDGET_PRESETS, recommend_for_environment
+
+POPULATIONS = ["AFR", "ALL", "AMR", "EAS", "EUR", "GBR", "SAS"]
 
 # Create chromosome data with estimated count
 chromosomes = [
@@ -159,12 +161,25 @@ chromosomes = [
     )
 ]
 
+# ind_jobs hint via recommend_parallelism (RFC-003 section 7 item 3):
+# generator.py no longer ships a fixed ind_jobs-per-preset table.
+# "$PARALLELISM" selects a memory budget via MEMORY_BUDGET_PRESETS instead.
+env = ComputeEnvironment.resolve("local", mem_budget_mb=MEMORY_BUDGET_PRESETS["$PARALLELISM"])
+individuals = sum(
+    len((BUNDLED_POPULATIONS_DIR / pop).read_text().split())
+    for pop in POPULATIONS
+    if (BUNDLED_POPULATIONS_DIR / pop).exists()
+)
+recommended = recommend_for_environment(
+    variants=$ESTIMATED_COUNT, individuals=individuals, env=env, chromosomes=1
+)
+
 # Generate workflow
 generator = HyperFlowGenerator()
 workflow = generator.generate(
     chromosomes=chromosomes,
-    populations=["AFR", "ALL", "AMR", "EAS", "EUR", "GBR", "SAS"],
-    ind_jobs=PARALLELISM_PRESETS["$PARALLELISM"],
+    populations=POPULATIONS,
+    ind_jobs=recommended.ind_jobs,
     name="1000genome-hla-estimated"
 )
 

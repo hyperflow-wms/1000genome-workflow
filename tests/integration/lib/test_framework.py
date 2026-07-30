@@ -121,47 +121,89 @@ def load_thresholds(yaml_path: Path) -> tuple[float, float]:
     )
 
 
-def compute_adaptive_parallelism(
-    estimated_variants: int,
-    vcpus: int,
-    target_variants_per_task: int = 25_000,
-    min_tasks_per_vcpu: float = 1.5,
-    max_tasks_per_vcpu: float = 5.0,
-) -> int:
-    """
-    Compute ind_jobs based on cluster size and data volume.
+def recommend_harness_parallelism(
+    intent_dict: dict,
+    vcpus: int | None = None,
+    parallelism: str | None = None,
+    compute_environment: str = "aws",
+):
+    """Resolve both parallelism dials for an intent dict via the same
+    ``recommend_parallelism`` tool the composer uses (RFC-003 section 7
+    item 3).
 
-    Goals:
-    1. Each task processes a reasonable chunk (~25k variants)
-    2. Enough tasks to keep all vCPUs busy (accounting for I/O wait)
-    3. Not so many tasks that scheduling overhead dominates
+    Replaces this module's own now-removed vCPU-only rule (the RFC-002
+    section 5 formula: ``clamp(V/25k, 1.5*vcpu, 5*vcpu)``), which had no
+    memory term and disagreed with ``planner.resolve_parallelism`` for the
+    same intent (RFC-003 section 1.1).
+
+    V comes from ``planner._estimate_max_variants_per_chromosome`` -- the
+    *max* per-chromosome estimate, not this module's own
+    ``estimate_total_variants`` (which sums across every region/chromosome
+    the intent touches, for the unrelated ``estimated_variants`` display
+    field in the ``adaptive-parallelism`` CLI output). Summing would be
+    unsafe here: ``recommend_parallelism``'s ``ind_jobs`` is applied
+    identically to every chromosome the intent touches (RFC-003 section
+    4.3/4.5), so feeding it a sum across chromosomes inflates ``ind_jobs``
+    past what any single chromosome supports -- see
+    ``_estimate_max_variants_per_chromosome``'s docstring for a worked
+    counterexample. I comes from the same population-file line-count logic
+    the planner uses (``planner._estimate_individuals``); the environment
+    resolution (named profile plus ``vcpus``/``parallelism`` overrides)
+    reuses ``planner._resolve_environment`` directly. That means a call here
+    and a call to ``planner.resolve_parallelism`` with the same intent,
+    ``vcpus``, ``parallelism``, and ``compute_environment`` compute the
+    identical (V, I, ``ComputeEnvironment``) triple -- the composer and this
+    harness can no longer compute parallelism differently, including for
+    multi-chromosome/multi-region intents (e.g. ``cases.yaml``'s
+    ``brca-breast-cancer`` and ``genome-wide-null`` fixtures).
 
     Args:
-        estimated_variants: Total estimated variant count
-        vcpus: Number of available vCPUs
-        target_variants_per_task: Target variants per task (~1-2 min processing)
-        min_tasks_per_vcpu: Minimum task multiplier (keeps CPUs busy during I/O)
-        max_tasks_per_vcpu: Maximum task multiplier (avoids scheduling overhead)
+        intent_dict: a ``ResearchIntent.model_dump()``-shaped dict.
+        vcpus: explicit vCPU override, forwarded to
+            ``ComputeEnvironment.resolve``.
+        parallelism: memory-budget preset name ("small", "medium", "large"),
+            mapped to ``mem_budget_mb`` via
+            ``environment.MEMORY_BUDGET_PRESETS`` -- never a task-count
+            table.
+        compute_environment: named ``ComputeEnvironment`` profile ("local",
+            "aws", "gcp").
 
     Returns:
-        Recommended ind_jobs value
+        A ``core.parallelism.Parallelism`` with both dials, the peak-memory
+        estimate, the binding constraint, and the reason string.
     """
-    if vcpus <= 0:
-        raise ValueError(f"vcpus must be positive, got {vcpus}")
-    if estimated_variants <= 0:
-        return 1
+    from workflow_composer.core.models import ResearchIntent, GenomicRegion
+    from workflow_composer.core.environment import recommend_for_environment
+    from workflow_composer.core.planner import (
+        _resolve_environment,
+        _estimate_individuals,
+        _estimate_max_variants_per_chromosome,
+        _num_chromosomes,
+    )
 
-    # Data-driven estimate
-    data_driven = max(1, estimated_variants // target_variants_per_task)
+    regions = None
+    if intent_dict.get("regions"):
+        regions = [GenomicRegion(**r) for r in intent_dict["regions"]]
 
-    # Resource-driven bounds
-    min_jobs = max(1, int(vcpus * min_tasks_per_vcpu))
-    max_jobs = max(min_jobs, int(vcpus * max_tasks_per_vcpu))
+    intent = ResearchIntent(
+        analysis_type=intent_dict["analysis_type"],
+        populations=intent_dict["populations"],
+        chromosomes=intent_dict.get("chromosomes"),
+        regions=regions,
+        focus=intent_dict.get("focus", "all_variants")
+    )
 
-    # Clamp to bounds
-    ind_jobs = max(min_jobs, min(data_driven, max_jobs))
+    env = _resolve_environment(compute_environment, parallelism, vcpus)
+    variants = _estimate_max_variants_per_chromosome(intent)
+    individuals_count = _estimate_individuals(intent.populations)
+    chromosomes = _num_chromosomes(intent)
 
-    return ind_jobs
+    return recommend_for_environment(
+        variants=variants,
+        individuals=individuals_count,
+        env=env,
+        chromosomes=chromosomes,
+    )
 
 
 def interpret_prompt(
@@ -259,7 +301,17 @@ def create_plan(intent_dict: dict, compute_env: str = "local") -> dict:
 
 
 def estimate_total_variants(intent_dict: dict) -> int:
-    """Estimate total variant count for an intent."""
+    """Estimate the total variant count across every region/chromosome an
+    intent touches, summed.
+
+    This is a display figure only -- the ``estimated_variants`` field in the
+    ``adaptive-parallelism`` CLI output and the analogous "estimate" command
+    -- and must never be fed to ``recommend_parallelism`` as V.
+    ``recommend_harness_parallelism`` uses
+    ``planner._estimate_max_variants_per_chromosome`` (the *max* per
+    chromosome) for that; see its docstring for why summing across
+    chromosomes is unsafe there.
+    """
     from workflow_composer.core.models import GenomicRegion
     from workflow_composer.core.data_resolver import estimate_variant_count, CHROMOSOME_VARIANT_COUNT
 
@@ -291,12 +343,12 @@ def generate_estimated_workflow(
 
     Parallelism precedence:
     1. ind_jobs (explicit)
-    2. vcpus (adaptive calculation)
-    3. parallelism preset
-    4. default "small"
+    2. vcpus (recommend_parallelism, RFC-003 section 7 item 3)
+    3. parallelism preset (mem_budget_mb via MEMORY_BUDGET_PRESETS, same tool)
+    4. default "small" preset
     """
     from workflow_composer.core.models import ResearchIntent, GenomicRegion
-    from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData, PARALLELISM_PRESETS
+    from workflow_composer.core.generator import HyperFlowGenerator, ChromosomeData
     from workflow_composer.core.data_resolver import estimate_variant_count
 
     regions = None
@@ -346,12 +398,11 @@ def generate_estimated_workflow(
     if ind_jobs is not None:
         final_ind_jobs = ind_jobs
     elif vcpus is not None:
-        total_variants = sum(c.row_count for c in chromosomes)
-        final_ind_jobs = compute_adaptive_parallelism(total_variants, vcpus)
+        final_ind_jobs = recommend_harness_parallelism(intent_dict, vcpus=vcpus).ind_jobs
     elif parallelism is not None:
-        final_ind_jobs = PARALLELISM_PRESETS.get(parallelism, 10)
+        final_ind_jobs = recommend_harness_parallelism(intent_dict, parallelism=parallelism).ind_jobs
     else:
-        final_ind_jobs = PARALLELISM_PRESETS.get("small", 10)
+        final_ind_jobs = recommend_harness_parallelism(intent_dict, parallelism="small").ind_jobs
 
     return generator.generate(
         chromosomes=chromosomes,
@@ -516,7 +567,7 @@ def main():
     est_parser.add_argument("--vcpus", type=int, default=None)
 
     # Adaptive parallelism command
-    adapt_parser = subparsers.add_parser("adaptive-parallelism", help="Compute adaptive parallelism")
+    adapt_parser = subparsers.add_parser("adaptive-parallelism", help="Recommend both parallelism dials")
     adapt_parser.add_argument("--intent-json", required=True)
     adapt_parser.add_argument("--vcpus", type=int, required=True)
 
@@ -599,11 +650,14 @@ def main():
         elif args.command == "adaptive-parallelism":
             intent = json.loads(args.intent_json)
             total_variants = estimate_total_variants(intent)
-            ind_jobs = compute_adaptive_parallelism(total_variants, args.vcpus)
+            result = recommend_harness_parallelism(intent, vcpus=args.vcpus)
             print(json.dumps({
                 "vcpus": args.vcpus,
                 "estimated_variants": total_variants,
-                "ind_jobs": ind_jobs
+                "ind_jobs": result.ind_jobs,
+                "max_parallelism": result.max_parallelism,
+                "est_peak_mb": result.est_peak_mb,
+                "reason": result.reason,
             }))
 
         elif args.command == "stop-point":

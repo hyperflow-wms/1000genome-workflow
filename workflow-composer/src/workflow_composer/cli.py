@@ -17,8 +17,10 @@ import click
 from .core.models import OutputFormat, ResearchIntent
 from .core.generator import (
     generate_workflow, generate_columns_txt, copy_population_files,
-    PARALLELISM_PRESETS, DEFAULT_PARALLELISM, BUNDLED_POPULATIONS_DIR,
+    load_data_csv, load_populations, BUNDLED_POPULATIONS_DIR,
 )
+from .core.environment import ComputeEnvironment, MEMORY_BUDGET_PRESETS
+from .core.parallelism import recommend_parallelism
 from .core.planner import plan_workflow
 
 
@@ -37,12 +39,21 @@ def cli():
               help="Path to data.csv")
 @click.option("--populations-dir", default=None, type=click.Path(exists=True),
               help="Path to populations directory (default: bundled)")
+@click.option("--env", "compute_env", default="local",
+              type=click.Choice(["local", "aws", "gcp"]),
+              help="Target compute environment, used to size --parallelism/--vcpus")
 @click.option("--parallelism", "-p", default=None,
-              type=click.Choice(list(PARALLELISM_PRESETS.keys())),
-              help=f"Parallelism preset: small={PARALLELISM_PRESETS['small']}, "
-                   f"medium={PARALLELISM_PRESETS['medium']}, large={PARALLELISM_PRESETS['large']}")
+              type=click.Choice(list(MEMORY_BUDGET_PRESETS.keys())),
+              help=f"Per-task memory budget preset: "
+                   f"small={MEMORY_BUDGET_PRESETS['small']}MB, "
+                   f"medium={MEMORY_BUDGET_PRESETS['medium']}MB, "
+                   f"large={MEMORY_BUDGET_PRESETS['large']}MB "
+                   f"(default: the --env profile's budget)")
 @click.option("--ind-jobs", default=None, type=int,
-              help="Explicit individuals jobs per chromosome (overrides --parallelism)")
+              help="Explicit individuals jobs per chromosome "
+                   "(overrides the recommendation computed from --parallelism/--env)")
+@click.option("--vcpus", default=None, type=int,
+              help="Override vCPUs for the compute environment")
 @click.option("--name", default="1000genome", help="Workflow name")
 @click.option("--version", default="1.0.0", help="Workflow version")
 @click.option("--populations", default=None,
@@ -50,8 +61,9 @@ def cli():
 @click.option("--max-samples-per-pop", default=None, type=int,
               help="Cap individuals per population in columns.txt")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
-def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: int,
-             name: str, version: str, populations: str, max_samples_per_pop: int, output: str):
+def generate(data_csv: str, populations_dir: str, compute_env: str, parallelism: str,
+             ind_jobs: int, vcpus: int, name: str, version: str, populations: str,
+             max_samples_per_pop: int, output: str):
     """
     Generate HyperFlow workflow directly (daxgen.py replacement).
 
@@ -68,17 +80,57 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
     if populations_dir is None:
         populations_dir = str(BUNDLED_POPULATIONS_DIR)
 
-    # Resolve ind_jobs: explicit value > preset > default
-    if ind_jobs is None:
-        if parallelism:
-            ind_jobs = PARALLELISM_PRESETS[parallelism]
-        else:
-            ind_jobs = PARALLELISM_PRESETS[DEFAULT_PARALLELISM]
-
     # Parse population filter
     pop_filter = None
     if populations:
         pop_filter = [p.strip() for p in populations.split(",")]
+
+    # Resolve the compute environment and the real (not estimated) V/I from
+    # the actual data.csv and population files (RFC-003 section 7 item 2/4).
+    # Always resolved -- not only when --ind-jobs is omitted -- so
+    # generate_workflow can clamp any hint, including an explicit
+    # --ind-jobs, and so the reason emitted below (section 5) always
+    # reflects what was actually used, never just what was requested.
+    env_overrides: dict[str, int] = {}
+    if vcpus is not None:
+        env_overrides["vcpus"] = vcpus
+    if parallelism is not None:
+        env_overrides["mem_budget_mb"] = MEMORY_BUDGET_PRESETS[parallelism]
+    env = ComputeEnvironment.resolve(compute_env, **env_overrides)
+
+    chromosomes_data = load_data_csv(Path(data_csv))
+    # recommend_parallelism's ind_jobs is per chromosome (RFC-003 section
+    # 4.3/4.5) and generate_workflow applies the single resulting value
+    # identically to every chromosome in chromosomes_data. Driving off
+    # the sum across chromosomes would size ind_jobs for a workload that
+    # belongs to no single chromosome and silently violate the
+    # min_work floor on every chromosome smaller than the sum; take the
+    # largest single chromosome's row_count instead so ind_jobs is
+    # memory-safe by construction and every smaller chromosome does less
+    # (never more) real work per task under the same ind_jobs.
+    total_variants = max(c.row_count for c in chromosomes_data)
+
+    selected_pops = load_populations(Path(populations_dir))
+    if pop_filter:
+        available = set(selected_pops)
+        selected_pops = [p for p in pop_filter if p in available]
+    total_individuals = sum(
+        len((Path(populations_dir) / pop).read_text().split())
+        for pop in selected_pops if (Path(populations_dir) / pop).exists()
+    )
+
+    if ind_jobs is None:
+        resolved = recommend_parallelism(
+            variants=total_variants,
+            individuals=total_individuals,
+            vcpus=env.vcpus,
+            host_mem_mb=env.host_mem_mb,
+            chromosomes=max(1, len(chromosomes_data)),
+            mem_budget_mb=env.mem_budget_mb,
+            engine_reserve=env.engine_reserve,
+            host_reserve_mb=env.host_reserve_mb,
+        )
+        ind_jobs = resolved.ind_jobs
 
     try:
         workflow = generate_workflow(
@@ -87,8 +139,17 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
             ind_jobs=ind_jobs,
             name=name,
             version=version,
-            population_filter=pop_filter
+            population_filter=pop_filter,
+            individuals=total_individuals,
+            compute_environment=env,
         )
+
+        # RFC-003 section 5/7 item 5: both dials and the reason, for the
+        # effective (post-clamp) ind_jobs generate_workflow actually used --
+        # to stderr, regardless of whether --ind-jobs was given, and never
+        # one dial without the other.
+        for entry in workflow.get("metadata", {}).get("parallelism", []):
+            click.echo(f"  chr{entry['chromosome']}: {entry['reason']}", err=True)
 
         result = json.dumps(workflow, indent=2)
 
@@ -143,12 +204,16 @@ def generate(data_csv: str, populations_dir: str, parallelism: str, ind_jobs: in
 @click.option("--env", "compute_env", default="local",
               type=click.Choice(["local", "aws", "gcp"]))
 @click.option("--parallelism", "-p", default=None,
-              type=click.Choice(list(PARALLELISM_PRESETS.keys())),
-              help="Parallelism preset (auto-selected if not specified)")
+              type=click.Choice(list(MEMORY_BUDGET_PRESETS.keys())),
+              help="Per-task memory budget preset (default: the --env profile's budget)")
+@click.option("--ind-jobs", default=None, type=int,
+              help="Explicit individuals jobs per chromosome (overrides the recommendation)")
+@click.option("--vcpus", default=None, type=int,
+              help="Override vCPUs for the compute environment")
 @click.option("--output", "-o", default=None, help="Output file (default: stdout)")
 @click.option("--json-only", is_flag=True, help="Output only JSON, no description")
 def compose(question: str, model: str, output_format: str, compute_env: str,
-            parallelism: str, output: str, json_only: bool):
+            parallelism: str, ind_jobs: int, vcpus: int, output: str, json_only: bool):
     """
     Generate a workflow plan from a natural language question.
 
@@ -178,8 +243,11 @@ def compose(question: str, model: str, output_format: str, compute_env: str,
         intent=intent,
         output_format=OutputFormat(output_format),
         compute_environment=compute_env,
-        parallelism=parallelism
+        parallelism=parallelism,
+        ind_jobs=ind_jobs,
+        vcpus=vcpus,
     )
+    click.echo(f"  {plan.execution_hints.parallelism_reason}", err=True)
 
     # Output
     if json_only:
@@ -227,9 +295,14 @@ Transfer: {plan.data_preparation.estimated_transfer_mb:.1f} MB
 @click.option("--env", "compute_env", default="local",
               type=click.Choice(["local", "aws", "gcp"]))
 @click.option("--parallelism", "-p", default=None,
-              type=click.Choice(list(PARALLELISM_PRESETS.keys())),
-              help="Parallelism preset (auto-selected if not specified)")
-def plan(intent_json: str, output_format: str, compute_env: str, parallelism: str):
+              type=click.Choice(list(MEMORY_BUDGET_PRESETS.keys())),
+              help="Per-task memory budget preset (default: the --env profile's budget)")
+@click.option("--ind-jobs", default=None, type=int,
+              help="Explicit individuals jobs per chromosome (overrides the recommendation)")
+@click.option("--vcpus", default=None, type=int,
+              help="Override vCPUs for the compute environment")
+def plan(intent_json: str, output_format: str, compute_env: str, parallelism: str,
+         ind_jobs: int, vcpus: int):
     """
     Generate workflow from a ResearchIntent JSON.
 
@@ -242,8 +315,13 @@ def plan(intent_json: str, output_format: str, compute_env: str, parallelism: st
         intent=intent,
         output_format=OutputFormat(output_format),
         compute_environment=compute_env,
-        parallelism=parallelism
+        parallelism=parallelism,
+        ind_jobs=ind_jobs,
+        vcpus=vcpus,
     )
+
+    # RFC-003 section 5/7 item 5: both dials and the reason, to stderr.
+    click.echo(f"  {result.execution_hints.parallelism_reason}", err=True)
 
     click.echo(result.model_dump_json(indent=2))
 
