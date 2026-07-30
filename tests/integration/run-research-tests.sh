@@ -40,7 +40,57 @@ log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+# ============================================================================
+# Timing
+# ============================================================================
+# Phases are timed by hooking log_phase: announcing a phase closes the previous
+# one and opens the next. A test that stops early leaves its last phase open, so
+# the loop closes it when the following test starts and once more after the loop.
+
+SUITE_START=$(date +%s)
+PHASE_LABEL=""
+PHASE_START=0
+CURRENT_TEST=""
+declare -A TEST_STARTED_AT
+declare -A TEST_ELAPSED
+declare -A TEST_PHASES
+
+fmt_duration() {
+    local s=${1:-0}
+    if [ "$s" -ge 3600 ]; then
+        printf "%dh %02dm %02ds" $((s / 3600)) $(((s % 3600) / 60)) $((s % 60))
+    elif [ "$s" -ge 60 ]; then
+        printf "%dm %02ds" $((s / 60)) $((s % 60))
+    else
+        printf "%ds" "$s"
+    fi
+}
+
+close_phase() {
+    [ -z "$PHASE_LABEL" ] && return 0
+    local elapsed=$(( $(date +%s) - PHASE_START ))
+    if [ -n "$CURRENT_TEST" ]; then
+        TEST_PHASES[$CURRENT_TEST]+="${PHASE_LABEL}:${elapsed} "
+    fi
+    PHASE_LABEL=""
+}
+
+close_test() {
+    [ -z "$CURRENT_TEST" ] && return 0
+    TEST_ELAPSED[$CURRENT_TEST]=$(( $(date +%s) - ${TEST_STARTED_AT[$CURRENT_TEST]:-$(date +%s)} ))
+}
+
 log_phase() {
+    close_phase
+    # Keep just the phase name: "Phase 3: EXTRACT (...)" -> "EXTRACT". The
+    # summary banner is not a phase and must not be timed.
+    case "$1" in
+        "Phase "*) PHASE_LABEL=$(echo "$1" | sed -E 's/^Phase [0-9]+: ([A-Za-z-]+).*/\1/') ;;
+        "EXECUTE-ONLY"*) PHASE_LABEL="SETUP" ;;
+        *) PHASE_LABEL="" ;;
+    esac
+    PHASE_START=$(date +%s)
+
     echo -e "\n${CYAN}═══════════════════════════════════════════════════════════════${NC}"
     echo -e "${CYAN}  $1${NC}"
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
@@ -270,7 +320,15 @@ declare -A RESULTS
 
 # Run each test
 for TEST_ID in "${TEST_IDS[@]}"; do
+    # Settle the previous test's timers before starting this one: whichever
+    # phase it stopped in is still open if it exited through a `continue`.
+    close_phase
+    close_test
+
     log_test "$TEST_ID"
+
+    CURRENT_TEST="$TEST_ID"
+    TEST_STARTED_AT[$TEST_ID]=$(date +%s)
 
     WORKFLOW_DIR="$SCRIPT_DIR/workflow-$TEST_ID"
 
@@ -705,34 +763,45 @@ done
 # ============================================================================
 # Summary
 # ============================================================================
+# The last test leaves its final phase open, exactly as an early exit would.
+close_phase
+close_test
+
 log_phase "TEST SUMMARY"
 
 echo ""
-printf "%-25s %s\n" "TEST" "RESULT"
-printf "%-25s %s\n" "-------------------------" "--------------------"
+printf "%-25s %-30s %s\n" "TEST" "RESULT" "TIME"
+printf "%-25s %-30s %s\n" "-------------------------" "------------------------------" "----------"
 for TEST_ID in "${TEST_IDS[@]}"; do
     RESULT="${RESULTS[$TEST_ID]:-UNKNOWN}"
+    ELAPSED=$(fmt_duration "${TEST_ELAPSED[$TEST_ID]:-0}")
     case $RESULT in
-        PASSED*)
-            printf "%-25s ${GREEN}%s${NC}\n" "$TEST_ID" "$RESULT"
-            ;;
-        FAILED*)
-            printf "%-25s ${RED}%s${NC}\n" "$TEST_ID" "$RESULT"
-            ;;
-        SKIPPED*)
-            printf "%-25s ${YELLOW}%s${NC}\n" "$TEST_ID" "$RESULT"
-            ;;
-        *)
-            printf "%-25s %s\n" "$TEST_ID" "$RESULT"
-            ;;
+        PASSED*)  COLOUR="$GREEN" ;;
+        FAILED*)  COLOUR="$RED" ;;
+        SKIPPED*) COLOUR="$YELLOW" ;;
+        *)        COLOUR="$NC" ;;
     esac
+    printf "%-25s ${COLOUR}%-30s${NC} %s\n" "$TEST_ID" "$RESULT" "$ELAPSED"
+
+    # Per-phase breakdown, so a slow run says which phase was slow.
+    if [ -n "${TEST_PHASES[$TEST_ID]:-}" ]; then
+        BREAKDOWN=""
+        for ENTRY in ${TEST_PHASES[$TEST_ID]}; do
+            PHASE_NAME="${ENTRY%%:*}"
+            PHASE_SECS="${ENTRY##*:}"
+            BREAKDOWN="${BREAKDOWN}${PHASE_NAME} $(fmt_duration "$PHASE_SECS"), "
+        done
+        printf "%-25s %s\n" "" "${BREAKDOWN%, }"
+    fi
 done
 
+SUITE_ELAPSED=$(( $(date +%s) - SUITE_START ))
 echo ""
 echo "────────────────────────────────────────────────"
 echo "  Passed:  $PASSED"
 echo "  Failed:  $FAILED"
 echo "  Skipped: $SKIPPED"
+echo "  Total:   $(fmt_duration "$SUITE_ELAPSED")"
 echo "────────────────────────────────────────────────"
 echo ""
 

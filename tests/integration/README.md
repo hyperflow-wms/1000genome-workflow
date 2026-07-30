@@ -86,6 +86,25 @@ downgrades the auto-stop, not because the volume is small.
 `--parallelism`. Whatever arrives is clamped to a memory-safe range per
 chromosome, so an over-large value costs throughput rather than the host.
 
+### Timing
+
+The summary reports each test's wall time with a per-phase breakdown, and the
+total across the run:
+
+```
+TEST                      RESULT                         TIME
+------------------------- ------------------------------ ----------
+eur-afr-hla               PASSED                         13m 41s
+                          INTERPRET 2s, PLAN 1s, EXTRACT 4m 12s, GENERATE 1s, EXECUTE 9m 25s
+
+  Total:   13m 41s
+```
+
+The breakdown is the useful part: EXTRACT is dominated by download bandwidth and
+EXECUTE by the analysis stages, so a run that feels slow usually points at one of
+the two rather than at the pipeline as a whole. A phase left open by an early
+stop is still recorded, so a stopped or failed run reports the time it spent.
+
 ### Volume Thresholds
 
 A case never declares its transfer volume. PLAN estimates it, records it as
