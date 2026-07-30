@@ -1,0 +1,55 @@
+# Builds the 1000genome worker image, and publishes it when the change lands on
+# main. The image tag encodes the job-executor version (1.3-je1.4.1), so merging
+# a Renovate bump of worker-image/Makefile is what produces a new tag.
+
+name: worker-image
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'worker-image/**'
+      - 'worker-base-image/**'
+      - '.github/workflows/worker-image.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'worker-image/**'
+      - 'worker-base-image/**'
+      - '.github/workflows/worker-image.yml'
+  workflow_dispatch:
+    inputs:
+      push:
+        description: 'Push the built image to Docker Hub'
+        type: boolean
+        default: false
+
+jobs:
+  worker-image:
+    runs-on: ubuntu-22.04
+    env:
+      # Publish on a main-branch push, or when a manual run asks for it.
+      DO_PUSH: ${{ github.event_name == 'push' || inputs.push }}
+      # A missing secret would otherwise fail the login step on forks.
+      HAVE_DOCKERHUB: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Log in before building: pulling the base image counts against the
+      # anonymous Docker Hub rate limit, which shared runners routinely exhaust.
+      - name: Login to Docker Hub
+        if: env.HAVE_DOCKERHUB == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build worker image
+        run: make -C worker-image image
+
+      - name: Show built tags
+        run: docker images 'hyperflowwms/1000genome-worker'
+
+      - name: Push
+        if: env.DO_PUSH == 'true' && env.HAVE_DOCKERHUB == 'true'
+        run: make -C worker-image push

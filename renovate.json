@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "enabledManagers": [
+    "custom.regex"
+  ],
+  "labels": [
+    "dependencies",
+    "release-chain"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "job-executor version pinned in the worker Makefile",
+      "fileMatch": [
+        "worker-image/Makefile"
+      ],
+      "matchStrings": [
+        "HF_JOB_EXECUTOR_VERSION\\s*\\??=\\s*['\"]?(?<currentValue>\\d+\\.\\d+\\.\\d+)['\"]?"
+      ],
+      "depNameTemplate": "@hyperflow/job-executor",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "engine image default used by the integration test",
+      "fileMatch": [
+        "tests/integration/docker-compose.yml"
+      ],
+      "matchStrings": [
+        "HF_ENGINE_IMAGE:-(?<depName>hyperflowwms/hyperflow):(?<currentValue>v\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "worker image default used by the integration test; the docker datasource means this cannot be bumped before the image exists",
+      "fileMatch": [
+        "tests/integration/docker-compose.yml"
+      ],
+      "matchStrings": [
+        "HF_VAR_WORKER_CONTAINER:-(?<depName>hyperflowwms/1000genome-worker):(?<currentValue>\\d+\\.\\d+-je\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^(?<compatibility>\\d+\\.\\d+)-je(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    }
+  ]
+}

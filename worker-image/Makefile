@@ -1,7 +1,8 @@
 REPO_NAME = 1000genome-worker
 PREFIX = hyperflowwms
 VERSION = 1.3
-HF_JOB_EXECUTOR_VERSION = 1.4.1
+# ?= so CI and Renovate can override the version from the environment
+HF_JOB_EXECUTOR_VERSION ?= 1.4.1
 TAG = $(VERSION)-je$(HF_JOB_EXECUTOR_VERSION)
 
 # Local job-executor checkout used by the 'image-dev' target
@@ -11,7 +12,7 @@ DEV_TAG = $(PREFIX)/$(REPO_NAME):dev
 all: push
 
 image:
-	docker build --no-cache --build-arg hf_job_executor_version=$(HF_JOB_EXECUTOR_VERSION) -t $(PREFIX)/$(REPO_NAME):$(TAG) .
+	docker build --build-arg hf_job_executor_version=$(HF_JOB_EXECUTOR_VERSION) -t $(PREFIX)/$(REPO_NAME):$(TAG) .
 	docker tag $(PREFIX)/$(REPO_NAME):$(TAG) $(PREFIX)/$(REPO_NAME):$(VERSION)-latest
 
 # Dev image: installs the job executor from a local checkout (npm pack)
