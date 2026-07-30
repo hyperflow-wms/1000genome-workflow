@@ -61,6 +61,7 @@ VCPUS=""
 IND_JOBS=""
 VERBOSE=false
 LIST_ONLY=false
+EXECUTE_ONLY=false
 TEST_IDS=()
 
 usage() {
@@ -78,6 +79,10 @@ Options:
   --model MODEL        LLM model to use
   --stop-before-extract    Stop after PLAN phase
   --stop-before-execute    Stop after GENERATE phase
+  --execute-only       Re-run EXECUTE against an existing workflow directory.
+                       Regenerates workflow.json from the data.csv already
+                       there, clears previous execution outputs, and keeps the
+                       extracted VCFs -- so no download and no LLM call.
   -y, --yes            Non-interactive mode, proceed through all phases
 
 Parallelism Options (mutually exclusive):
@@ -122,6 +127,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --stop-before-execute)
             STOP_BEFORE="execute"
+            shift
+            ;;
+        --execute-only)
+            EXECUTE_ONLY=true
             shift
             ;;
         -y|--yes)
@@ -264,8 +273,62 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     log_test "$TEST_ID"
 
     WORKFLOW_DIR="$SCRIPT_DIR/workflow-$TEST_ID"
-    rm -rf "$WORKFLOW_DIR"
-    mkdir -p "$WORKFLOW_DIR"
+
+    if [ "$EXECUTE_ONLY" = true ]; then
+        # Reuse the extracted data already in the directory: regenerate
+        # workflow.json from it, clear only what a previous execution wrote,
+        # and leave the VCFs, columns.txt, and intent.json in place.
+        if [ ! -f "$WORKFLOW_DIR/data.csv" ] || [ ! -f "$WORKFLOW_DIR/intent.json" ]; then
+            log_error "--execute-only needs data.csv and intent.json in $WORKFLOW_DIR"
+            log_info "Run the test without --execute-only first to extract the data"
+            FAILED=$((FAILED + 1))
+            RESULTS[$TEST_ID]="FAILED (no extracted data)"
+            continue
+        fi
+
+        log_phase "EXECUTE-ONLY: reusing extracted data in workflow-$TEST_ID"
+
+        INTENT_JSON=$(cat "$WORKFLOW_DIR/intent.json")
+        INTENT_POPULATIONS=$(echo "$INTENT_JSON" | python3 -c "import sys,json; print(','.join(json.load(sys.stdin)['populations']))")
+
+        rm -rf "$WORKFLOW_DIR"/chr*n-*/ "$WORKFLOW_DIR/logs-hf" "$WORKFLOW_DIR/plots_no_sift"
+        rm -f "$WORKFLOW_DIR"/chr*n*.tar.gz "$WORKFLOW_DIR"/chr*-*.tar.gz \
+              "$WORKFLOW_DIR"/sifted.SIFT.*.txt "$WORKFLOW_DIR"/wftrace-*.log
+
+        # Same flag precedence the full GENERATE phase uses: an explicit
+        # ind_jobs wins, otherwise a memory-budget preset, plus an optional
+        # vCPU override. With none of them the recommendation decides.
+        GEN_ENV_FLAG=""
+        if [ -n "$IND_JOBS" ]; then
+            GEN_ENV_FLAG="--ind-jobs $IND_JOBS"
+        elif [ -n "$PARALLELISM" ]; then
+            GEN_ENV_FLAG="--parallelism $PARALLELISM"
+        fi
+        [ -n "$VCPUS" ] && GEN_ENV_FLAG="$GEN_ENV_FLAG --vcpus $VCPUS"
+
+        if ! (cd "$WORKFLOW_DIR" && python3 -m workflow_composer.cli generate \
+                --data-csv data.csv \
+                --populations "$INTENT_POPULATIONS" \
+                $GEN_ENV_FLAG \
+                -o workflow.json); then
+            log_error "Workflow regeneration failed"
+            FAILED=$((FAILED + 1))
+            RESULTS[$TEST_ID]="FAILED (generate)"
+            continue
+        fi
+
+        # Same tool the full path uses, so both agree on the concurrency dial.
+        MAX_PARALLELISM_VALUE=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
+            --intent-json "$INTENT_JSON" \
+            --vcpus "${VCPUS:-$(nproc)}" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
+        log_info "max_parallelism=$MAX_PARALLELISM_VALUE"
+    else
+        rm -rf "$WORKFLOW_DIR"
+        mkdir -p "$WORKFLOW_DIR"
+    fi
+
+    if [ "$EXECUTE_ONLY" = false ]; then
 
     # ========================================================================
     # PHASE 1: INTERPRET
@@ -537,6 +600,8 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         RESULTS[$TEST_ID]="SKIPPED (stop-before-execute)"
         continue
     fi
+
+    fi  # phases 1-4, skipped entirely under --execute-only
 
     # ========================================================================
     # PHASE 5: EXECUTE
