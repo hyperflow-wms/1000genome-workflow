@@ -1,7 +1,7 @@
 REPO_NAME = 1000genome-worker
 PREFIX = hyperflowwms
 VERSION = 1.3
-HF_JOB_EXECUTOR_VERSION = 1.4.0
+HF_JOB_EXECUTOR_VERSION = 1.4.1
 TAG = $(VERSION)-je$(HF_JOB_EXECUTOR_VERSION)
 
 # Local job-executor checkout used by the 'image-dev' target
