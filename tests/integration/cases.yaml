@@ -30,15 +30,15 @@ volume_thresholds:
 
 test_cases:
   # ============================================================================
-  # Case 1: EUR vs AFR deleterious mutations on chr22 (MODERATE - ~50-100MB)
+  # Case 1: EUR vs AFR deleterious mutations on chr22 (MODERATE - ~190 MB)
   # ============================================================================
   - id: eur-afr-chr22
     name: "European vs African deleterious mutations on chromosome 22"
     description: |
       Tests population comparison workflow for a single chromosome.
-      Chromosome 22 is the smallest autosome (~1.1M variants, ~50-100MB transfer
-      including VCF and annotation files).
-      This is a moderate-volume test - stops before execution by default.
+      Chromosome 22 is the smallest autosome. PLAN estimates ~190 MB transfer
+      and ~3.8 GB on disk, which clears the 50 MB execute threshold, so this
+      stops before execution by default.
 
     prompt: |
       Do European and African populations show different patterns of shared
@@ -71,7 +71,8 @@ test_cases:
     name: "Genome-wide mutation sharing null distribution"
     description: |
       Establishes statistical baseline for mutation sharing patterns.
-      This requires ALL chromosomes (~15GB total) and is too large for routine testing.
+      This requires ALL chromosomes (PLAN estimates ~13.8 GB transfer, ~270 GB on
+      disk) and is too large for routine testing.
       By default, stops after ESTIMATE phase.
 
     prompt: |

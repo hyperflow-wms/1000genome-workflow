@@ -27,19 +27,25 @@ INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE
 
 Defined in `cases.yaml`:
 
-| ID | Description | Transfer | Default behavior |
-|----|-------------|----------|------------------|
-| `micro` | Smoke test with pre-existing data; skips INTERPRET and EXTRACT | ~1 MB | Full E2E |
-| `brca1-gbr` | BRCA1 in the British population; fastest real end-to-end test | ~0.4 MB | Full E2E |
-| `brca-breast-cancer` | BRCA1/BRCA2 genes, five populations | ~5 MB | Full E2E |
-| `eas-hla-autoimmune` | HLA region analysis | ~25 MB | Full E2E |
-| `eur-afr-hla` | EUR vs AFR in HLA | ~25 MB | Full E2E |
-| `eur-afr-chr22` | Full chromosome 22 | ~100 MB | Stop before execute |
-| `genome-wide-null` | All chromosomes | ~15 GB | Stop after plan |
+| ID | Description | Est. transfer | Est. disk | Default behavior |
+|----|-------------|--------------:|----------:|------------------|
+| `brca1-gbr` | BRCA1 in the British population; fastest real end-to-end test | 0.4 MB | 8 MB | Full E2E |
+| `brca-breast-cancer` | BRCA1/BRCA2 genes, five populations | 0.75 MB | 15 MB | Full E2E |
+| `eas-hla-autoimmune` | HLA region analysis | 24.7 MB | 494 MB | Full E2E |
+| `eur-afr-hla` | EUR vs AFR in HLA | 24.7 MB | 494 MB | Full E2E |
+| `eur-afr-chr22` | Full chromosome 22 | 190 MB | 3.8 GB | Stop before execute |
+| `genome-wide-null` | All chromosomes | 13.8 GB | 270 GB | Stop after plan |
+| `micro` | Smoke test on pre-truncated data; skips INTERPRET and EXTRACT | n/a | n/a | Full E2E |
 
-Transfer is compressed download size, which is what the auto-stop thresholds
-weigh. Disk footprint is much larger — the HLA cases expand to ~1.6 GB — so a
-case that runs end-to-end by default is cheap to fetch, not cheap to run.
+Both columns are what PLAN estimates, which is what the auto-stop thresholds
+weigh — not measurements. Where measured they run well over: `brca1-gbr`
+extracted 24 MB against an 8 MB estimate, and the HLA VCFs occupy 1.7 GB against
+494 MB. Treat the estimates as a routing signal, not a budget.
+
+`micro` has no meaningful figure. It ships a 10,000-row extract and skips
+EXTRACT, but the estimator sizes all of chr1 — it predicts 1100 MB and 6.47M
+variants against an actual 10,000. Its `-y` run proceeds because `--force-yes`
+downgrades the auto-stop, not because the volume is small.
 
 ### Usage
 
@@ -183,10 +189,15 @@ stage, whose task count is derived from the row count:
 A different population set, or a missing merge or sifting step, fails the test —
 it means the workflow that was reviewed is not the workflow that will run.
 
-The variant percentage is reported, not asserted. It reads high because the
-estimator carries a safety margin, and it is worth watching: that same estimate
-decides where a run auto-stops, so drift in it misroutes those decisions with
-nothing else to reveal them.
+The variant percentage is reported, not asserted. It normally reads a little high
+because the estimator carries a safety margin — +6.4% on the HLA region, +17.6%
+on BRCA1 — and it is worth watching: that same estimate decides where a run
+auto-stops, so drift in it misroutes those decisions with nothing else to reveal
+them.
+
+A large percentage means the estimate was not a preview of this run rather than
+that anything is broken. `micro` reads +64,580% because it ships a pre-truncated
+10,000-row extract while the estimator sizes all of chr1.
 
 ---
 
