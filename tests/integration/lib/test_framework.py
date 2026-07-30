@@ -128,13 +128,12 @@ def recommend_harness_parallelism(
     compute_environment: str = "aws",
 ):
     """Resolve both parallelism dials for an intent dict via the same
-    ``recommend_parallelism`` tool the composer uses (RFC-003 section 7
-    item 3).
+    ``recommend_parallelism`` tool the composer uses.
 
-    Replaces this module's own now-removed vCPU-only rule (the RFC-002
-    section 5 formula: ``clamp(V/25k, 1.5*vcpu, 5*vcpu)``), which had no
+    The harness sizes parallelism through the shared recommendation rather
+    than its own vCPU-only formula, which had no
     memory term and disagreed with ``planner.resolve_parallelism`` for the
-    same intent (RFC-003 section 1.1).
+    same intent.
 
     V comes from ``planner._estimate_max_variants_per_chromosome`` -- the
     *max* per-chromosome estimate, not this module's own
@@ -142,9 +141,9 @@ def recommend_harness_parallelism(
     the intent touches, for the unrelated ``estimated_variants`` display
     field in the ``adaptive-parallelism`` CLI output). Summing would be
     unsafe here: ``recommend_parallelism``'s ``ind_jobs`` is applied
-    identically to every chromosome the intent touches (RFC-003 section
-    4.3/4.5), so feeding it a sum across chromosomes inflates ``ind_jobs``
-    past what any single chromosome supports -- see
+    identically to every chromosome the intent touches, so feeding it a sum
+    across chromosomes inflates ``ind_jobs`` past what any single chromosome
+    supports -- see
     ``_estimate_max_variants_per_chromosome``'s docstring for a worked
     counterexample. I comes from the same population-file line-count logic
     the planner uses (``planner._estimate_individuals``); the environment
@@ -343,7 +342,7 @@ def generate_estimated_workflow(
 
     Parallelism precedence:
     1. ind_jobs (explicit)
-    2. vcpus (recommend_parallelism, RFC-003 section 7 item 3)
+    2. vcpus (recommend_parallelism)
     3. parallelism preset (mem_budget_mb via MEMORY_BUDGET_PRESETS, same tool)
     4. default "small" preset
     """

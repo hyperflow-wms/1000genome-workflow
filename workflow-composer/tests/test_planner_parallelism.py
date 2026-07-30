@@ -1,5 +1,5 @@
 """
-Tests for planner.resolve_parallelism (RFC-003 section 7 item 2, second half).
+Tests for planner.resolve_parallelism.
 
 Covers the acceptance criteria for "Route planner, CLI, and MCP server
 through recommend_parallelism":
@@ -22,7 +22,7 @@ not a sum across the chromosomes/regions an intent touches, because
 ``generate_workflow`` applies the single resolved ``ind_jobs`` identically to
 every chromosome. A summed V inflates ``ind_jobs`` past what any individual
 chromosome's real variant count supports and silently drives its real
-per-task work under the section 4.3 ``min_work`` floor.
+per-task work under the ``min_work`` floor.
 """
 from __future__ import annotations
 
@@ -129,7 +129,7 @@ def test_bp_span_no_longer_determines_ind_jobs():
 
 
 def test_bigger_machine_gets_bigger_ind_jobs():
-    """The old rule was machine-blind (RFC-003 section 1.2); the new one isn't."""
+    """The old rule was machine-blind; the new one isn't."""
     intent = _hla_eur_afr_intent()
 
     small_machine = resolve_parallelism(intent, compute_environment="local", vcpus=2)
@@ -143,7 +143,7 @@ def test_bigger_machine_gets_bigger_ind_jobs():
 # chromosomes an intent touches. generate_workflow applies the single
 # resolved ind_jobs identically to every chromosome, so an ind_jobs sized
 # against a summed V belongs to no single chromosome and can silently drive
-# a smaller chromosome's real per-task work under the RFC-003 section 4.3
+# a smaller chromosome's real per-task work under the
 # min_work=1e7 floor even though the reported ind_jobs "looks" fine in
 # aggregate.
 # ---------------------------------------------------------------------------
@@ -266,20 +266,20 @@ def test_plan_workflow_populates_execution_hints():
 def test_create_advisory_plan_and_plan_workflow_agree_on_ind_jobs():
     """Both planning paths call the same mechanism for the same
     intent/environment, so neither can silently drift far from the other --
-    the section 1.1 divergence (plan.json said 50, the harness ran 10) is
+    the recorded-vs-executed divergence (plan.json said 50, the harness ran 10) is
     unrepresentable.
 
     They need not be bit-identical, though: create_advisory_plan sizes V
     from the region-based *estimate* (``_estimate_max_variants_per_
     chromosome``), since it runs without real data files, while
-    plan_workflow (RFC-003 section 7 item 5) now reports what
+    plan_workflow now reports what
     generate_workflow's per-chromosome clamp *actually did* against the
     *exact* row_count in data.csv -- the authoritative source (see
     generator.py's module docstring). When the estimate and the real
     row_count differ, as they do for this fixture's placeholder
     data.csv (which is 250,000, not this region's true row count), the two
     ind_jobs can land a task or two apart. Reporting the advisory estimate
-    unchanged would reproduce section 1.1's bug in the other direction:
+    unchanged would reproduce that bug in the other direction:
     plan_workflow claiming a value the generator did not actually use.
     """
     intent = _hla_eur_afr_intent()

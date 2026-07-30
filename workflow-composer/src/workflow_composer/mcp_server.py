@@ -419,8 +419,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
             # Resolve the compute environment and real individuals count up
             # front -- always, not only when ind_jobs is omitted -- so the
-            # generator below can clamp any hint (RFC-003 section 3.3 "trust
-            # but clamp") and so the human-readable summary always shows
+            # generator below can clamp any hint and so the human-readable summary always shows
             # both dials and the reason for the effective (post-clamp)
             # value, never just the ind_jobs that was requested.
             env_overrides: dict[str, int] = {}
@@ -445,11 +444,10 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
 
             # Resolve ind_jobs: explicit override > recommend_parallelism, computed
             # from the actual variant/individual counts and the target environment
-            # (RFC-003 section 7 item 2) -- never a preset name looked up directly.
+            # -- never a preset name looked up directly.
             ind_jobs = arguments.get("ind_jobs")
             if ind_jobs is None:
-                # recommend_parallelism's ind_jobs is per chromosome (RFC-003
-                # section 4.3/4.5) and the workflow below applies the single
+                # recommend_parallelism's ind_jobs is per chromosome and the workflow below applies the single
                 # resulting value identically to every chromosome in
                 # chromosome_data. Driving off the sum across chromosomes
                 # would size ind_jobs for a workload that belongs to no
@@ -505,8 +503,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
                 ))
 
             # Generate workflow. individuals/compute_environment clamp
-            # ind_jobs to the memory-safe range per chromosome (RFC-003
-            # section 3.3 "trust but clamp") and populate
+            # ind_jobs to the memory-safe range per chromosome and populate
             # workflow["metadata"]["parallelism"] with the effective dials
             # and reason for each -- always, so the human-readable summary
             # below can report them even when ind_jobs was given explicitly.
@@ -525,7 +522,7 @@ For full chromosomes, uses pre-computed 1000 Genomes Phase 3 counts.""",
             task_count = len(workflow["processes"])
             file_count = len(workflow["signals"])
 
-            # RFC-003 section 5/7 item 5: both dials and the reason for
+            # Both dials and the reason for
             # every chromosome, never one dial without the other.
             parallelism_lines = "\n".join(
                 f"- chr{entry['chromosome']}: {entry['reason']}"

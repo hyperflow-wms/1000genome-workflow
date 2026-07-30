@@ -89,12 +89,11 @@ class ExecutionHints(BaseModel):
     """Structured guidance for execution agents.
 
     ``max_parallelism``, ``est_peak_mb``, and ``parallelism_reason`` come
-    straight from ``core.parallelism.recommend_parallelism`` (RFC-003
-    section 4.3/section 5): the global concurrency dial
+    straight from ``core.parallelism.recommend_parallelism``: the global concurrency dial
     (``HF_VAR_REDIS_CMD_MAX_PARALLELISM``), the per-task memory estimate it
     was sized against, and the one-line explanation of which constraint
     bound. Recording all three next to ``recommended_parallelism`` is what
-    keeps a plan self-describing -- RFC-003 section 1.1 documents a run
+    keeps a plan self-describing -- otherwise a run
     where ``plan.json`` recorded one parallelism value while the harness
     used another, and nothing in the plan surfaced the mismatch.
     """

@@ -1,6 +1,5 @@
 """
-Tests for ComputeEnvironment and MEMORY_BUDGET_PRESETS (RFC-003 section 7
-item 2 first half, section 3.1 audience split, section 8 consistency check).
+Tests for ComputeEnvironment and MEMORY_BUDGET_PRESETS.
 """
 from __future__ import annotations
 
@@ -33,7 +32,7 @@ def test_memory_budget_presets_values_are_ints():
 
 
 def test_memory_budget_presets_do_not_carry_machine_fields():
-    """RFC-003 section 7 item 2: presets must not bundle vcpus/host_mem_mb/C.
+    """Presets must not bundle vcpus/host_mem_mb/C.
 
     A preset is a dict-of-dicts only if someone adds machine fields to it;
     today each entry is a bare int, which already satisfies this, but the
@@ -56,7 +55,7 @@ def test_memory_budget_presets_do_not_carry_machine_fields():
 
 
 # ---------------------------------------------------------------------------
-# Acceptance criterion 2: resolve("local") reproduces the section 4.4 first row
+# resolve("local") reproduces the first worked example
 # ---------------------------------------------------------------------------
 
 def test_resolve_local_reproduces_section_4_4_first_row():

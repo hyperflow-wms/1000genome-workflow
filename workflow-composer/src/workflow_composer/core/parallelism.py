@@ -1,15 +1,16 @@
 """
 Resource-aware parallelism recommendation.
 
-RFC-003 section 7 item 1: the single mechanism that replaces both the
-region-span preset in ``planner.calculate_ind_jobs`` and the vCPU-only
-formula in the RFC-002 section 5 test harness. See RFC-003 sections 4.1
-(cost model), 4.2 (two dials), 4.3 (formula), 4.4 (worked examples), 4.5
-(multi-chromosome runs), and 5 (reason string format).
+``recommend_parallelism`` is the one place that decides how the individuals
+stage is split and how much of it runs at once. The planner, generator, CLI,
+MCP server, and integration harness all route through it, so a run cannot
+record one parallelism and execute another.
 
-Nothing calls ``recommend_parallelism`` yet; wiring it into the planner,
-generator, and test harness is tracked separately by RFC-003 section 7
-items 2-5.
+A task is sized by the work it does -- variants times individuals -- rather
+than by variant count alone, because a chunk costs twice as much over 2504
+individuals as over 1153. That work is bounded below by the fixed per-task
+overhead and above by a per-task memory ceiling, which is what keeps many
+concurrent tasks from exhausting the host.
 """
 from __future__ import annotations
 
@@ -21,15 +22,15 @@ from dataclasses import dataclass
 class Parallelism:
     """Both dials plus the estimate and reasoning behind them.
 
-    Returning ind_jobs and max_parallelism together (RFC-003 section 4.2)
+    Returning ind_jobs and max_parallelism together
     means a caller cannot set one without seeing the other -- a task count
     that looks safe in isolation can still hide an unsafe concurrency.
     """
     ind_jobs: int            # tasks per chromosome
     max_parallelism: int     # global concurrency (HF_VAR_REDIS_CMD_MAX_PARALLELISM)
-    est_peak_mb: int         # per-task estimate from RFC-003 section 4.1
+    est_peak_mb: int         # estimated peak memory for one task
     binding: str             # "cores" | "memory" | "min_work"
-    reason: str              # RFC-003 section 5 one-line string
+    reason: str              # one line naming both dials and the binding constraint
 
 
 _BINDING_LABEL = {
@@ -49,15 +50,15 @@ def format_parallelism_reason(
     cores: int,
     est_peak_mb: int,
 ) -> str:
-    """Render the RFC-003 section 5 one-line parallelism reason.
+    """Render the one-line reason that accompanies both dials.
 
-    The single formatting helper for that line (RFC-003 section 7 item 5):
+    The single formatting helper for that line:
     every place that reports ``ind_jobs``/``max_parallelism`` --
     ``recommend_parallelism`` itself, the planner's explicit-``ind_jobs``
     override, the generator's hint-vs-clamped-effective-value report, the
     CLI, and the MCP server -- renders through this function, so there is
-    exactly one f-string producing the section 5 format in the tree. That
-    matters because section 5 requires both dials to always appear
+    exactly one f-string producing that line in the tree. Both dials must
+    always appear
     together: a caller that reports ``ind_jobs`` without ``max_parallelism``
     (or vice versa) can look safe while hiding an unsafe concurrency, and a
     second, independently-typed format string is exactly how that
@@ -65,10 +66,8 @@ def format_parallelism_reason(
 
     Args:
         ind_jobs: the value actually in effect -- the post-clamp value when
-            a caller has one, never the pre-clamp hint (RFC-003 section
-            1.1's ``plan.json`` vs. harness divergence is this line stating
-            a number nothing actually ran with).
-        max_parallelism: the paired concurrency dial (RFC-003 section 4.2).
+            a caller has one, never the pre-clamp hint.
+        max_parallelism: the paired concurrency dial.
         binding: one of ``"cores"``, ``"memory"``, ``"min_work"`` (the
             ``Parallelism.binding`` values); rendered as ``"core-bound"``,
             ``"memory-bound"``, ``"min_work-bound"``.
@@ -102,12 +101,12 @@ def recommend_parallelism(
 ) -> Parallelism:
     """Recommend ind_jobs and max_parallelism for an individuals-stage run.
 
-    Implements the formula in RFC-003 section 4.3 exactly:
+    The formula:
 
         work_per_task = clamp(V*I/C, min_work, max_work)   # work = rows * individuals
         rows_per_task = work_per_task / I
         ind_jobs      = ceil(V / rows_per_task)
-        est_peak_mb   = 12 + 1.2 * work_per_task / 1e6      # section 4.1, inverted below
+        est_peak_mb   = 12 + 1.2 * work_per_task / 1e6      # cost model, inverted below
         concurrency   = min(ind_jobs*chromosomes, C, floor((host_mem_mb-host_reserve_mb)/est_peak_mb))
 
         C        = vcpus - engine_reserve
@@ -119,7 +118,7 @@ def recommend_parallelism(
         vcpus: vCPUs available on the target host.
         host_mem_mb: total host memory in MB.
         chromosomes: number of chromosomes running concurrently. ind_jobs is
-            computed per chromosome (RFC-003 section 4.5); max_parallelism is
+            computed per chromosome; max_parallelism is
             the global concurrency shared across all chromosomes in flight,
             not ind_jobs multiplied by chromosomes.
         mem_budget_mb: memory ceiling for a single task.
@@ -128,7 +127,7 @@ def recommend_parallelism(
         host_reserve_mb: host memory reserved for the OS and everything that
             is not an individuals-stage task.
         min_work: floor on rows*individuals per task, so a task's useful
-            work is not dwarfed by its fixed per-task cost (RFC-003 section 8).
+            work is not dwarfed by its fixed per-task cost.
 
     Returns:
         A frozen Parallelism with both dials, the peak-memory estimate, the
@@ -136,8 +135,8 @@ def recommend_parallelism(
 
     Raises:
         ValueError: if variants, individuals, vcpus, or host_mem_mb is not
-            positive, or if mem_budget_mb is at or below the section 4.1
-            model's fixed 12 MB base cost.
+            positive, or if mem_budget_mb is at or below the cost model's
+            fixed 12 MB base cost.
     """
     if variants <= 0:
         raise ValueError(f"variants must be positive, got {variants}")
@@ -148,13 +147,13 @@ def recommend_parallelism(
     if host_mem_mb <= 0:
         raise ValueError(f"host_mem_mb must be positive, got {host_mem_mb}")
     if mem_budget_mb <= 12:
-        # The section 4.1 cost model charges a fixed 12 MB base cost before
+        # The cost model charges a fixed 12 MB base cost before
         # any work-dependent term. A budget at or below that leaves no room
         # for max_work, which would go negative and drive ind_jobs to 0 --
         # violating the function's own ind_jobs >= 1 invariant.
         raise ValueError(
             f"mem_budget_mb must be greater than 12 (the fixed base cost in "
-            f"the section 4.1 cost model), got {mem_budget_mb}"
+            f"the cost model), got {mem_budget_mb}"
         )
 
     # vcpus <= engine_reserve leaves no cores for tasks after reserving the
@@ -162,11 +161,11 @@ def recommend_parallelism(
     # or negative.
     cores = max(1, vcpus - engine_reserve)
 
-    # RFC-003 section 4.1 charges 1.2 MB per 1e6 row*individuals of work, so
+    # The cost model charges 1.2 MB per 1e6 row*individuals of work, so
     # inverting the model to solve for the work that fits mem_budget_mb
     # multiplies by 1e6 -- not divides by 1.2e-3. Getting this backwards
     # caps a task at a few hundred rows and inflates ind_jobs by three
-    # orders of magnitude (RFC-003 section 4.3).
+    # orders of magnitude.
     max_work = (mem_budget_mb - 12) * 1e6 / 1.2
 
     raw_work = variants * individuals / cores
@@ -191,7 +190,7 @@ def recommend_parallelism(
 
     mem_cap = (host_mem_mb - host_reserve_mb) // max(1, est_peak_mb)
 
-    # max_parallelism is global (RFC-003 section 4.5): dividing the shared
+    # max_parallelism is global: dividing the shared
     # core/memory budget across the chromosomes in flight, rather than
     # applying ind_jobs*chromosomes as if each chromosome got its own
     # concurrency budget, is what keeps a five-chromosome plan from running

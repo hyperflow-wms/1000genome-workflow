@@ -1,18 +1,18 @@
 """
-Tests for RFC-003 section 7 item 5 / section 5: observability.
+Tests for parallelism observability.
 
 Both dials (``ind_jobs``, ``max_parallelism``) and the reason behind them
 must be emitted wherever a workflow is planned or generated, and the same
 fields must land in ``plan.json`` (``WorkflowPlan.parameters_used``),
 consistent with ``ExecutionHints``. Section 5's central worry: a
 safe-looking task count can hide an unsafe concurrency, so nothing may
-report one dial without the other, and the section 1.1 divergence
+report one dial without the other, and the recorded-vs-executed divergence
 (``plan.json`` said 50, the harness ran 10) must be unrepresentable.
 
 Covers the acceptance criteria:
 
-1. ``format_parallelism_reason`` is the single source of the section 5
-   format: the section 4.4 first row matches exactly, every emitted variant
+1. ``format_parallelism_reason`` is the single source of the reason
+   format: the first worked example matches exactly, every emitted variant
    (``recommend_parallelism``, ``resolve_parallelism``'s explicit-hint
    override, ``generate_workflow``'s clamp metadata, ``create_advisory_plan``
    / ``plan_workflow``'s ``ExecutionHints.parallelism_reason``, the CLI)
@@ -54,7 +54,7 @@ from workflow_composer.core.planner import (
 )
 
 # The preserved HLA baseline: one chromosome (6), row_count=166052 -- the
-# exact V in the RFC-003 section 4.4 first worked example (V=166,052,
+# exact V in the first worked example (V=166,052,
 # I=1153, 16 vCPUs -> ind_jobs=15, max_parallelism=15, core-bound,
 # est_peak=27MB/task).
 BASELINE_DIR = Path(__file__).parent.parent.parent / "tests" / "integration" / "workflow-eur-afr-hla-baseline"
@@ -69,7 +69,7 @@ pytestmark = pytest.mark.skipif(
 
 HLA_REGION = GenomicRegion(name="HLA", chromosome="6", start=28477797, end=33448354, context="immune function")
 
-# RFC-003 section 5's format: both dials required together, the binding
+# The reason format: both dials required together, the binding
 # constraint named as one of the three allowed labels.
 REASON_RE = re.compile(
     r"ind_jobs=\d+ max_parallelism=\d+ \((core|memory|min_work)-bound; "
@@ -93,7 +93,7 @@ def _assert_both_dials(reason: str) -> None:
 
 # ---------------------------------------------------------------------------
 # Acceptance criterion 1: format_parallelism_reason is the single source of
-# the section 5 format.
+# the reason format.
 # ---------------------------------------------------------------------------
 
 def test_format_helper_matches_section_4_4_first_row_exactly():
@@ -113,7 +113,7 @@ def test_format_helper_matches_section_4_4_first_row_exactly():
 
 
 def test_recommend_parallelism_worked_example_matches_helper_output():
-    """The section 4.4 first row, produced end-to-end, matches the helper's
+    """The first worked example, produced end-to-end, matches the helper's
     output exactly -- recommend_parallelism has no format string of its own
     left after routing through format_parallelism_reason."""
     result = recommend_parallelism(
@@ -129,8 +129,8 @@ def test_recommend_parallelism_worked_example_matches_helper_output():
 
 
 def test_every_emitted_variant_has_both_dials():
-    """Every call site RFC-003 section 5 names emits a reason with both
-    dials in the section 5 shape -- recommend_parallelism itself, the
+    """Every reporting call site emits a reason with both
+    dials in the same shape -- recommend_parallelism itself, the
     planner's explicit-hint override, generate_workflow's clamp metadata,
     and both planning entry points' ExecutionHints.parallelism_reason."""
     intent = _hla_eur_afr_intent()
@@ -156,7 +156,7 @@ def test_every_emitted_variant_has_both_dials():
 
 
 def test_format_helper_is_the_only_source_of_the_format():
-    """Guards section 5: no file in the package may contain a second,
+    """No file in the package may contain a second,
     independently-typed f-string producing the two-dial shape
     (``ind_jobs={...} max_parallelism={...}``) -- only
     core/parallelism.py's format_parallelism_reason may. A duplicate is
@@ -222,13 +222,13 @@ def test_create_advisory_plan_parameters_used_matches_execution_hints_and_round_
 
 # ---------------------------------------------------------------------------
 # Acceptance criterion 3: a clamped explicit hint is recorded as the
-# effective value, not the pre-clamp hint (RFC-003 section 1.1).
+# effective value, not the pre-clamp hint.
 # ---------------------------------------------------------------------------
 
 def test_explicit_hint_clamped_by_generator_is_recorded_not_the_hint():
     """A requested ind_jobs=250 on the 16-core/31GB "local" environment is
-    memory/core-safe at 15 (the section 4.4 worked example); plan_workflow
-    must record 15, not the 250 that went in -- the exact section 1.1
+    memory/core-safe at 15 (the documented worked example); plan_workflow
+    must record 15, not the 250 that went in -- the exact
     failure mode (plan.json stating a value nothing executed with)."""
     intent = _hla_eur_afr_intent()
     plan = plan_workflow(

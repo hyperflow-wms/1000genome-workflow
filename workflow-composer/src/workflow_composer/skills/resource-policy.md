@@ -1,6 +1,6 @@
 # Resource Policy
 
-This is the resource half of parallelism policy (RFC-003 §3.1): the numbers
+This is the resource half of parallelism policy: the numbers
 that describe the target machine, as opposed to domain policy (which
 populations and regions a question implies — that half stays in `SKILL.md`
 and `research-contexts.md`).
@@ -29,7 +29,7 @@ Three named profiles ship in `core/environment.py`, selected by
 | `aws` | 8 | 32768 (32 GiB) | 512 |
 | `gcp` | 8 | 32768 (32 GiB) | 512 |
 
-`local` is the reference environment RFC-003 §4.4's worked examples are
+`local` is the reference environment the worked examples are
 pinned to. `aws` and `gcp` are representative general-purpose instance
 sizes, not measurements of a specific instance type — a deployment that
 knows its actual instance should override rather than trust the default.

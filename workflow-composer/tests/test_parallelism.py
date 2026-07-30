@@ -1,8 +1,8 @@
 """
-Tests for recommend_parallelism (RFC-003 section 7 item 1).
+Tests for recommend_parallelism.
 
-Covers the RFC-003 section 6 "Mechanism" validation list: the three worked
-examples in section 4.4, the max_work round-trip against the section 4.1
+Covers the mechanism validation list: the three documented worked
+examples, the max_work round-trip against the
 cost model, monotonicity, and the invariant that no input can produce a
 per-task estimate above mem_budget_mb or a concurrency above C.
 """
@@ -17,14 +17,14 @@ from workflow_composer.core.parallelism import Parallelism, recommend_parallelis
 
 
 # ---------------------------------------------------------------------------
-# RFC-003 section 4.4 worked examples
+# Documented worked examples
 # ---------------------------------------------------------------------------
 
 WORKED_EXAMPLES_KWARGS = dict(mem_budget_mb=512, host_mem_mb=31744, engine_reserve=1)
 
 
 def test_worked_example_hla_16_vcpus_core_bound():
-    """RFC-003 section 4.4 row 1: HLA region, 16 vcpus -> core-bound."""
+    """HLA region on 16 vcpus is core-bound."""
     result = recommend_parallelism(
         variants=166_052, individuals=1153, vcpus=16, **WORKED_EXAMPLES_KWARGS
     )
@@ -35,7 +35,7 @@ def test_worked_example_hla_16_vcpus_core_bound():
 
 
 def test_worked_example_chr1_16_vcpus_memory_bound():
-    """RFC-003 section 4.4 row 2: whole chr1, 16 vcpus -> memory-bound."""
+    """Whole chr1 on 16 vcpus is memory-bound."""
     result = recommend_parallelism(
         variants=6_200_000, individuals=2504, vcpus=16, **WORKED_EXAMPLES_KWARGS
     )
@@ -46,7 +46,7 @@ def test_worked_example_chr1_16_vcpus_memory_bound():
 
 
 def test_worked_example_hla_64_vcpus_min_work_bound():
-    """RFC-003 section 4.4 row 3: HLA region, 64 vcpus -> min_work-bound."""
+    """HLA region on 64 vcpus is min_work-bound."""
     result = recommend_parallelism(
         variants=166_052, individuals=1153, vcpus=64, **WORKED_EXAMPLES_KWARGS
     )
@@ -57,13 +57,13 @@ def test_worked_example_hla_64_vcpus_min_work_bound():
 
 
 # ---------------------------------------------------------------------------
-# max_work round-trip against RFC-003 section 4.1
+# max_work round-trip against the cost model
 # ---------------------------------------------------------------------------
 
 def test_max_work_round_trips_the_cost_model():
     """A memory-bound call's est_peak_mb inverts back to mem_budget_mb.
 
-    Pins the RFC-003 section 4.3 inversion: 12 + 1.2*max_work/1e6 must equal
+    Pins the inversion: 12 + 1.2*max_work/1e6 must equal
     mem_budget_mb, exercised end-to-end through the memory-bound worked
     example (chr1, 16 vcpus) so a units slip in the implementation fails
     this test even though it also fails the worked-example test above.
@@ -82,7 +82,7 @@ def test_max_work_round_trips_the_cost_model():
 def test_max_work_units_regression():
     """A units slip (dividing by 1.2e-3 instead of multiplying by 1e6) must fail.
 
-    RFC-003 section 4.3: max_work = (mem_budget_mb - 12) * 1e6 / 1.2. At
+    max_work = (mem_budget_mb - 12) * 1e6 / 1.2. At
     512 MB that is ~4.1667e8, not ~4.2e2 -- the value a units slip would
     produce.
     """
@@ -164,13 +164,13 @@ def test_invariants_hold_across_sweep(variants, individuals, vcpus, host_mem_mb)
 
 
 # ---------------------------------------------------------------------------
-# Multi-chromosome runs: RFC-003 section 4.5
+# Multi-chromosome runs
 # ---------------------------------------------------------------------------
 
 def test_multi_chromosome_ind_jobs_unchanged_but_concurrency_shared():
     """ind_jobs is per chromosome; max_parallelism is the shared global budget.
 
-    RFC-003 section 4.5: a five-chromosome plan must not run five times the
+    A five-chromosome plan must not run five times the
     intended number of concurrent tasks.
     """
     single = recommend_parallelism(
@@ -217,7 +217,7 @@ def test_multi_chromosome_concurrency_actually_differs_when_not_core_bound():
 
 
 # ---------------------------------------------------------------------------
-# Reason string format: RFC-003 section 5
+# Reason string format
 # ---------------------------------------------------------------------------
 
 def test_reason_format_matches_section_5():
@@ -278,7 +278,7 @@ def test_non_positive_host_mem_raises(host_mem_mb):
 
 @pytest.mark.parametrize("mem_budget_mb", [12, 10, 0, -5])
 def test_mem_budget_at_or_below_base_cost_raises(mem_budget_mb):
-    """mem_budget_mb <= 12 (the section 4.1 fixed base cost) must raise.
+    """mem_budget_mb <= 12 (the cost model's fixed base cost) must raise.
 
     Below the model's own fixed base cost, max_work goes negative, which
     would otherwise drive rows_per_task negative and ind_jobs to 0 --

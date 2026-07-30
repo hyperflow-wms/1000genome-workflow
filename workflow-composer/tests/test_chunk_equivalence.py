@@ -1,6 +1,6 @@
 """
 Output-equivalence tests for the ind_jobs clamp in generate_workflow
-(RFC-003 section 7 item 4).
+.
 
 Clamping can change chunk boundaries whenever it binds, so a per-chunk
 byte-for-byte comparison against a fixed baseline workflow is not available

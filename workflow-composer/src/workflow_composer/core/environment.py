@@ -1,14 +1,13 @@
 """
 Resource policy: the numbers that describe the target machine.
 
-RFC-003 section 3.1 splits "policy" into two audiences that should not share
-a file: domain policy (which populations a question implies, region lookups)
-belongs to a genomics curator and lives in the skill prose; resource policy
-(memory budget per task, vCPUs, host memory) belongs to whoever knows the
-target machine and lives here.
+Parallelism policy has two audiences that should not share a file. Domain
+policy -- which populations a question implies, region lookups -- belongs to a
+genomics curator and lives in the skill prose. Resource policy -- memory budget
+per task, vCPUs, host memory -- belongs to whoever knows the target machine and
+lives here.
 
-This module holds two independent things that section 7 item 2 explicitly
-forbids bundling together:
+This module holds two independent things, kept apart deliberately:
 
 - ``MEMORY_BUDGET_PRESETS``: named per-task memory ceilings only. A curator
   can reason about "how much memory may one task use" without knowing
@@ -20,14 +19,12 @@ forbids bundling together:
   ``host_mem_mb`` live.
 
 ``recommend_for_environment`` is the convenience that forwards a resolved
-``ComputeEnvironment`` into ``recommend_parallelism`` (RFC-003 section 7 item
-1, in ``core/parallelism.py``) so no caller has to assemble that argument
+``ComputeEnvironment`` into ``recommend_parallelism`` so no caller has to assemble that argument
 list by hand.
 
-``check_budget_consistency`` implements the second bullet of RFC-003 section
-8 ("Two memory budgets, set independently"), choosing the "keep both and add
-a consistency check that refuses contradictory settings" option over
-iterating the two budgets to a fixed point.
+``check_budget_consistency`` guards the fact that the per-task and whole-host
+memory ceilings are set independently: rather than iterating the two to a fixed
+point, it refuses settings that contradict each other.
 """
 from __future__ import annotations
 
@@ -35,23 +32,22 @@ import os
 from dataclasses import dataclass, fields, replace
 
 # ---------------------------------------------------------------------------
-# Memory-budget presets: per-task ceiling only (RFC-003 section 7 item 2)
+# Memory-budget presets: per-task ceiling only
 # ---------------------------------------------------------------------------
 
 MEMORY_BUDGET_PRESETS: dict[str, int] = {
     # Half of "medium". For hosts that are themselves memory-constrained (a
     # laptop, a shared dev box), so a single task's ceiling leaves more
     # concurrent tasks fitting in a small host_mem_mb -- at the cost of more,
-    # smaller tasks (a lower max_work in RFC-003 section 4.3).
+    # smaller tasks (a lower max_work).
     "small": 256,
-    # The RFC-003 section 4.1 cost model is calibrated against measured peak
-    # RSS on the HLA region; section 4.4's worked examples all assume this
-    # value. Changing it invalidates those worked examples and the tests
-    # pinned to them.
+    # The cost model is calibrated against measured peak RSS on the HLA
+    # region, and the documented worked examples all assume this value.
+    # Changing it invalidates those examples and the tests pinned to them.
     "medium": 512,
     # Double "medium". For hosts with memory to spare, trading it for fewer,
     # larger tasks -- fewer container starts and less input-rescan overhead
-    # per variant (RFC-003 section 4.1's fixed per-task cost).
+    # per variant.
     "large": 1024,
 }
 
@@ -77,9 +73,9 @@ _ENV_VARS = {
 class ComputeEnvironment:
     """Machine-describing resource policy for one named compute environment.
 
-    RFC-003 section 3.1: this is the "resource" half of policy, owned by
-    whoever knows the target machine -- distinct from the "domain" half
-    (region/population mapping) that stays in skill prose.
+    This is the "resource" half of policy, owned by whoever knows the target
+    machine -- distinct from the "domain" half (region/population mapping)
+    that stays in skill prose.
     """
 
     name: str
@@ -98,10 +94,9 @@ class ComputeEnvironment:
         ``G1KWF_HOST_MEM_MB``, ``G1KWF_MEM_BUDGET_MB``), then the shipped
         profile's default.
 
-        This is a direct answer to the RFC-003 section 8 open question
-        "Where do vcpus, host_mem_mb, and MAX_PARALLELISM come from for a
-        remote target?" -- by declaration (a named profile plus explicit
-        overrides), not by detection (probing the host at run time). A
+        Resource facts arrive by declaration -- a named profile plus explicit
+        overrides -- rather than by detection, so a plan for a remote target
+        does not depend on probing the machine that generated it. A
         caller that wants detection is free to probe the host itself and
         pass the result in as an explicit override; this function never
         inspects the machine it runs on.
@@ -154,9 +149,9 @@ class ComputeEnvironment:
 # representative, not measured: pick a general-purpose instance class per
 # cloud and let deployment-time overrides correct it for the actual target.
 _PROFILES: dict[str, ComputeEnvironment] = {
-    # RFC-003 section 4.4's worked examples: 31 GB host, 16 vCPUs,
-    # engine_reserve=1, mem_budget_mb=512. This is the reference environment
-    # the acceptance tests and section 4.4's table are pinned to.
+    # 31 GB host, 16 vCPUs, engine_reserve=1, mem_budget_mb=512. This is the
+    # reference environment the documented worked examples and the acceptance
+    # tests are pinned to.
     "local": ComputeEnvironment(
         name="local",
         vcpus=16,
@@ -189,17 +184,16 @@ _PROFILES: dict[str, ComputeEnvironment] = {
 
 
 # ---------------------------------------------------------------------------
-# Consistency check: RFC-003 section 8, "Two memory budgets, set independently"
+# Consistency check: the two memory budgets are set independently
 # ---------------------------------------------------------------------------
 
 def check_budget_consistency(env: ComputeEnvironment) -> None:
     """Refuse a ComputeEnvironment whose two independent budgets contradict.
 
-    RFC-003 section 8 notes that ``mem_budget_mb`` (a single task's ceiling)
-    and ``host_mem_mb`` (all concurrent tasks' ceiling) are set independently
-    and nothing keeps them consistent. This picks the "keep both and add a
-    consistency check that refuses contradictory settings" option over
-    iterating the two to a fixed point.
+    ``mem_budget_mb`` (a single task's ceiling) and ``host_mem_mb`` (all
+    concurrent tasks' ceiling) are set independently, and nothing otherwise
+    keeps them consistent. Rather than iterating the two to a fixed point,
+    contradictory settings are refused here.
 
     Checks two ways an environment can be self-contradictory:
 
@@ -256,14 +250,13 @@ def recommend_for_environment(
 
     Convenience so no caller assembles ``recommend_parallelism``'s argument
     list by hand from a ``ComputeEnvironment`` -- see ``core/parallelism.py``
-    (RFC-003 section 7 item 1) for the formula this forwards into.
+ for the formula this forwards into.
 
     Args:
         variants: V, actual row_count of the input (not bp span).
         individuals: I, individual count after population filtering.
         env: a resolved ``ComputeEnvironment`` (see ``ComputeEnvironment.resolve``).
-        chromosomes: number of chromosomes running concurrently (RFC-003
-            section 4.5).
+        chromosomes: number of chromosomes running concurrently.
 
     Returns:
         The same ``Parallelism`` that calling ``recommend_parallelism``

@@ -1,6 +1,5 @@
 """
-Tests for the ind_jobs clamp in generate_workflow (RFC-003 section 7 item 4,
-section 3.3 "trust but clamp").
+Tests for the ind_jobs clamp in generate_workflow.
 
 Covers the acceptance criteria:
 
@@ -80,7 +79,7 @@ def test_hint_above_recommended_is_clamped_down():
         engine_reserve=env.engine_reserve,
         host_reserve_mb=env.host_reserve_mb,
     )
-    assert expected.ind_jobs == 15  # RFC-003 section 4.4 worked example
+    assert expected.ind_jobs == 15  # documented worked example
 
     wf = _generate(250, individuals=HLA_INDIVIDUALS, compute_environment="local")
 
@@ -153,7 +152,7 @@ def test_emitted_task_count_never_implies_estimate_above_mem_budget(hint):
     max_step = max(stop - start for start, stop in starts_stops)
 
     work = max_step * HLA_INDIVIDUALS
-    est_peak_mb = 12 + 1.2 * work / 1e6  # RFC-003 section 4.1 cost model
+    est_peak_mb = 12 + 1.2 * work / 1e6  # cost model
 
     assert est_peak_mb <= env.mem_budget_mb, (
         f"hint={hint}: emitted step {max_step} implies {est_peak_mb:.1f} MB/task, "

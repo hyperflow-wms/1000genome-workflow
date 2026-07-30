@@ -108,8 +108,8 @@ def _num_chromosomes(intent: ResearchIntent) -> int:
     """Count the chromosomes an intent touches.
 
     Shared by ``estimate_task_counts`` and ``resolve_parallelism`` so the
-    concurrency division in RFC-003 section 4.5 ("ind_jobs is per chromosome,
-    but max_parallelism is global") uses the same chromosome count that
+    concurrency division -- ind_jobs is per chromosome, but max_parallelism
+    is global -- uses the same chromosome count that
     drives the task-count estimate. Default (no regions, no explicit
     chromosomes) is the full genome: 22 autosomes + X + Y.
     """
@@ -125,8 +125,7 @@ def _estimate_max_variants_per_chromosome(intent: ResearchIntent) -> int:
     """Estimate V, the per-chromosome variant count ``recommend_parallelism``
     is sized against.
 
-    ``recommend_parallelism``'s ``ind_jobs`` is defined per chromosome (RFC-003
-    section 4.3/4.5): it is the task count for *one* chromosome's individuals
+    ``recommend_parallelism``'s ``ind_jobs`` is defined per chromosome: it is the task count for *one* chromosome's individuals
     stage, and ``generate_workflow`` applies that single value identically to
     every chromosome the intent touches. So V here must be a per-chromosome
     figure, never a sum across chromosomes -- summing (regions first, then
@@ -135,7 +134,7 @@ def _estimate_max_variants_per_chromosome(intent: ResearchIntent) -> int:
     ``recommend_parallelism`` a V that belongs to no single chromosome. For a
     multi-region/multi-chromosome intent that inflates ind_jobs far past what
     any individual chromosome's real variant count supports, silently
-    violating the section 4.3 ``min_work`` floor on every chromosome smaller
+    violating the ``min_work`` floor on every chromosome smaller
     than the sum (reproducible: two 1 Mb regions on chr6 and chr9 sum to
     V=65,832 and recommend ind_jobs=5, but chr9's own 30,303 variants at
     ind_jobs=5 does ~4.0M row*individuals of real work per task, well under
@@ -180,7 +179,7 @@ def _estimate_individuals(populations: list[str] | None) -> int:
     specific VCF's actual sample list. For EUR+AFR the bundled files sum to
     1675 individuals, versus the 1153 samples actually present in the HLA
     region's VCF (``columns.txt``). Over-counting is the safe direction for
-    a memory bound (RFC-003 section 4.1): it can only push ``est_peak_mb``
+    a memory bound: it can only push ``est_peak_mb``
     and ``ind_jobs`` up, never let a task exceed the real per-task memory it
     will actually use.
     """
@@ -203,8 +202,7 @@ def _resolve_environment(
 
     Shared by ``resolve_parallelism`` and ``plan_workflow`` so both resolve
     the *same* environment for the same call -- ``plan_workflow`` needs its
-    own copy to pass into ``generate_workflow`` for clamping (RFC-003
-    section 7 item 4), and a second, independently-resolved environment
+    own copy to pass into ``generate_workflow`` for clamping, and a second, independently-resolved environment
     could silently disagree with the one ``resolve_parallelism`` used.
 
     Raises:
@@ -232,10 +230,8 @@ def resolve_parallelism(
 ) -> Parallelism:
     """Resolve both parallelism dials for a research intent.
 
-    Replaces the old region-span preset lookup (RFC-003 section 1.1: it
-    disagreed with the RFC-002 section 5 test harness and was blind to the
-    target machine) with a single call into ``recommend_for_environment`` /
-    ``recommend_parallelism`` (RFC-003 section 7 item 1). No arithmetic on
+    Replaces the old region-span preset lookup with a single call into ``recommend_for_environment`` /
+    ``recommend_parallelism``. No arithmetic on
     ind_jobs happens in this module any more.
 
     Args:
@@ -249,22 +245,20 @@ def resolve_parallelism(
             terms unless overridden below.
         parallelism: memory-budget preset name ("small", "medium", "large")
             selecting ``mem_budget_mb`` via
-            ``environment.MEMORY_BUDGET_PRESETS`` (RFC-003 section 7 item 2:
-            presets are memory-budget bundles, not task counts, and must not
-            bundle vcpus). ``None`` keeps the environment profile's default
+            ``environment.MEMORY_BUDGET_PRESETS``. ``None`` keeps the environment profile's default
             budget. An unknown name raises ``ValueError``.
         ind_jobs: explicit task-count override. Honoured as a hint at this
             layer: the returned ``Parallelism.ind_jobs`` is exactly this
             value, though ``max_parallelism`` and ``est_peak_mb`` still
             reflect the computed recommendation for the actual (V, I).
             Clamping an out-of-range hint against the computed safe range
-            is the generator's job (RFC-003 section 3.3 "trust but clamp"),
+            is the generator's job,
             not this function's.
         vcpus: explicit vCPU override for the compute environment.
 
     Returns:
         A ``Parallelism`` with both dials, the peak-memory estimate, and a
-        reason string (RFC-003 section 5).
+        reason string.
 
     Raises:
         ValueError: if ``parallelism`` names an unknown preset, or if
@@ -285,11 +279,11 @@ def resolve_parallelism(
 
     if ind_jobs is not None:
         # Honoured as a hint (see docstring): report it verbatim, but keep
-        # the reason string internally consistent -- RFC-003 section 5
-        # warns that reporting one dial without the other, or a reason that
-        # names a different ind_jobs than the one actually used, reproduces
-        # the plan.json/harness divergence in section 1.1. Built through the
-        # single format_parallelism_reason helper (section 7 item 5) rather
+        # the reason string internally consistent. Reporting one dial
+        # without the other, or a reason that names a different ind_jobs than
+        # the one actually used, is how a plan comes to record a value
+        # nothing ran with. Built through the
+        # single format_parallelism_reason helper rather
         # than a second, independent f-string.
         cores = max(1, env.vcpus - env.engine_reserve)
         reason = format_parallelism_reason(
@@ -314,7 +308,7 @@ def calculate_ind_jobs(intent: ResearchIntent, parallelism: str | None = None) -
     Kept for callers that only need the task count, not the full
     ``Parallelism`` (both dials plus the memory estimate and reason). Uses
     the "aws" compute environment default, matching this function's
-    pre-existing default before RFC-003; callers that know their target
+    default; callers that know their target
     machine should call ``resolve_parallelism`` directly instead.
 
     Args:
@@ -404,7 +398,7 @@ def create_advisory_plan(
     # Step 1: Create data preparation plan
     data_plan = create_data_preparation_plan(intent, compute_environment)
 
-    # Step 2: Resolve both parallelism dials together (RFC-003 section 7 item 2)
+    # Step 2: Resolve both parallelism dials together
     resolved = resolve_parallelism(
         intent,
         compute_environment=compute_environment,
@@ -420,7 +414,7 @@ def create_advisory_plan(
     description = generate_description(intent, data_plan, task_count)
     rationale = generate_rationale(intent, data_plan, compute_environment)
 
-    # RFC-003 section 5/7 item 5: emit the effective dials and the reason
+    # Emit the effective dials and the reason
     # wherever a workflow is planned, into the log -- not only into the
     # returned plan -- so the value actually recommended is visible even
     # when nobody inspects plan.json.
@@ -454,8 +448,8 @@ def create_advisory_plan(
             "regions": [r.model_dump() for r in intent.regions] if intent.regions else None,
             "focus": intent.focus,
             "compute_environment": compute_environment,
-            # RFC-003 section 5: both dials, the memory estimate, and the
-            # reason, kept consistent with execution_hints above -- so
+            # Both dials, the memory estimate, and the reason, kept
+            # consistent with execution_hints above -- so
             # plan.json on disk carries the same artefact the log line does.
             "ind_jobs": resolved.ind_jobs,
             "max_parallelism": resolved.max_parallelism,
@@ -475,10 +469,10 @@ def _effective_parallelism(workflow: dict, resolved: Parallelism) -> Parallelism
     ``resolve_parallelism`` sizes ``resolved`` against planner's *estimated*
     V (``_estimate_max_variants_per_chromosome``); ``generate_workflow``
     independently clamps against each chromosome's *exact* ``row_count``
-    from ``data.csv`` (RFC-003 section 7 item 4) and is the authoritative
+    from ``data.csv`` and is the authoritative
     source (see the module docstring). Recording the estimate instead of
-    what the generator actually did reproduces the section 1.1 divergence
-    this task exists to close -- a hint that the generator clamped away
+    what the generator actually did is how a plan comes to record a value
+    nothing ran with -- a hint that the generator clamped away
     must not survive into ``plan.json`` unchanged.
 
     When more than one chromosome is touched, each is clamped independently
@@ -542,7 +536,7 @@ def plan_workflow(
     # Step 1: Create data preparation plan
     data_plan = create_data_preparation_plan(intent, compute_environment)
 
-    # Step 2: Resolve both parallelism dials together (RFC-003 section 7 item 2)
+    # Step 2: Resolve both parallelism dials together
     resolved = resolve_parallelism(
         intent,
         compute_environment=compute_environment,
@@ -562,7 +556,7 @@ def plan_workflow(
     # Step 4: Generate workflow using native generator
     # THIS IS THE AUTHORITATIVE SOURCE - generator.py mirrors daxgen.py exactly.
     # Pass individuals/compute_environment so generate_workflow clamps
-    # resolved.ind_jobs -- a hint, RFC-003 section 3.3 "trust but clamp" --
+    # resolved.ind_jobs -- a hint, trusted but clamped --
     # to the memory-safe range for each chromosome's *exact* row_count from
     # data.csv, the same environment resolve_parallelism used above.
     env = _resolve_environment(compute_environment, parallelism, vcpus)
@@ -578,7 +572,7 @@ def plan_workflow(
     )
 
     # Record what generate_workflow actually did, not the pre-clamp hint
-    # that went in (RFC-003 section 5; see _effective_parallelism).
+    # that went in.
     resolved = _effective_parallelism(workflow, resolved)
     logger.info(resolved.reason)
 
@@ -622,8 +616,8 @@ def plan_workflow(
             "regions": [r.model_dump() for r in intent.regions] if intent.regions else None,
             "focus": intent.focus,
             "compute_environment": compute_environment,
-            # RFC-003 section 5: both dials, the memory estimate, and the
-            # reason, kept consistent with execution_hints above -- the
+            # Both dials, the memory estimate, and the reason, kept
+            # consistent with execution_hints above -- the
             # effective (post-clamp) value, not the pre-clamp hint.
             "ind_jobs": resolved.ind_jobs,
             "max_parallelism": resolved.max_parallelism,

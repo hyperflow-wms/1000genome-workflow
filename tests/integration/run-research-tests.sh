@@ -343,10 +343,9 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     echo -e "${CYAN}  Rationale:${NC} $RATIONALE"
     echo ""
 
-    # Show both parallelism dials and the reason (RFC-003 section 5: reporting
-    # one dial without the other hides an unsafe concurrency) if using --vcpus,
+    # Show both parallelism dials and the reason if using --vcpus,
     # computed by the same recommend_parallelism tool the composer uses
-    # (RFC-003 section 7 item 3).
+    #.
     if [ -n "$VCPUS" ]; then
         ADAPTIVE_INFO=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
             --intent-json "$INTENT_JSON" \
@@ -474,9 +473,9 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     fi
 
     # Determine parallelism for CLI, and resolve MAX_PARALLELISM (the
-    # HF_VAR_REDIS_CMD_MAX_PARALLELISM concurrency dial, RFC-003 section 4.2)
+    # HF_VAR_REDIS_CMD_MAX_PARALLELISM concurrency dial)
     # from the same recommend_parallelism tool instead of a hardcoded
-    # constant (RFC-003 section 7 item 3).
+    # constant.
     CLI_PARALLELISM=""
     MAX_PARALLELISM_VALUE=""
     if [ -n "$IND_JOBS" ]; then

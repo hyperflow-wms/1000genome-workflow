@@ -86,10 +86,10 @@ def generate(data_csv: str, populations_dir: str, compute_env: str, parallelism:
         pop_filter = [p.strip() for p in populations.split(",")]
 
     # Resolve the compute environment and the real (not estimated) V/I from
-    # the actual data.csv and population files (RFC-003 section 7 item 2/4).
+    # the actual data.csv and population files.
     # Always resolved -- not only when --ind-jobs is omitted -- so
     # generate_workflow can clamp any hint, including an explicit
-    # --ind-jobs, and so the reason emitted below (section 5) always
+    # --ind-jobs, and so the reason emitted below always
     # reflects what was actually used, never just what was requested.
     env_overrides: dict[str, int] = {}
     if vcpus is not None:
@@ -99,8 +99,7 @@ def generate(data_csv: str, populations_dir: str, compute_env: str, parallelism:
     env = ComputeEnvironment.resolve(compute_env, **env_overrides)
 
     chromosomes_data = load_data_csv(Path(data_csv))
-    # recommend_parallelism's ind_jobs is per chromosome (RFC-003 section
-    # 4.3/4.5) and generate_workflow applies the single resulting value
+    # recommend_parallelism's ind_jobs is per chromosome and generate_workflow applies the single resulting value
     # identically to every chromosome in chromosomes_data. Driving off
     # the sum across chromosomes would size ind_jobs for a workload that
     # belongs to no single chromosome and silently violate the
@@ -144,7 +143,7 @@ def generate(data_csv: str, populations_dir: str, compute_env: str, parallelism:
             compute_environment=env,
         )
 
-        # RFC-003 section 5/7 item 5: both dials and the reason, for the
+        # Both dials and the reason, for the
         # effective (post-clamp) ind_jobs generate_workflow actually used --
         # to stderr, regardless of whether --ind-jobs was given, and never
         # one dial without the other.
@@ -320,7 +319,7 @@ def plan(intent_json: str, output_format: str, compute_env: str, parallelism: st
         vcpus=vcpus,
     )
 
-    # RFC-003 section 5/7 item 5: both dials and the reason, to stderr.
+    # Both dials and the reason, to stderr.
     click.echo(f"  {result.execution_hints.parallelism_reason}", err=True)
 
     click.echo(result.model_dump_json(indent=2))

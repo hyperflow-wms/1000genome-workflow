@@ -161,7 +161,7 @@ chromosomes = [
     )
 ]
 
-# ind_jobs hint via recommend_parallelism (RFC-003 section 7 item 3):
+# ind_jobs hint via recommend_parallelism:
 # generator.py no longer ships a fixed ind_jobs-per-preset table.
 # "$PARALLELISM" selects a memory budget via MEMORY_BUDGET_PRESETS instead.
 env = ComputeEnvironment.resolve("local", mem_budget_mb=MEMORY_BUDGET_PRESETS["$PARALLELISM"])

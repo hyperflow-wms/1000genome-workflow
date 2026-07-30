@@ -1,8 +1,8 @@
 """
-Tests for RFC-003 section 7 item 6 / section 3.1: the parallelism guidance
+Tests for the parallelism guidance
 in SKILL.md and the resource-policy split.
 
-RFC-003 section 3.1 splits parallelism policy into two audiences: domain
+Parallelism policy has two audiences: domain
 policy (which populations/regions a question implies, and how much work a
 task is worth) belongs to the genomics curator and stays in SKILL.md as
 prose; resource policy (memory budget per task, vCPUs, host memory) belongs
@@ -18,8 +18,7 @@ task prompt:
    in ``load_skill_context()`` output, names an owner for each resource
    field, and documents every ``ComputeEnvironment`` field.
 4. The guidance does not restate the clamp formula (``clamp(``,
-   ``max_work``, ``1.2``) -- the mechanism stays in code (RFC-003 section
-   3.1).
+   ``max_work``, ``1.2``) -- the mechanism stays in code.
 5. Every numeric value in the guidance section carries a justification
    nearby, and the quoted per-task memory budget equals
    ``MEMORY_BUDGET_PRESETS["medium"]``.
@@ -177,7 +176,7 @@ def test_skill_markdown_does_not_restate_clamp_formula(filename, forbidden):
     content = filepath.read_text()
     assert forbidden not in content, (
         f"{filename} restates clamp mechanism string {forbidden!r}; "
-        f"RFC-003 section 3.1 keeps the formula in code"
+        f"the formula stays in code"
     )
 
 
@@ -199,9 +198,7 @@ NUMERIC_JUSTIFICATIONS = {
 def test_cohort_scaling_direction_matches_recommend_parallelism():
     """The prose claims a *larger* cohort needs *fewer* variants per task to
     clear the fixed-cost floor. Verify that against recommend_parallelism
-    itself (RFC-003 section 4.3: in the min_work-bound regime,
-    rows_per_task = min_work / individuals, so it is inversely proportional
-    to individuals) rather than trusting the prose to describe its own
+    itself rather than trusting the prose to describe its own
     mechanism correctly -- a bare "assert the sentence contains a cue word"
     test cannot catch a sentence whose claim is simply backwards.
     """

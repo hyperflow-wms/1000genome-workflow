@@ -1,14 +1,14 @@
 """
 Tests for pointing the test harness's --vcpus flag at recommend_parallelism
-and deleting the duplicate rule (RFC-003 section 7 item 3).
+and deleting the duplicate rule.
 
 Covers the acceptance criteria:
 
-1. The RFC-002 section 5 rule (``compute_adaptive_parallelism``) is gone
+1. The superseded ``compute_adaptive_parallelism`` rule is gone
    from ``tests/integration/lib/test_framework.py``, not merely bypassed.
 2. The harness's ``generate_estimated_workflow`` and the composer's
    ``planner.resolve_parallelism`` agree on the individuals task count for
-   the same intent and environment -- the RFC-003 section 1.1 divergence
+   the same intent and environment -- the divergence
    can no longer happen.
 3. The ``adaptive-parallelism`` CLI subcommand (invoked as a subprocess,
    exactly as ``run-research-tests.sh`` does) exits 0 and prints both
@@ -197,7 +197,7 @@ def test_harness_and_planner_agree_across_multi_chromosome_fixtures(intent_dict,
     """Regression test for the summed-V bug: a previous version of
     ``recommend_harness_parallelism`` summed V across every region/chromosome
     an intent touches, while ``planner.resolve_parallelism`` takes the max
-    per chromosome (``ind_jobs`` is defined per chromosome, RFC-003 section
+    per chromosome (``ind_jobs`` is defined per chromosome
     4.3/4.5). That disagreed on two real ``cases.yaml`` fixtures that touch
     more than one chromosome -- ``brca-breast-cancer`` (chr17 + chr13,
     harness ind_jobs=2 vs planner ind_jobs=1) and ``genome-wide-null`` (all
@@ -238,7 +238,7 @@ def test_harness_workflow_individuals_count_matches_num_chromosomes_times_ind_jo
     ``planner._num_chromosomes``: for an intent with neither regions nor an
     explicit chromosome list, the harness's chromosome-data loop covers the
     22 autosomes only, while ``_num_chromosomes`` (used for the
-    ``max_parallelism`` concurrency divide, RFC-003 section 4.5) counts 24
+    ``max_parallelism`` concurrency divide) counts 24
     (autosomes + X + Y). That divergence is pre-existing, orthogonal to the
     ind_jobs/max_parallelism agreement this test suite is about, and out of
     this task's scope.
