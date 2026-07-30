@@ -594,6 +594,30 @@ for TEST_ID in "${TEST_IDS[@]}"; do
         log_info "  Task difference from estimate: $((GEN_TASKS - EST_TASKS))"
     fi
 
+    # The estimated workflow is only a useful preview if regenerating it from
+    # the exact variant count repartitions the individuals stage and changes
+    # nothing else. A different population set, or a missing merge or sifting
+    # step, means the reviewed workflow was not this one.
+    if [ -f "$WORKFLOW_DIR/workflow-estimated.json" ]; then
+        CMP_RESULT=$(python3 "$FRAMEWORK_PY" compare-workflows \
+            --estimated "$WORKFLOW_DIR/workflow-estimated.json" \
+            --final "$WORKFLOW_DIR/workflow.json")
+        if echo "$CMP_RESULT" | python3 -c "import sys,json; sys.exit(0 if json.load(sys.stdin)['ok'] else 1)"; then
+            EST_IND=$(echo "$CMP_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['estimated_individuals'])")
+            GEN_IND=$(echo "$CMP_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['final_individuals'])")
+            log_success "  Estimate held: individuals $EST_IND -> $GEN_IND, other stages unchanged"
+        else
+            echo "$CMP_RESULT" | python3 -c "
+import sys, json
+for p in json.load(sys.stdin)['problems']:
+    print(f'  {p}')" >&2
+            log_error "Final workflow diverges from the estimate beyond the individuals stage"
+            FAILED=$((FAILED + 1))
+            RESULTS[$TEST_ID]="FAILED (estimate diverged)"
+            continue
+        fi
+    fi
+
     if [ "$STOP_POINT" = "generate" ]; then
         log_warning "Stopping after GENERATE phase"
         SKIPPED=$((SKIPPED + 1))

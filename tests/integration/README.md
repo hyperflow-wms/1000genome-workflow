@@ -166,18 +166,22 @@ only the individuals stage is reproducible.
 
 ---
 
-## Legacy Tests
+## Deferred Generation
 
-These predate `run-research-tests.sh`, which covers all of them except where
-noted. They still run, but nothing invokes them automatically.
+PLAN writes `workflow-estimated.json` from an estimated variant count, before any
+data is downloaded, so a workflow can be reviewed while it is still cheap to
+change. GENERATE writes `workflow.json` from the exact count once the data is on
+disk.
 
-| Script | Description | Covered by |
-|--------|-------------|------------|
-| `test-deferred-generation.sh` | Plans a workflow from an estimated variant count, then regenerates it from the exact count and checks the two differ only in how individuals tasks are partitioned | **Not covered** — the harness writes `workflow-estimated.json` but never compares it against the final workflow |
-| `test-workflow-composer.sh` | Generates and runs a workflow on the micro dataset | `micro` case |
-| `test-hla-region.sh` | Downloads HLA data via tabix and runs it; `--skip-download` reuses existing data | `eur-afr-hla` / `eas-hla-autoimmune`; `--skip-download` → `--execute-only` |
-| `setup-micro-workflow.sh` + `run-workflow.sh` | Manual micro setup, capping individuals per population | `micro` case + `--max-samples-per-pop` + `--execute-only` |
-| `setup-tiny-workflow.sh` | Smallest possible workflow: one chromosome, one individuals task, 17 jobs | No equivalent case; `data-tiny.csv` is used only here |
+After GENERATE the harness checks that the two differ **only** in the individuals
+stage, whose task count is derived from the row count:
+
+```
+[OK]   Estimate held: individuals 11 -> 15, other stages unchanged
+```
+
+A different population set, or a missing merge or sifting step, fails the test —
+it means the workflow that was reviewed is not the workflow that will run.
 
 ---
 

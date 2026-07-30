@@ -206,11 +206,11 @@ Run integration tests to validate the complete pipeline:
 ```bash
 cd tests/integration
 
-# Test with micro dataset (fast, ~2-3 minutes)
-./test-workflow-composer.sh --parallelism small --yes
+# Test with the micro dataset (fast, ~2-3 minutes)
+./run-research-tests.sh -y micro
 
 # Test with real 1000 Genomes data via tabix
-./test-hla-region.sh --quick --yes
+./run-research-tests.sh --mock-llm -y brca1-gbr
 ```
 
 See [tests/integration/README.md](tests/integration/README.md) for detailed documentation on the end-to-end workflow execution pipeline.

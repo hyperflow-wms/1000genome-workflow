@@ -494,6 +494,51 @@ def verify_outputs(workflow_dir: Path, expected_outputs: list[str]) -> tuple[int
     return len(missing), missing
 
 
+def compare_estimated_to_final(estimated: dict, final: dict) -> dict:
+    """Check that regenerating a workflow only repartitioned the individuals stage.
+
+    Deferred generation plans a workflow from an estimated variant count, then
+    regenerates it once the data is on disk and the exact count is known. Only
+    the individuals stage may change: it is the one stage whose task count comes
+    from the row count. If the exact count also changed which populations are
+    analysed, or dropped the merge or sifting step, the estimate was not a
+    preview of the same workflow and reviewing it proved nothing.
+
+    Returns a dict with ``ok``, the per-stage task counts of both workflows, and
+    ``problems`` -- an empty list when the only differing stage is individuals.
+    """
+    def stage_counts(wf: dict) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for proc in wf.get("processes", []):
+            name = proc.get("name", "?")
+            counts[name] = counts.get(name, 0) + 1
+        return counts
+
+    est, fin = stage_counts(estimated), stage_counts(final)
+    problems = []
+
+    for stage in sorted(set(est) | set(fin)):
+        e, f = est.get(stage, 0), fin.get(stage, 0)
+        if stage == "individuals":
+            if f == 0:
+                problems.append("final workflow has no individuals tasks")
+            continue
+        if e != f:
+            problems.append(
+                f"stage '{stage}' changed from {e} to {f} tasks; only the "
+                f"individuals stage may be repartitioned"
+            )
+
+    return {
+        "ok": not problems,
+        "estimated_stages": est,
+        "final_stages": fin,
+        "estimated_individuals": est.get("individuals", 0),
+        "final_individuals": fin.get("individuals", 0),
+        "problems": problems,
+    }
+
+
 def get_tabix_commands(plan_dict: dict) -> list[dict]:
     """
     Extract data preparation commands from a workflow plan.
@@ -590,6 +635,13 @@ def main():
     verify_parser.add_argument("--test-id", required=True)
 
     # Tabix commands
+    cmp_parser = subparsers.add_parser(
+        "compare-workflows",
+        help="Check the final workflow only repartitioned the individuals stage",
+    )
+    cmp_parser.add_argument("--estimated", required=True, help="workflow-estimated.json")
+    cmp_parser.add_argument("--final", required=True, help="workflow.json")
+
     tabix_parser = subparsers.add_parser("tabix-commands", help="Generate tabix extraction commands")
     tabix_parser.add_argument("--plan-json", required=True, help="Plan JSON string or @file path")
 
@@ -682,6 +734,13 @@ def main():
 
             result = {"valid": is_valid, "differences": diffs}
             print(json.dumps(result))
+
+        elif args.command == "compare-workflows":
+            with open(args.estimated) as fh:
+                estimated = json.load(fh)
+            with open(args.final) as fh:
+                final = json.load(fh)
+            print(json.dumps(compare_estimated_to_final(estimated, final), indent=2))
 
         elif args.command == "verify-outputs":
             cases = load_test_cases(Path(args.yaml))
