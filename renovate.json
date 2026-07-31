@@ -22,7 +22,7 @@
     {
       "customType": "regex",
       "description": "job-executor version pinned in the worker Makefile",
-      "fileMatch": [
+      "managerFilePatterns": [
         "worker-image/Makefile"
       ],
       "matchStrings": [
@@ -34,7 +34,7 @@
     {
       "customType": "regex",
       "description": "engine image default used by the integration test",
-      "fileMatch": [
+      "managerFilePatterns": [
         "tests/integration/docker-compose.yml"
       ],
       "matchStrings": [
@@ -46,7 +46,7 @@
     {
       "customType": "regex",
       "description": "worker image default used by the integration test; the docker datasource means this cannot be bumped before the image exists",
-      "fileMatch": [
+      "managerFilePatterns": [
         "tests/integration/docker-compose.yml"
       ],
       "matchStrings": [
