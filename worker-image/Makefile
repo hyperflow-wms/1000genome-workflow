@@ -2,7 +2,7 @@ REPO_NAME = 1000genome-worker
 PREFIX = hyperflowwms
 VERSION = 1.3
 # ?= so CI and Renovate can override the version from the environment
-HF_JOB_EXECUTOR_VERSION ?= 1.4.1
+HF_JOB_EXECUTOR_VERSION ?= 1.4.2
 TAG = $(VERSION)-je$(HF_JOB_EXECUTOR_VERSION)
 
 # Local job-executor checkout used by the 'image-dev' target
