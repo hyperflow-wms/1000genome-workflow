@@ -8,6 +8,23 @@ Composer reużywa `interpret_research_question` z pakietu `workflow_composer` (c
 
 ---
 
+## 🖥️ Narzędzie (GUI)
+
+Najprościej użyć przez lokalny **GUI**: wpisujesz pytanie badawcze, wybierasz silnik
+(**Nextflow / HyperFlow / Oba**) i klikasz **Uruchom** — widzisz przebiegi, progress
+(X/Y per proces) i wyniki. Runy o tym samym wejściu (NF ↔ HF) listują się same jako pary
+do przejrzenia.
+
+```bash
+./run-gui.sh          # → http://localhost:8765
+```
+
+> 📄 **Instalacja, wymagania, konfiguracja, troubleshooting → [SETUP.md](SETUP.md)**
+> (Docker, conda env, klucz LLM, obraz workera, układ katalogów, macOS **i Linux**).
+> To jest źródło prawdy dla uruchomienia — sekcje niżej opisują port Nextflow od strony technicznej.
+
+---
+
 ## Architektura — jak to działa
 
 ### DAG naukowy (to odtwarza `main.nf`)
@@ -76,14 +93,14 @@ nowy jest tylko backend generujący i uruchamiający Nextflow.
 
 ---
 
-## Wymagania (jednorazowo, już skonfigurowane)
+## Wymagania (skrót — pełna instrukcja w [SETUP.md](SETUP.md))
 
-- Docker Desktop uruchomiony
-- conda env `1000genome` (ma litellm, pydantic, pakiet `workflow_composer`)
-- Klucz Gemini w `../1000genome-workflow/.env` jako `GEMINI_API_KEY`
-- Obraz `1000genome-worker-nf:latest` (worker + bash). Odbudowa gdyby brakowało:
+- Docker uruchomiony
+- conda env `1000genome` (litellm, pydantic, pakiet `workflow_composer`)
+- Klucz LLM w `../1000genome-workflow/.env` jako `GEMINI_API_KEY`
+- Obraz `1000genome-worker-nf:1.3` (streaming individuals.py + ANNOTATE). Buduje go `bash setup.sh`; ręcznie:
   ```bash
-  docker build --platform linux/amd64 -f worker-nf.Dockerfile -t 1000genome-worker-nf:latest .
+  docker build --platform linux/amd64 -f worker-nf.Dockerfile -t 1000genome-worker-nf:1.3 .
   ```
 
 > **Uwaga:** zawsze `NXF_VER=25.10.2`. Nextflow 26.x nie parsuje configów nf-core.

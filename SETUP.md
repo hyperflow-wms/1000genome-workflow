@@ -93,6 +93,11 @@ Domyślne wartości pasują do układu z §1. Nadpisz, jeśli masz inaczej:
   (już w `main.nf`); HyperFlow robi to w `extract-data.sh`. Upewnij się, że używasz aktualnych repo.
 - **Nie widać zmian w GUI po edycji** — twardy reload przeglądarki `Cmd+Shift+R`. Po edycji `gui.py`
   zrestartuj serwer (`./run-gui.sh`); po edycji `main.nf`/`composer.py` restart NIE jest potrzebny.
+- **Port 8765 zajęty** (`Address already in use`) — zabij proces trzymający port i uruchom ponownie:
+  ```bash
+  lsof -ti :8765 | xargs kill        # dokańczająco: xargs kill -9
+  ./run-gui.sh
+  ```
 - **Linux** — działa: gnubin niepotrzebny (natywne GNU), otwieranie folderów przez `xdg-open`
   (doinstaluj `xdg-utils`), obrazy amd64 natywnie (bez emulacji). `run-gui.sh` sam znajdzie conda
   przez `conda info --base`. Nic nie trzeba przepinać ręcznie.

@@ -29,3 +29,9 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Materialy prezentacyjne/thesis (zostaja na dysku, poza repo — nie sa czescia toola)
+*.png
+*.pdf
+presentation-*.md
+build_slides.py
