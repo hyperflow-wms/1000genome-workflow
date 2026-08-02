@@ -2,32 +2,34 @@
 
 GUI (`gui.py`) przyjmuje pytanie badawcze w języku naturalnym, interpretuje je LLM-em
 (intent), po czym uruchamia workflow 1000genome na **Nextflow** albo **HyperFlow** i pokazuje
-przebiegi, progress i wyniki. Testowane na **macOS (Apple Silicon)** — obrazy Docker są amd64
-i idą przez emulację.
+przebiegi, progress i wyniki. Działa na **macOS** i **Linux** (obrazy Docker są amd64 — na
+Apple Silicon idą przez emulację, na x86 natywnie).
 
-## 1. Wymagany układ katalogów
+## 1. Układ katalogów
 
-Tool zależy od dwóch sąsiednich repozytoriów. Sklonuj obok siebie:
+Wystarczą **dwa katalogi obok siebie** (nazwa katalogu-rodzica dowolna):
 
 ```
-magisterka/
-├── nextflow-1000genome/          # TEN tool (gui.py, composer.py, main.nf, worker-nf.Dockerfile, testdata/)
-├── 1000genome-workflow/          # fork: pakiet workflow_composer (interpret intentu) + .env (klucz LLM)
-├── 1000genome-workflow2/
-│   └── 1000genome-workflow/      # HyperFlow harness (streaming worker 1.3) — `git pull` = najnowszy
-└── nextflow-experiments/bin/nextflow   # wrapper Nextflow (respektuje NXF_VER=25.10.2)
+dowolny-katalog/
+├── 1000genome-workflow/     # repo 1000genome (aktualne!): pakiet workflow_composer + harness HyperFlow + .env
+└── nextflow-1000genome/     # TEN tool (gui.py, composer.py, main.nf, worker-nf.Dockerfile, testdata/)
 ```
 
-Ścieżki można nadpisać zmiennymi środowiskowymi (patrz §6), ale domyślnie zakładany jest ten układ.
+`1000genome-workflow` musi być **aktualnym** klonem (`git pull`) — daje trzy rzeczy: pakiet
+`workflow_composer` (interpret intentu, reużyty 1:1), harness HyperFlow (`tests/integration`,
+ze streaming workerem) oraz plik `.env` z kluczem LLM.
+
+> Tool sam wykrywa harness HyperFlow: jeśli istnieje `../1000genome-workflow2/1000genome-workflow/...`
+> użyje go, inaczej `../1000genome-workflow/tests/integration`. Nextflow bierze z `$NEXTFLOW_BIN`,
+> albo z sąsiedniego `nextflow-experiments/bin/nextflow`, albo z `PATH`. Wszystko nadpisywalne (§6).
 
 ## 2. Wymagane narzędzia
 
-- **Docker** (Desktop) — uruchomiony.
+- **Docker** — uruchomiony.
 - **Miniconda/conda**.
-- **Homebrew** (macOS): `brew install coreutils gnu-sed grep bash`
-  (GNU `head -n -1`/`sed`/`grep` — skrypty harnessu tego wymagają; macOS ma BSD).
-- **Nextflow** — użyty wrapper `../nextflow-experiments/bin/nextflow`, `NXF_VER=25.10.2`
-  (Nextflow 26.x psuje configi — nie używać brew binary).
+- **Nextflow** ≥ 24; **pinuj `NXF_VER=25.10.2`** (Nextflow 26.x psuje configi nf-core).
+- **macOS**: `brew install coreutils gnu-sed grep bash` — harness używa GNU `head -n -1`/`sed`/`grep`
+  (macOS ma BSD). Na **Linux** niepotrzebne (GNU natywnie); do otwierania folderów w GUI: `xdg-utils`.
 
 ## 3. Instalacja (raz)
 
@@ -73,12 +75,14 @@ Domyślne wartości pasują do układu z §1. Nadpisz, jeśli masz inaczej:
 
 | Zmienna | Znaczenie | Domyślnie |
 |---|---|---|
-| `CONDA_SH` | ścieżka `conda.sh` | miniconda w Homebrew |
+| `CONDA_SH` | ścieżka `conda.sh` | miniconda w Homebrew (fallback: `conda info --base`) |
 | `CONDA_ENV` | nazwa env conda | `1000genome` |
 | `ENV_FILE` | plik z kluczem LLM | `../1000genome-workflow/.env` |
-| `GUI_HF_INTEG` | katalog harnessu HyperFlow | `../1000genome-workflow2/1000genome-workflow/tests/integration` |
-| `GUI_BASH` | bash 5 | `/opt/homebrew/bin/bash` (fallback: `which bash`) |
-| `GUI_GNUBIN` | katalogi gnubin (PATH) | coreutils/gnu-sed/grep z Homebrew |
+| `GUI_HF_INTEG` | katalog harnessu HyperFlow | auto: workflow2 jeśli jest, inaczej `../1000genome-workflow/tests/integration` |
+| `GUI_BASH` | bash | `/opt/homebrew/bin/bash`, inaczej `which bash` |
+| `GUI_GNUBIN` | katalogi gnubin (PATH) | gnubin z Homebrew na macOS; **puste na Linux** |
+| `NEXTFLOW_BIN` | binarka Nextflow | sąsiedni wrapper, inaczej `which nextflow` |
+| `NXF_VER` | wersja Nextflow | `25.10.2` |
 
 ## 7. Najczęstsze problemy
 
@@ -89,5 +93,6 @@ Domyślne wartości pasują do układu z §1. Nadpisz, jeśli masz inaczej:
   (już w `main.nf`); HyperFlow robi to w `extract-data.sh`. Upewnij się, że używasz aktualnych repo.
 - **Nie widać zmian w GUI po edycji** — twardy reload przeglądarki `Cmd+Shift+R`. Po edycji `gui.py`
   zrestartuj serwer (`./run-gui.sh`); po edycji `main.nf`/`composer.py` restart NIE jest potrzebny.
-- **Linux** — usuń zależność od Homebrew/gnubin (natywne GNU), `open` (Finder) → nieaktywne; obrazy
-  amd64 bez emulacji. Reszta działa tak samo.
+- **Linux** — działa: gnubin niepotrzebny (natywne GNU), otwieranie folderów przez `xdg-open`
+  (doinstaluj `xdg-utils`), obrazy amd64 natywnie (bez emulacji). `run-gui.sh` sam znajdzie conda
+  przez `conda info --base`. Nic nie trzeba przepinać ręcznie.

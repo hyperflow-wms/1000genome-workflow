@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -30,8 +31,19 @@ from workflow_composer.interpretation.llm_interpreter import (
 from workflow_composer.core.models import ResearchIntent
 
 THIS_DIR = Path(__file__).parent.resolve()
-NEXTFLOW_BIN = THIS_DIR.parent / "nextflow-experiments" / "bin" / "nextflow"
-NXF_VER = "25.10.2"
+
+def _find_nextflow():
+    # 1) jawnie przez env; 2) wrapper obok (nextflow-experiments); 3) z PATH.
+    env_bin = os.environ.get("NEXTFLOW_BIN")
+    if env_bin:
+        return env_bin
+    wrapper = THIS_DIR.parent / "nextflow-experiments" / "bin" / "nextflow"
+    if wrapper.exists():
+        return str(wrapper)
+    return shutil.which("nextflow") or str(wrapper)
+
+NEXTFLOW_BIN = _find_nextflow()
+NXF_VER = os.environ.get("NXF_VER", "25.10.2")
 
 # Populacje dla ktorych mamy pliki (testdata/populations)
 AVAILABLE_POPULATIONS = {"AFR", "ALL", "AMR", "EAS", "EUR", "GBR", "SAS"}

@@ -13,7 +13,10 @@ command -v conda   >/dev/null && ok "conda: $(conda --version 2>/dev/null)"   ||
 [ -x "$THIS_DIR/../nextflow-experiments/bin/nextflow" ] && ok "nextflow wrapper obecny" || warn "brak ../nextflow-experiments/bin/nextflow (NXF_VER=25.10.2)"
 if [ "$(uname)" = "Darwin" ]; then
   [ -d /opt/homebrew/opt/coreutils/libexec/gnubin ] && ok "coreutils (gnubin) obecne" || warn "brak coreutils — 'brew install coreutils gnu-sed grep bash'"
+else
+  command -v xdg-open >/dev/null && ok "xdg-open obecne" || warn "brak xdg-open — 'sudo apt install xdg-utils' (otwieranie folderow w GUI)"
 fi
+command -v nextflow >/dev/null || [ -x "$THIS_DIR/../nextflow-experiments/bin/nextflow" ] || warn "brak nextflow w PATH i brak wrappera — zainstaluj Nextflow (NXF_VER=25.10.2)"
 
 echo "== 2. Lokalny obraz worker-nf (streaming individuals.py + ANNOTATE) =="
 if [ ! -f "$THIS_DIR/individuals.streaming.py" ]; then

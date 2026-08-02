@@ -22,17 +22,39 @@ ACTIVE = {}
 # Domyslnie repo workflow2 (git pull od Bartosza): streaming worker 1.3-je1.4.2,
 # engine v1.11.1, completion-transport=stream, adnotacja rs ID. Stary fork mial na
 # sztywno wolny worker 1.0. Sciezki mozna nadpisac zmiennymi srodowiskowymi (patrz SETUP.md).
-HF_INTEG = Path(os.environ.get("GUI_HF_INTEG",
-    str(BASE.parent / "1000genome-workflow2" / "1000genome-workflow" / "tests" / "integration")))
+def _default_hf_integ():
+    # obsluguje uklad 3-katalogowy (workflow2) i uproszczony 2-katalogowy (jedno repo obok).
+    for c in (BASE.parent / "1000genome-workflow2" / "1000genome-workflow" / "tests" / "integration",
+              BASE.parent / "1000genome-workflow" / "tests" / "integration"):
+        if c.exists():
+            return c
+    return BASE.parent / "1000genome-workflow" / "tests" / "integration"
+
+HF_INTEG = Path(os.environ.get("GUI_HF_INTEG", str(_default_hf_integ())))
 HARNESS  = HF_INTEG / "run-research-tests.sh"
 CASES_YAML = HF_INTEG / "cases.yaml"
-# bash 5 (Nextflow/harness wymagaja bash); gnubin = GNU head/sed/grep (macOS ma BSD).
+_MAC = sys.platform == "darwin"
+# bash 5 (Nextflow/harness wymagaja bash); gnubin = GNU head/sed/grep (macOS ma BSD; Linux natywnie).
 BASH5 = (os.environ.get("GUI_BASH")
          or ("/opt/homebrew/bin/bash" if os.path.exists("/opt/homebrew/bin/bash")
              else (shutil.which("bash") or "bash")))
 GNUBIN = os.environ.get("GUI_GNUBIN",
-    "/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:"
-    "/opt/homebrew/opt/grep/libexec/gnubin")
+    ("/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:"
+     "/opt/homebrew/opt/grep/libexec/gnubin") if _MAC else "")
+
+def _open_in_file_manager(path):
+    """Otwiera folder w menedzerze plikow — cross-platform (mac/Linux/Windows)."""
+    path = str(path)
+    try:
+        if sys.platform == "darwin":
+            subprocess.run(["open", path])
+        elif sys.platform.startswith("win"):
+            os.startfile(path)  # type: ignore[attr-defined]
+        else:
+            subprocess.run(["xdg-open", path])
+        return True
+    except Exception:
+        return False
 ACTIVE_HF = {}   # {case_id: {"proc":Popen, "tmp_yaml":str}}
 
 def launch_hyperflow(prompt, model):
@@ -53,7 +75,7 @@ def launch_hyperflow(prompt, model):
     # Harness wola gole `python3` z PATH. GUI dziala pod conda-pythonem (ma yaml +
     # workflow_composer), ale conda-bin nie musi byc na przodzie PATH -> harness
     # lapal systemowego pythona bez yaml i padal w INTERPRET. Podajemy nasz python.
-    env["PATH"] = os.path.dirname(sys.executable) + ":" + GNUBIN + ":" + env.get("PATH", "")
+    env["PATH"] = ":".join(p for p in (os.path.dirname(sys.executable), GNUBIN, env.get("PATH", "")) if p)
     cmd = [BASH5, str(HARNESS), "-y", "--model", model, case_id]
     proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT,
                             cwd=str(HF_INTEG), env=env, start_new_session=True)
@@ -192,59 +214,64 @@ def hf_progress(case_id):
             return {"pct": int(round(100 * sx / sy)), "phase": "EXECUTE", "done": False, "procs": procs}
     return {"pct": base, "phase": phase, "done": False}
 
-def _cat(name):
-    if name.startswith('Histogram'): return 'Histogramy'
-    if name.startswith('random_indiv'): return 'random_indiv (losowe)'
-    if name.startswith('Mutation_overlap'): return 'Mutation_overlap'
-    if name.startswith('map_variations'): return 'map_variations'
-    if name.startswith('mutation_index'): return 'mutation_index'
-    return 'inne'
+def _intent_key(intent):
+    """Klucz wejscia z intentu — te same wejscia (prompt) => ten sam klucz."""
+    if not intent:
+        return None
+    pops = ",".join(sorted(intent.get("populations") or []))
+    regs = ",".join(sorted(r.get("name", "") for r in (intent.get("regions") or [])))
+    chrs = ",".join(sorted(str(c) for c in (intent.get("chromosomes") or [])))
+    return f"{intent.get('analysis_type','')}|{pops}|{regs}|{chrs}|{intent.get('focus','')}"
 
-def get_pairs():
-    """Zwraca dostępne pary Nextflow↔HyperFlow (te same wejścia = bit-do-bit porównywalne)."""
-    pairs = []
-    # Para 1: BRCA1 / GBR
-    if (BASE / "verified-gbr-match" / "chr17-GBR-freq.tar.gz").exists() and (REF_HF / "chr17-GBR-freq.tar.gz").exists():
-        pairs.append({"id": "brca1-gbr", "label": "BRCA1 / GBR",
-                      "nf": str(BASE / "verified-gbr-match"), "hf": str(REF_HF)})
-    # Para 2: BRCA1+BRCA2 / 5 populacji
-    p2nf = BASE / "match-brca" / "results"; p2hf = HF_INTEG / "workflow-brca-breast-cancer"
-    if p2nf.exists() and p2hf.exists() and list(p2nf.glob("*.tar.gz")):
-        pairs.append({"id": "brca-breast-cancer", "label": "BRCA1+BRCA2 / 5 populacji",
-                      "nf": str(p2nf), "hf": str(p2hf)})
+def _intent_label(intent):
+    regs = ",".join(r.get("name", "") for r in (intent.get("regions") or [])) or "—"
+    pops = ",".join(intent.get("populations") or []) or "—"
+    return f"{intent.get('analysis_type','?')} · [{pops}] · {regs} · {intent.get('focus','')}"
+
+def list_pairs():
+    """Pary runow NF<->HF dla tych samych wejsc (ten sam intent) — do przegladania folderow."""
+    nf, hf = [], []
+    for d in RUNS.glob("*"):
+        if not d.is_dir():
+            continue
+        ip = d / "intent.json"
+        if not ip.exists():
+            continue
+        try:
+            intent = json.loads(ip.read_text())
+        except Exception:
+            continue
+        k = _intent_key(intent)
+        if not k:
+            continue
+        res = list((d / "results").glob("*.tar.gz")) if (d / "results").exists() else []
+        nf.append({"engine": "nextflow", "id": d.name, "key": k, "intent": intent,
+                   "date": fmt_date(d.name), "n_results": len(res), "folder": "runs/" + d.name})
+    for d in HF_INTEG.glob("workflow-gui-*"):
+        ip = d / "intent.json"
+        if not ip.exists():
+            continue
+        try:
+            intent = json.loads(ip.read_text())
+        except Exception:
+            continue
+        k = _intent_key(intent)
+        if not k:
+            continue
+        cid = d.name.replace("workflow-", "")
+        hf.append({"engine": "hyperflow", "id": cid, "key": k, "intent": intent,
+                   "date": fmt_date(cid), "n_results": len(list(d.glob("chr*-*.tar.gz")))})
+    groups = {}
+    for r in nf + hf:
+        g = groups.setdefault(r["key"], {"label": _intent_label(r["intent"]), "nf": [], "hf": []})
+        g["nf" if r["engine"] == "nextflow" else "hf"].append(r)
+    pairs = [g for g in groups.values() if g["nf"] and g["hf"]]
+    pairs.sort(key=lambda g: max((r["id"].replace("gui-", "") for r in g["nf"] + g["hf"]), default=""), reverse=True)
+    # gdy pasuje wiecej niz jeden run po danej stronie -> bierzemy najnowszy (po dacie w id)
+    for g in pairs:
+        g["nf"] = [max(g["nf"], key=lambda r: r["id"].replace("gui-", ""))]
+        g["hf"] = [max(g["hf"], key=lambda r: r["id"].replace("gui-", ""))]
     return pairs
-
-def compare_pair(pair_id):
-    """Porównuje parę per-tarball (region×populacja) i per-kategoria (md5)."""
-    p = {x["id"]: x for x in get_pairs()}.get(pair_id)
-    if not p:
-        return {"ok": False, "msg": "Brak takiej pary (może jeszcze się liczy)."}
-    nf = Path(p["nf"]); hf = Path(p["hf"])
-    tarballs = sorted(t.name for t in nf.glob("*.tar.gz") if (hf / t.name).exists())
-    if not tarballs:
-        return {"ok": False, "msg": "Brak wspólnych plików wynikowych do porównania."}
-    per = []; tot = collections.defaultdict(lambda: [0, 0])
-    tmp = Path(tempfile.mkdtemp())
-    try:
-        for tb in tarballs:
-            a = tmp / "a"; b = tmp / "b"
-            shutil.rmtree(a, ignore_errors=True); shutil.rmtree(b, ignore_errors=True)
-            with tarfile.open(nf / tb) as t: t.extractall(a)
-            with tarfile.open(hf / tb) as t: t.extractall(b)
-            ident = diff = 0
-            for f in a.rglob("*"):
-                if not f.is_file(): continue
-                g = b / f.relative_to(a)
-                if not g.exists(): continue
-                same = hashlib.md5(f.read_bytes()).hexdigest() == hashlib.md5(g.read_bytes()).hexdigest()
-                tot[_cat(f.name)][0 if same else 1] += 1
-                ident += same; diff += (not same)
-            per.append({"tarball": tb, "id": ident, "diff": diff})
-        cats = [{"kat": k, "id": v[0], "diff": v[1]} for k, v in sorted(tot.items())]
-        return {"ok": True, "pair": p["label"], "per": per, "cats": cats,
-                "total_id": sum(v[0] for v in tot.values()), "total_diff": sum(v[1] for v in tot.values())}
-    finally:
-        shutil.rmtree(tmp, ignore_errors=True)
 
 def list_runs():
     out = []
@@ -426,7 +453,6 @@ tbody tr:hover{background:#fafcff}
     <button class=sec onclick=refresh()>Odśwież</button>
   </div>
   <div id=pairs></div>
-  <div id=cmpout></div>
   <div class=filt id=filt>
     <button data-f=all class=on onclick="setFilter('all',this)">Oba</button>
     <button data-f=nextflow onclick="setFilter('nextflow',this)">Nextflow</button>
@@ -595,10 +621,6 @@ async function openFolder(p){
   const r=await fetch('/api/open?p='+encodeURIComponent(p));const j=await r.json();
   if(!j.ok)alert(j.msg||'nie udało się otworzyć folderu');
 }
-async function openPair(el){
-  const r=await fetch('/api/open_pair?pair='+el.dataset.pid+'&side='+el.dataset.side);const j=await r.json();
-  if(!j.ok)alert(j.msg||'nie udało się otworzyć folderu');
-}
 async function stopRun(id){
   if(!confirm('Zatrzymać przebieg '+id+'?'))return;
   const r=await fetch('/api/stop?id='+id);const j=await r.json();
@@ -606,43 +628,15 @@ async function stopRun(id){
 }
 async function loadPairs(){
   const r=await fetch('/api/pairs');const ps=await r.json();
-  let h='';
-  if(ps.length){
-    h='<div class=card style="background:#eef6ff;margin-bottom:14px"><b>Weryfikacje HyperFlow ↔ Nextflow</b> <span class=muted>(dostępne, gdy mamy wynik HyperFlow na tym samym wejściu)</span><div class=row style=margin-top:8px>';
-    for(const p of ps){
-      h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0">';
-      h+='<button class=sec data-pid="'+p.id+'" onclick="cmp(this.dataset.pid)">Porównaj: '+p.label+'</button>';
-      h+='<a class=link style=cursor:pointer data-pid="'+p.id+'" data-side=nf onclick="openPair(this)">📂 Nextflow</a>';
-      h+='<a class=link style=cursor:pointer data-pid="'+p.id+'" data-side=hf onclick="openPair(this)">📂 HyperFlow</a>';
-      h+='</div>';
-    }
-    h+='</div></div>';
-  }else{
-    h='<p class=muted>Brak par do weryfikacji (potrzebny wynik HyperFlow na identycznym wejściu). Runy composera używają pełnych 2504 kolumn — nie pasują bit-do-bit do referencji HyperFlow.</p>';
-  }
-  $('pairs').innerHTML=h;
-}
-async function cmp(pid){
-  $('cmpout').innerHTML='<span class=muted>Porównuję md5… (dla wielu plików może potrwać ~1 min)</span>';
-  const r=await fetch('/api/compare?pair='+pid);const j=await r.json();
-  if(!j.ok){$('cmpout').innerHTML='<span class=muted>'+(j.msg||'brak porównania')+'</span>';return;}
-  let t='<h3 style=margin-top:14px>Weryfikacja: '+j.pair+' — Nextflow vs HyperFlow (md5)</h3>';
-  t+='<table><tr><th>Kategoria wyników</th><th>Identyczne</th><th>Różne</th></tr>';
-  for(const c of j.cats)t+='<tr><td>'+c.kat+'</td><td>'+c.id+'</td><td>'+(c.diff?'<b style=color:#b26b00>'+c.diff+'</b>':'0')+'</td></tr>';
-  t+='<tr><th>RAZEM</th><th>'+j.total_id+'</th><th>'+(j.total_diff?'<b style=color:#b26b00>'+j.total_diff+'</b>':'0')+'</th></tr></table>';
-  t+='<div style="margin-top:8px;padding:10px 12px;background:#fff8ec;border:1px solid #f0e0c0;border-radius:8px;font-size:12.5px">'
-    +'<b>Co to random_indiv i czemu się różni?</b><br>'
-    +'To pliki z <b>losowo dobranymi grupami osobników</b> (np. HG00158, HG00250…), tworzone przez '
-    +'<code>random.sample()</code> <b>bez ustawionego seed</b>. Jest ich 1000 = 1000 iteracji '
-    +'<b>testu permutacyjnego (rozkład zerowy / Monte Carlo)</b> — baza odniesienia „jak wygląda '
-    +'współdzielenie mutacji przy losowym pogrupowaniu?”. Ponieważ losowanie nie ma seed, '
-    +'<b>każde uruchomienie losuje inne osobniki</b> → dwa runy HyperFlow też by się różniły. '
-    +'To <b>celowa losowość metody, nie różnica silników</b>. Wyniki deterministyczne (histogramy, '
-    +'overlap, mapy) są identyczne bit-do-bit.</div>';
-  t+='<details style=margin-top:8px><summary style="cursor:pointer;color:#1565c0">Szczegóły per (region × populacja) — '+j.per.length+' plików wynikowych</summary><table style=margin-top:6px><tr><th>Plik wynikowy</th><th>Identyczne</th><th>Różne</th></tr>';
-  for(const p of j.per)t+='<tr><td>'+p.tarball+'</td><td>'+p.id+'</td><td>'+(p.diff?'<b style=color:#b26b00>'+p.diff+'</b>':'0')+'</td></tr>';
-  t+='</table></details>';
-  $('cmpout').innerHTML=t;
+  if(!ps.length){$('pairs').innerHTML='<p class=muted>Brak par — uruchom ten sam prompt na Nextflow i HyperFlow (te same wejścia), a pojawią się tu obok siebie do przejrzenia.</p>';return;}
+  const side=(arr,eng)=>arr.map(r=>{
+    const attr=eng=='nf'?('data-p="'+r.folder+'" onclick="openFolder(this.dataset.p)"'):('data-id="'+r.id+'" onclick="openHF(this.dataset.id)"');
+    return '<div style=margin:2px 0><a class=link style=cursor:pointer '+attr+'>📂 '+r.id+'</a> <span class=muted>'+(r.date||'')+' · '+r.n_results+' plików</span></div>';
+  }).join('')||'<span class=muted>—</span>';
+  let h='<div class=card style="background:#eef6ff;margin-bottom:14px"><b>Pary runów — te same wejścia (Nextflow ↔ HyperFlow)</b> <span class=muted>· kliknij, aby otworzyć folder z plikami</span>'
+       +'<table style=margin-top:8px><tr><th>Wejście (intent)</th><th>Nextflow</th><th>HyperFlow</th></tr>';
+  for(const g of ps) h+='<tr><td>'+g.label+'</td><td>'+side(g.nf,'nf')+'</td><td>'+side(g.hf,'hf')+'</td></tr>';
+  h+='</table></div>';$('pairs').innerHTML=h;
 }
 function tick(){refresh();loadPairs();}
 tick();setInterval(tick,5000);
@@ -668,16 +662,7 @@ class H(BaseHTTPRequestHandler):
             rel = parse_qs(u.query).get("p", [""])[0]
             target = (BASE / rel).resolve()
             if str(target).startswith(str(BASE)) and target.exists():
-                subprocess.run(["open", str(target)])   # macOS: otwiera Finder
-                self._send(200, "application/json", json.dumps({"ok": True}).encode())
-            else:
-                self._send(200, "application/json", json.dumps({"ok": False, "msg": "brak folderu"}).encode())
-        elif u.path == "/api/open_pair":
-            q = parse_qs(u.query); pid = q.get("pair", [""])[0]; side = q.get("side", [""])[0]
-            p = {x["id"]: x for x in get_pairs()}.get(pid)
-            path = p.get(side) if p and side in ("nf", "hf") else None
-            if path and Path(path).exists():
-                subprocess.run(["open", path])
+                _open_in_file_manager(target)   # otwiera folder (mac/Linux/Windows)
                 self._send(200, "application/json", json.dumps({"ok": True}).encode())
             else:
                 self._send(200, "application/json", json.dumps({"ok": False, "msg": "brak folderu"}).encode())
@@ -689,14 +674,11 @@ class H(BaseHTTPRequestHandler):
             cid = parse_qs(u.query).get("id", [""])[0]
             d = HF_INTEG / f"workflow-{cid}"
             if d.exists():
-                subprocess.run(["open", str(d)]); self._send(200, "application/json", json.dumps({"ok": True}).encode())
+                _open_in_file_manager(d); self._send(200, "application/json", json.dumps({"ok": True}).encode())
             else:
                 self._send(200, "application/json", json.dumps({"ok": False, "msg": "brak folderu"}).encode())
         elif u.path == "/api/pairs":
-            self._send(200, "application/json", json.dumps(get_pairs()).encode())
-        elif u.path == "/api/compare":
-            pid = parse_qs(u.query).get("pair", [""])[0]
-            self._send(200, "application/json", json.dumps(compare_pair(pid)).encode())
+            self._send(200, "application/json", json.dumps(list_pairs()).encode())
         elif u.path == "/file":
             p = parse_qs(u.query).get("p", [""])[0]
             target = (BASE / p).resolve()
