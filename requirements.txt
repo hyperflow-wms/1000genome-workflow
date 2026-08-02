@@ -1,0 +1,10 @@
+# Zaleznosci Python dla composera 1000genome (GUI + composer.py).
+# Instalacja (w env conda 1000genome, python 3.11):
+#   pip install -r requirements.txt
+#   pip install -e ../1000genome-workflow/workflow-composer   # pakiet workflow_composer (interpret intentu)
+litellm>=1.88
+instructor>=1.15
+openai>=2.0
+pydantic>=2.13
+pydantic-settings>=2.14
+pyyaml>=6.0

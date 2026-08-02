@@ -1,0 +1,30 @@
+# Sekrety — NIGDY nie commitować
+.env
+*.env
+
+# Artefakty przebiegow / Nextflow (generowane)
+runs/
+work/
+results/
+.nextflow/
+.nextflow.log*
+report-*.html
+timeline-*.html
+trace-*.txt
+dag-*.html
+gui-*.log
+gui-server.log
+
+# Duze dane pobierane/generowane — regenerowalne przez EXTRACT
+hla-data/
+hla-sub/
+match-brca/        # ~48 MB wejsciowych VCF z przeszlego runu; tool ich nie potrzebuje
+
+# Python
+__pycache__/
+*.pyc
+
+# Uwaga: testdata/ (brca1 VCF) jest POTRZEBNE do domyslnego runu — commituj.
+
+# macOS
+.DS_Store
