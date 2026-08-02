@@ -107,6 +107,7 @@ def list_hf_runs():
             status = "?"
         log_name = f"gui-hf-{cid}.log"
         out.append({"id": cid, "engine": "hyperflow", "date": fmt_date(cid),
+                    "duration": run_duration(cid, running, [BASE / log_name, *results]),
                     "intent": intent, "status": status, "n_results": len(results),
                     "results": [r.name for r in results], "running": running,
                     "hf_log": log_name if (BASE / log_name).exists() else None,
@@ -159,6 +160,39 @@ def fmt_date(run_id):
         return ""
     y, mo, d, h, mi, _s = m.groups()
     return f"{y}-{mo}-{d} {h}:{mi}"
+
+def _epoch_from_id(run_id):
+    """Czas STARTU runu z jego ID (YYYYMMDD-HHMMSS, czas lokalny) -> epoch."""
+    m = RUN_TS.search(run_id or "")
+    if not m:
+        return None
+    try:
+        return time.mktime((*(int(x) for x in m.groups()), 0, 0, -1))
+    except Exception:
+        return None
+
+def _fmt_dur(sec):
+    """Sekundy -> '45s' / '3m 12s' / '1h 4m'."""
+    if sec is None or sec < 0:
+        return ""
+    sec = int(sec)
+    if sec < 60:
+        return f"{sec}s"
+    if sec < 3600:
+        return f"{sec // 60}m {sec % 60}s"
+    return f"{sec // 3600}h {(sec % 3600) // 60}m"
+
+def run_duration(run_id, running, end_paths):
+    """Czas trwania: start = z ID, koniec = teraz (jesli w toku) lub max mtime z end_paths."""
+    start = _epoch_from_id(run_id)
+    if start is None:
+        return ""
+    if running:
+        end = time.time()
+    else:
+        mtimes = [p.stat().st_mtime for p in end_paths if p and p.exists()]
+        end = max(mtimes) if mtimes else start
+    return _fmt_dur(end - start)
 
 # Fazy harnessu HyperFlow -> bazowy % na starcie kazdej fazy (przed EXECUTE).
 HF_PHASES = [("INTERPRET", 5), ("PLAN", 12), ("EXTRACT", 22), ("GENERATE", 32), ("EXECUTE", 45)]
@@ -311,6 +345,7 @@ def list_runs():
             "id": d.name,
             "engine": "nextflow",
             "date": fmt_date(d.name),
+            "duration": run_duration(d.name, status == "w toku", [nextflow_log, *results]),
             "intent": intent,
             "status": status,
             "n_results": len(results),
@@ -594,9 +629,10 @@ function stopBtn(x){
 function renderRuns(){
   let rows=ALLRUNS.filter(x=>RUNFILTER=='all'||x.engine==RUNFILTER);
   if(!rows.length){$('runs').innerHTML='<p class=muted>Brak przebiegów dla tego filtra.</p>';return;}
-  let h='<table><tr><th>Silnik</th><th>Data</th><th>Przebieg</th><th>Intent</th><th>Status</th><th>Wyniki</th><th>Raporty</th><th>Akcje</th></tr>';
+  let h='<table><tr><th>Silnik</th><th>Data</th><th>Czas</th><th>Przebieg</th><th>Intent</th><th>Status</th><th>Wyniki</th><th>Raporty</th><th>Akcje</th></tr>';
   for(const x of rows){
-    h+='<tr><td>'+engBadge(x.engine)+'</td><td class=dt>'+(x.date||'')+'</td><td>'+x.id+'</td><td>'+isummary(x.intent)+'</td><td>'+badge(x.status)+progHtml(x)+'</td><td>'+x.n_results+' plików</td><td>'+(runLinks(x)||'—')+'</td><td>'+(stopBtn(x)||'—')+'</td></tr>';
+    const dur=(x.duration||'')+(x.running&&x.duration?' …':'');
+    h+='<tr><td>'+engBadge(x.engine)+'</td><td class=dt>'+(x.date||'')+'</td><td class=dt>'+dur+'</td><td>'+x.id+'</td><td>'+isummary(x.intent)+'</td><td>'+badge(x.status)+progHtml(x)+'</td><td>'+x.n_results+' plików</td><td>'+(runLinks(x)||'—')+'</td><td>'+(stopBtn(x)||'—')+'</td></tr>';
   }
   h+='</table>';$('runs').innerHTML=h;
 }
