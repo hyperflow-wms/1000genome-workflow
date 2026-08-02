@@ -18,7 +18,8 @@ gui-server.log
 # Duze dane pobierane/generowane — regenerowalne przez EXTRACT
 hla-data/
 hla-sub/
-match-brca/        # ~48 MB wejsciowych VCF z przeszlego runu; tool ich nie potrzebuje
+# match-brca/ = ~48 MB wejsciowych VCF z przeszlego runu; tool ich nie potrzebuje
+match-brca/
 
 # Python
 __pycache__/
