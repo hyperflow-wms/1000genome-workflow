@@ -569,7 +569,7 @@ a.link:hover{text-decoration:underline}
 .pmini{font-size:11px;color:#555}.pmini .d{color:#2e7d34}.pmini .a{color:#b26b00;font-weight:600}
 button.mini{font-size:11.5px;padding:5px 10px;margin:2px 4px 2px 0;background:#eef3fa;color:#1565c0;border:1px solid #d3e0f2}
 button.mini.stop{background:#fbe9e9;color:#b02a2a;border-color:#f0cccc}
-.badge{font-size:11px;padding:2px 8px;border-radius:20px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap;display:inline-block}
 .b-done{background:#e6f4ea;color:#1e7d34;border:1px solid #b7e0c2}
 .b-run{background:#e7f0fd;color:#1565c0;border:1px solid #cadef7}
 .b-warn{background:#fff4e0;color:#b26b00;border:1px solid #f0d8b3}
@@ -586,6 +586,7 @@ h3{margin:0 0 10px}
 .filt button{background:#eef3fa;color:#41506a;border:1px solid #d3e0f2;padding:5px 13px;font-size:12.5px;border-radius:20px}
 .filt button.on{background:#1565c0;color:#fff;border-color:#1565c0}
 td.dt{white-space:nowrap;color:#41506a;font-size:12px}
+td.st,th.st{min-width:130px}
 tbody tr:hover{background:#fafcff}
 .seg{font-size:13px;color:#41506a;display:flex;align-items:center;gap:10px;background:#f2f6fc;border:1px solid #dbe6f5;border-radius:8px;padding:6px 12px}
 .seg label{display:flex;align-items:center;gap:4px;cursor:pointer;margin:0}
@@ -787,13 +788,13 @@ function stopBtn(x){
 function renderRuns(){
   let rows=ALLRUNS.filter(x=>RUNFILTER=='all'||x.engine==RUNFILTER);
   if(!rows.length){$('runs').innerHTML='<p class=muted>No runs match this filter.</p>';return;}
-  let h='<table><tr><th>Engine</th><th>Date</th><th>Duration</th><th>Run</th><th>Intent</th><th>Status</th><th>Results</th><th>Reports</th><th>Actions</th></tr>';
+  let h='<table><tr><th>Engine</th><th>Date</th><th>Duration</th><th>Run</th><th>Intent</th><th class=st>Status</th><th>Results</th><th>Reports</th><th>Actions</th></tr>';
   for(const x of rows){
     const dur=(x.duration||'')+(x.running&&x.duration?' …':'');
     const fast=x.fast?' <span class=fastb title="fast mode: fewer variants and 100 Monte Carlo iterations -- this changes the analysis">&#9889; fast</span>':'';
     const dry=x.dry?' <span class=dryb title="dry run: intent preview only, the pipeline is not started">&#128269; dry run</span>':'';
     const pl=x.prompt?' <span class=promptlink title="show the original prompt" data-e="'+x.engine+'" data-i="'+x.id+'" onclick="showPrompt(this.dataset.e,this.dataset.i)">📝</span>':'';
-    h+='<tr><td>'+engBadge(x.engine)+'</td><td class=dt>'+(x.date||'')+'</td><td class=dt>'+dur+'</td><td>'+x.id+fast+dry+'</td><td>'+isummary(x.intent)+pl+'</td><td>'+badge(x.status)+progHtml(x)+'</td><td>'+x.n_results+' files</td><td>'+(runLinks(x)||'—')+'</td><td>'+(stopBtn(x)||'—')+'</td></tr>';
+    h+='<tr><td>'+engBadge(x.engine)+'</td><td class=dt>'+(x.date||'')+'</td><td class=dt>'+dur+'</td><td>'+x.id+fast+dry+'</td><td>'+isummary(x.intent)+pl+'</td><td class=st>'+badge(x.status)+progHtml(x)+'</td><td>'+x.n_results+' files</td><td>'+(runLinks(x)||'—')+'</td><td>'+(stopBtn(x)||'—')+'</td></tr>';
   }
   h+='</table>';$('runs').innerHTML=h;
 }
