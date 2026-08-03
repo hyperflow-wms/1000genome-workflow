@@ -344,3 +344,46 @@ test_cases:
       end: 44909393
       context: Alzheimer's
     focus: all_variants
+- id: q3-multi-region
+  name: Sickle cell, cystic fibrosis and Alzheimer's across five super-populations
+  prompt: 'Investigate HBB gene variants related to sickle cell trait, CFTR variants
+    linked to cystic fibrosis, and APOE variants associated with Alzheimer''s disease
+    across all five super-populations.
+
+    '
+  description: 'Q3 of the end-to-end evaluation. Two of its three regions, HBB at
+    136
+
+    variants and APOE at 113, are smaller than a VCF''s 253 header lines, so
+
+    before RFC-005 they contributed no variants at all while the workflow
+
+    still reported every task successful.
+
+    '
+  mock_intent:
+    analysis_type: multi_population
+    populations:
+    - AFR
+    - AMR
+    - EAS
+    - EUR
+    - SAS
+    chromosomes: null
+    regions:
+    - name: HBB
+      chromosome: '11'
+      start: 5225464
+      end: 5229395
+      context: sickle cell
+    - name: CFTR
+      chromosome: '7'
+      start: 117120017
+      end: 117308718
+      context: cystic fibrosis
+    - name: APOE
+      chromosome: '19'
+      start: 44905796
+      end: 44909393
+      context: Alzheimer's
+    focus: all_variants

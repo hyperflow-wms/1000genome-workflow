@@ -2,7 +2,7 @@
 """
 Prosty lokalny GUI dla composera 1000genome/Nextflow.
 Uruchomienie: ./run-gui.sh  (aktywuje env + klucz Gemini + odpala ten plik)
-Potem otwórz http://localhost:8765
+Then open http://localhost:8765
 """
 import json, os, re, subprocess, sys, signal, time, glob, mimetypes, hashlib, tarfile, tempfile, shutil, collections
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -104,13 +104,13 @@ def list_hf_runs():
         running = proc is not None and proc.poll() is None
         prog = hf_progress(cid)
         if running:
-            status = "w toku"
+            status = "running"
         elif results:
-            status = "gotowe"
+            status = "done"
         elif prog and prog.get("failed"):
-            status = "błąd"
+            status = "error"
         elif intent is not None:
-            status = "brak wyników"
+            status = "no results"
         else:
             status = "?"
         log_name = f"gui-hf-{cid}.log"
@@ -126,10 +126,10 @@ def list_hf_runs():
 def stop_hf(cid):
     proc = (ACTIVE_HF.get(cid) or {}).get("proc")
     if proc is None or proc.poll() is not None:
-        return {"ok": False, "msg": "Przebieg HyperFlow nie jest aktywny."}
+        return {"ok": False, "msg": "This HyperFlow run is not active."}
     try:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-        return {"ok": True, "msg": "Zatrzymano."}
+        return {"ok": True, "msg": "Stopped."}
     except Exception as e:
         return {"ok": False, "msg": str(e)}
 
@@ -265,7 +265,7 @@ def hf_progress(case_id):
         return None
     procs = _hf_task_breakdown(case_id, txt)
     if re.search(r"\bPASSED\b", txt) or "Workflow execution completed" in txt or re.search(r"Workflow \[[^\]]*\] finished", txt):
-        return {"pct": 100, "phase": "gotowe", "done": True, "procs": procs}
+        return {"pct": 100, "phase": "done", "done": True, "procs": procs}
     if re.search(r"\bFAILED\b", txt):
         phase = next((n for n, _ in reversed(HF_PHASES) if re.search(rf"Phase\s+\d+:\s*{n}", txt)), "?")
         return {"pct": 0, "phase": phase, "failed": True, "procs": procs}
@@ -378,7 +378,7 @@ def compare_results(a_eng, a_id, b_eng, b_id):
     """Zestawia wykresy/txt DOWOLNYCH dwoch runow (dowolne silniki) — parowanie po nazwie pliku."""
     da, db = _results_dir(a_eng, a_id), _results_dir(b_eng, b_id)
     if not da.exists() or not db.exists():
-        return {"ok": False, "msg": "Brak folderu wyników po jednej ze stron."}
+        return {"ok": False, "msg": "One side has no results directory."}
     all_tb = lambda d: sorted(d.glob("chr*-*.tar.gz"))
     main_tb = lambda d: [t for t in all_tb(d) if not t.name.endswith("-freq.tar.gz")]
     cache = CMP_CACHE / re.sub(r"[^A-Za-z0-9_.-]", "_", f"{a_eng}-{a_id}__{b_eng}-{b_id}")
@@ -390,7 +390,7 @@ def compare_results(a_eng, a_id, b_eng, b_id):
     a_txt = _collect_result_files(main_tb(da), cache / "a", (".txt",))
     b_txt = _collect_result_files(main_tb(db), cache / "b", (".txt",))
     if not (a_png or b_png or a_txt or b_txt):
-        return {"ok": False, "msg": "Brak wypakowanych plików (czy runy się skończyły?)."}
+        return {"ok": False, "msg": "No extracted files -- have both runs finished?"}
     rel = lambda p: str(p.relative_to(BASE)) if p else None
     def build(am, bm):
         out = []
@@ -430,13 +430,13 @@ def list_runs():
             return g[0].name if g else None
         proc = ACTIVE.get(d.name)
         if proc is not None and proc.poll() is None:
-            status = "w toku"
+            status = "running"
         elif results:
-            status = "gotowe"
+            status = "done"
         elif failed:
-            status = "błąd"
+            status = "error"
         elif intent is not None:
-            status = "brak wyników"
+            status = "no results"
         else:
             status = "?"
         comparable = (REF_HF / "chr17-GBR-freq.tar.gz").exists() and (d / "results" / "chr17-GBR-freq.tar.gz").exists()
@@ -477,10 +477,10 @@ def list_runs():
 def stop_run(run_id):
     proc = ACTIVE.get(run_id)
     if proc is None or proc.poll() is not None:
-        return {"ok": False, "msg": "Przebieg nie jest aktywny."}
+        return {"ok": False, "msg": "This run is not active."}
     try:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-        return {"ok": True, "msg": "Wysłano sygnał zatrzymania."}
+        return {"ok": True, "msg": "Stop signal sent."}
     except Exception as e:
         return {"ok": False, "msg": str(e)}
 
@@ -515,14 +515,14 @@ def launch_full(prompt, model, fast=False):
     return {"ok": run_id is not None, "run_id": run_id}
 
 EXAMPLES = [
-    ("BRCA1 (rzadki region)", "Analyze BRCA1 gene variants comparing European and African populations."),
-    ("HLA (GĘSTY region)", "Compare mutation patterns in the HLA region between European and African populations."),
+    ("BRCA1 (sparse region)", "Analyze BRCA1 gene variants comparing European and African populations."),
+    ("HLA (DENSE region)", "Compare mutation patterns in the HLA region between European and African populations."),
     ("EAS HLA autoimmune", "Do East Asian populations show distinct mutation sharing patterns in the HLA immune region?"),
     ("BRCA1+BRCA2 (multi)", "What variants exist in the BRCA1 and BRCA2 genes across European and African populations?"),
-    ("Po polsku", "Porównaj warianty w regionie HLA między populacją brytyjską a afrykańską."),
+    ("Non-English prompt", "Porównaj warianty w regionie HLA między populacją brytyjską a afrykańską."),
 ]
 
-HTML = """<!doctype html><html lang=pl><head><meta charset=utf-8>
+HTML = """<!doctype html><html lang=en><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>Composer 1000genome / Nextflow</title>
 <style>
@@ -577,28 +577,28 @@ tbody tr:hover{background:#fafcff}
 .cmpimg{width:100%;max-width:460px;border:1px solid #e0e6ef;border-radius:6px;background:#fff}
 </style></head><body>
 <header><h1>Composer 1000genome → Nextflow</h1>
-<p>Pytanie w języku naturalnym → intent (LLM) → tabix → workflow → wyniki. Region i populacje zależą od prompta.</p></header>
+<p>A natural-language question becomes an intent (LLM), then tabix extraction, then a workflow, then results. The region and populations come from the prompt.</p></header>
 <div class=wrap>
 
 <div class=card>
-  <h3>1. Wpisz pytanie badawcze</h3>
-  <textarea id=prompt placeholder="np. Compare mutation patterns in the HLA region between European and African populations."></textarea>
+  <h3>1. Ask a research question</h3>
+  <textarea id=prompt placeholder="e.g. Compare mutation patterns in the HLA region between European and African populations."></textarea>
   <div class=row>
     <select id=model>
-      <option value="gemini/gemini-2.5-flash">gemini-2.5-flash (tani)</option>
-      <option value="gemini/gemini-2.5-pro">gemini-2.5-pro</option>
+      <option value="gemini/gemini-flash-latest">gemini-flash-latest (cheap)</option>
+      <option value="gemini/gemini-pro-latest">gemini-pro-latest</option>
     </select>
-    <span class=seg>Silnik:
+    <span class=seg>Engine:
       <label><input type=radio name=engine value=nextflow checked> Nextflow</label>
       <label><input type=radio name=engine value=hyperflow> HyperFlow</label>
-      <label><input type=radio name=engine value=both> Oba</label>
+      <label><input type=radio name=engine value=both> Both</label>
     </span>
-    <button class=sec onclick=dry()>Podejrzyj intent (dry-run, ~3s)</button>
-    <button onclick=runSelected()>Uruchom ▶</button>
-    <label style="font-size:13px;display:flex;align-items:center;gap:5px"><input type=checkbox id=fast> tryb szybki (Nextflow: ≤3000 wariantów, 100 iteracji)</label>
+    <button class=sec onclick=dry()>Preview intent (dry run, ~3s)</button>
+    <button onclick=runSelected()>Run &#9654;</button>
+    <label style="font-size:13px;display:flex;align-items:center;gap:5px"><input type=checkbox id=fast> fast mode (Nextflow: &#8804;3000 variants, 100 iterations)</label>
   </div>
   <div class=row>
-    <span class=muted>Przykłady (kliknij):</span>
+    <span class=muted>Examples (click to use):</span>
     __CHIPS__
   </div>
   <div id=out style=margin-top:12px></div>
@@ -606,13 +606,13 @@ tbody tr:hover{background:#fafcff}
 
 <div class=card>
   <div class=row style="justify-content:space-between">
-    <h3 style=margin:0>2. Weryfikacje i przebiegi</h3>
-    <button class=sec onclick=refresh()>Odśwież</button>
+    <h3 style=margin:0>2. Comparisons and runs</h3>
+    <button class=sec onclick=refresh()>Refresh</button>
   </div>
   <div id=pairs></div>
   <div id=cmpview></div>
   <div class=filt id=filt>
-    <button data-f=all class=on onclick="setFilter('all',this)">Oba</button>
+    <button data-f=all class=on onclick="setFilter('all',this)">Both</button>
     <button data-f=nextflow onclick="setFilter('nextflow',this)">Nextflow</button>
     <button data-f=hyperflow onclick="setFilter('hyperflow',this)">HyperFlow</button>
   </div>
@@ -621,20 +621,20 @@ tbody tr:hover{background:#fafcff}
 </div>
 
 <div class=card help>
-  <h3>Co możesz tu robić</h3>
+  <h3>What you can do here</h3>
   <ul class=help>
-    <li><b>Region zależy od prompta</b> — wpisz „HLA" → gęsty region (niezerowe histogramy); „BRCA1" → mały region.</li>
-    <li><b>Populacje z prompta</b> — np. „European and African" → EUR, AFR (napędzają obliczenia).</li>
-    <li><b>Podejrzyj intent</b> — zobacz, co LLM zrozumiał, bez uruchamiania (szybkie, tanie).</li>
-    <li><b>Uruchom pełny</b> — tabix pobiera region, workflow liczy, wyniki + raporty pojawią się w przebiegach.</li>
-    <li><b>Raporty Nextflow</b> — przy każdym przebiegu: <i>report</i> (CPU/RAM), <i>timeline</i> (równoległość), <i>dag</i> (graf).</li>
+    <li><b>The region follows the prompt</b> &mdash; "HLA" gives a dense region with non-zero histograms; "BRCA1" gives a small one.</li>
+    <li><b>Populations come from the prompt</b> &mdash; "European and African" becomes EUR, AFR, which drive the computation.</li>
+    <li><b>Preview the intent</b> &mdash; see what the LLM understood without running anything. Fast and cheap.</li>
+    <li><b>Run in full</b> &mdash; tabix fetches the region, the workflow computes, and results and reports appear under the run.</li>
+    <li><b>Nextflow reports</b> &mdash; per run: <i>report</i> (CPU/RAM), <i>timeline</i> (parallelism), <i>dag</i> (the graph).</li>
   </ul>
-  <h3 style=margin-top:14px>Odnośniki — dokumentacja Nextflow</h3>
+  <h3 style=margin-top:14px>Nextflow documentation</h3>
   <ul class=help>
-    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/index.html" target=_blank>Dokumentacja Nextflow</a></li>
-    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/reports.html" target=_blank>Raporty: report / timeline / trace / dag</a></li>
-    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/channel.html" target=_blank>Kanały (scatter-gather)</a></li>
-    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/executor.html" target=_blank>Executory (local / SLURM / Kubernetes)</a></li>
+    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/index.html" target=_blank>Nextflow docs</a></li>
+    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/reports.html" target=_blank>Reports: report / timeline / trace / dag</a></li>
+    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/channel.html" target=_blank>Channels (scatter-gather)</a></li>
+    <li class=ext><a class=link href="https://www.nextflow.io/docs/latest/executor.html" target=_blank>Executors (local / SLURM / Kubernetes)</a></li>
     <li class=ext><a class=link href="https://training.nextflow.io/" target=_blank>Nextflow Training</a></li>
   </ul>
 </div>
@@ -654,14 +654,14 @@ function showPrompt(eng,id){
 }
 function setChip(t){$('prompt').value=t}
 async function dry(){
-  $('out').innerHTML='<span class=muted>Interpretuję…</span>';
+  $('out').innerHTML='<span class=muted>Interpreting&hellip;</span>';
   const r=await fetch('/api/dry',{method:'POST',body:JSON.stringify({prompt:$('prompt').value,model:$('model').value})});
   const j=await r.json();
-  if(j.intent){$('out').innerHTML='<b>Intent (co LLM zrozumiał):</b><pre>'+JSON.stringify(j.intent,null,2)+'</pre>';}
-  else{$('out').innerHTML='<span class=muted>Nie udało się sparsować intentu.</span><pre>'+(j.raw||'')+'</pre>';}
+  if(j.intent){$('out').innerHTML='<b>Intent (what the LLM understood):</b><pre>'+JSON.stringify(j.intent,null,2)+'</pre>';}
+  else{$('out').innerHTML='<span class=muted>Could not parse the intent.</span><pre>'+(j.raw||'')+'</pre>';}
 }
 async function runFull(){
-  $('out').innerHTML='<span class=muted>Startuję workflow… (interpret + tabix + DAG)</span>';
+  $('out').innerHTML='<span class=muted>Starting workflow&hellip; (interpret + tabix + DAG)</span>';
 
   try {
     const r = await fetch('/api/run',{
@@ -685,18 +685,18 @@ async function runFull(){
     if(j.run_id){
       $('out').innerHTML =
         '<b>Uruchomiono:</b> '+j.run_id+
-        ' — śledź w tabeli przebiegów.';
+        ' &mdash; follow it in the runs table below.';
       refresh();
     }
     else{
       $('out').innerHTML =
-        '<span class=muted>Nie udało się wystartować.</span>';
+        '<span class=muted>Failed to start.</span>';
     }
 
   } catch(e){
     console.error("runFull error:", e);
     $('out').innerHTML =
-      '<span class=muted>Błąd: '+e.message+'</span>';
+      '<span class=muted>Error: '+e.message+'</span>';
   }
 }
 function selEngine(){const r=document.querySelector('input[name=engine]:checked');return r?r.value:'nextflow';}
@@ -708,7 +708,7 @@ async function runSelected(){
   return runBoth();
 }
 async function runBoth(){
-  $('out').innerHTML='<span class=muted>Startuję na Nextflow i HyperFlow…</span>';
+  $('out').innerHTML='<span class=muted>Starting on both Nextflow and HyperFlow&hellip;</span>';
   const nfBody=JSON.stringify({prompt:$('prompt').value,model:$('model').value,fast:$('fast').checked});
   const hfBody=JSON.stringify({prompt:$('prompt').value,model:$('model').value});
   const [nf,hf]=await Promise.all([
@@ -716,9 +716,9 @@ async function runBoth(){
     fetch('/api/run_hf',{method:'POST',headers:{'Content-Type':'application/json'},body:hfBody}).then(r=>r.json()).catch(e=>({err:e.message}))
   ]);
   let msg='<b>Uruchomiono:</b> ';
-  msg+=nf.run_id?('Nextflow '+nf.run_id):('Nextflow — '+(nf.err||'błąd'));
-  msg+=' &nbsp;·&nbsp; '+(hf.run_id?('HyperFlow '+hf.run_id):('HyperFlow — '+(hf.msg||hf.err||'błąd')));
-  $('out').innerHTML=msg+' — śledź w tabeli przebiegów.';
+  msg+=nf.run_id?('Nextflow '+nf.run_id):('Nextflow &mdash; '+(nf.err||'error'));
+  msg+=' &nbsp;·&nbsp; '+(hf.run_id?('HyperFlow '+hf.run_id):('HyperFlow &mdash; '+(hf.msg||hf.err||'error')));
+  $('out').innerHTML=msg+' &mdash; follow it in the runs table below.';
   refresh();
 }
 function badge(s){if(s=='gotowe')return '<span class="badge b-done">gotowe</span>';if(s=='w toku')return '<span class="badge b-run">w toku</span>';return '<span class="badge b-none">'+s+'</span>';}
@@ -758,18 +758,18 @@ function progHtml(x){
 function stopBtn(x){
   if(!x.running)return '';
   const fn=x.engine=='hyperflow'?'stopHF':'stopRun';
-  return '<button class="mini stop" data-id="'+x.id+'" onclick="'+fn+'(this.dataset.id)">Zatrzymaj</button>';
+  return '<button class="mini stop" data-id="'+x.id+'" onclick="'+fn+'(this.dataset.id)">Stop</button>';
 }
 function renderRuns(){
   let rows=ALLRUNS.filter(x=>RUNFILTER=='all'||x.engine==RUNFILTER);
-  if(!rows.length){$('runs').innerHTML='<p class=muted>Brak przebiegów dla tego filtra.</p>';return;}
-  let h='<table><tr><th>Silnik</th><th>Data</th><th>Czas</th><th>Przebieg</th><th>Intent</th><th>Status</th><th>Wyniki</th><th>Raporty</th><th>Akcje</th></tr>';
+  if(!rows.length){$('runs').innerHTML='<p class=muted>No runs match this filter.</p>';return;}
+  let h='<table><tr><th>Engine</th><th>Date</th><th>Duration</th><th>Run</th><th>Intent</th><th>Status</th><th>Results</th><th>Reports</th><th>Actions</th></tr>';
   for(const x of rows){
     const dur=(x.duration||'')+(x.running&&x.duration?' …':'');
-    const fast=x.fast?' <span class=fastb title="tryb szybki: mniej wariantów / 100 iteracji Monte Carlo — wpływa na analizę">⚡ szybki</span>':'';
-    const dry=x.dry?' <span class=dryb title="dry-run: tylko podgląd intentu, bez uruchomienia pipeline">🔍 dry-run</span>':'';
-    const pl=x.prompt?' <span class=promptlink title="pokaż oryginalny prompt" data-e="'+x.engine+'" data-i="'+x.id+'" onclick="showPrompt(this.dataset.e,this.dataset.i)">📝</span>':'';
-    h+='<tr><td>'+engBadge(x.engine)+'</td><td class=dt>'+(x.date||'')+'</td><td class=dt>'+dur+'</td><td>'+x.id+fast+dry+'</td><td>'+isummary(x.intent)+pl+'</td><td>'+badge(x.status)+progHtml(x)+'</td><td>'+x.n_results+' plików</td><td>'+(runLinks(x)||'—')+'</td><td>'+(stopBtn(x)||'—')+'</td></tr>';
+    const fast=x.fast?' <span class=fastb title="fast mode: fewer variants and 100 Monte Carlo iterations -- this changes the analysis">&#9889; fast</span>':'';
+    const dry=x.dry?' <span class=dryb title="dry run: intent preview only, the pipeline is not started">&#128269; dry run</span>':'';
+    const pl=x.prompt?' <span class=promptlink title="show the original prompt" data-e="'+x.engine+'" data-i="'+x.id+'" onclick="showPrompt(this.dataset.e,this.dataset.i)">📝</span>':'';
+    h+='<tr><td>'+engBadge(x.engine)+'</td><td class=dt>'+(x.date||'')+'</td><td class=dt>'+dur+'</td><td>'+x.id+fast+dry+'</td><td>'+isummary(x.intent)+pl+'</td><td>'+badge(x.status)+progHtml(x)+'</td><td>'+x.n_results+' files</td><td>'+(runLinks(x)||'—')+'</td><td>'+(stopBtn(x)||'—')+'</td></tr>';
   }
   h+='</table>';$('runs').innerHTML=h;
 }
@@ -779,34 +779,34 @@ async function refresh(){
   renderRuns();
 }
 async function runHF(){
-  $('out').innerHTML='<span class=muted>Startuję na HyperFlow (harness: interpret + extract + execute)… wolne (emulacja).</span>';
+  $('out').innerHTML='<span class=muted>Starting on HyperFlow (harness: interpret + extract + execute)&hellip;</span>';
   const r=await fetch('/api/run_hf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:$('prompt').value,model:$('model').value})});
   const j=await r.json();
-  if(j.run_id){$('out').innerHTML='<b>HyperFlow uruchomiony:</b> '+j.run_id+' — śledź w tabeli przebiegów (filtr HyperFlow).';refresh();}
-  else{$('out').innerHTML='<span class=muted>Nie udało się: '+(j.msg||'')+'</span>';}
+  if(j.run_id){$('out').innerHTML='<b>HyperFlow started:</b> '+j.run_id+' &mdash; follow it in the runs table (HyperFlow filter).';refresh();}
+  else{$('out').innerHTML='<span class=muted>Failed: '+(j.msg||'')+'</span>';}
 }
 async function stopHF(id){
-  if(!confirm('Zatrzymać HyperFlow '+id+'?'))return;
+  if(!confirm('Stop HyperFlow run '+id+'?'))return;
   const r=await fetch('/api/stop_hf?id='+id);const j=await r.json();alert(j.msg||'ok');refresh();
 }
-async function openHF(id){const r=await fetch('/api/open_hf?id='+id);const j=await r.json();if(!j.ok)alert(j.msg||'błąd');}
+async function openHF(id){const r=await fetch('/api/open_hf?id='+id);const j=await r.json();if(!j.ok)alert(j.msg||'error');}
 async function openFolder(p){
   const r=await fetch('/api/open?p='+encodeURIComponent(p));const j=await r.json();
-  if(!j.ok)alert(j.msg||'nie udało się otworzyć folderu');
+  if(!j.ok)alert(j.msg||'could not open the folder');
 }
 async function stopRun(id){
-  if(!confirm('Zatrzymać przebieg '+id+'?'))return;
+  if(!confirm('Stop run '+id+'?'))return;
   const r=await fetch('/api/stop?id='+id);const j=await r.json();
-  alert(j.msg||(j.ok?'zatrzymano':'nie udało się'));refresh();
+  alert(j.msg||(j.ok?'stopped':'failed'));refresh();
 }
 function cmpBtn(el){const a=el.dataset.a.split('|'),b=el.dataset.b.split('|');cmp(a[0],a[1],b[0],b[1]);}
-function runOpt(x){return '<option value="'+x.engine+'|'+x.id+'">'+(x.engine=='hyperflow'?'HF':'NF')+' '+x.id+' — '+isummary(x.intent)+' ('+x.n_results+' plików)</option>';}
+function runOpt(x){return '<option value="'+x.engine+'|'+x.id+'">'+(x.engine=='hyperflow'?'HF':'NF')+' '+x.id+' — '+isummary(x.intent)+' ('+x.n_results+' files)</option>';}
 function openManualCompare(){
   const withRes=(ALLRUNS||[]).filter(x=>x.n_results>0);
-  if(withRes.length<2){$('cmpview').innerHTML='<div class=card><span class=muted>Za mało runów z wynikami (potrzeba ≥2).</span></div>';$('cmpview').scrollIntoView({behavior:'smooth'});return;}
+  if(withRes.length<2){$('cmpview').innerHTML='<div class=card><span class=muted>Need at least two runs with results.</span></div>';$('cmpview').scrollIntoView({behavior:'smooth'});return;}
   const opts=withRes.map(runOpt).join('');
-  $('cmpview').innerHTML='<div class=card style="background:#f4f8ff"><div class=row style="justify-content:space-between"><b>⚖️ Porównaj dowolne 2 runy</b><button class="mini sec" onclick="closeCmp()">✕</button></div>'
-    +'<div class=row style="margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap"><span class=muted>A:</span><select id=cmpA>'+opts+'</select><span class=muted>B:</span><select id=cmpB>'+opts+'</select><button onclick="runManualCompare()">Porównaj wykresy</button></div></div>';
+  $('cmpview').innerHTML='<div class=card style="background:#f4f8ff"><div class=row style="justify-content:space-between"><b>&#9878; Compare any two runs</b><button class="mini sec" onclick="closeCmp()">✕</button></div>'
+    +'<div class=row style="margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap"><span class=muted>A:</span><select id=cmpA>'+opts+'</select><span class=muted>B:</span><select id=cmpB>'+opts+'</select><button onclick="runManualCompare()">Compare charts</button></div></div>';
   $('cmpview').scrollIntoView({behavior:'smooth'});
 }
 function runManualCompare(){const a=$('cmpA').value.split('|'),b=$('cmpB').value.split('|');cmp(a[0],a[1],b[0],b[1]);}
@@ -814,18 +814,18 @@ async function loadPairs(){
   const r=await fetch('/api/pairs');const ps=await r.json();
   const side=(arr,eng)=>arr.map(r=>{
     const attr=eng=='nf'?('data-p="'+r.folder+'" onclick="openFolder(this.dataset.p)"'):('data-id="'+r.id+'" onclick="openHF(this.dataset.id)"');
-    return '<div style=margin:2px 0><a class=link style=cursor:pointer '+attr+'>📂 '+r.id+'</a> <span class=muted>'+(r.date||'')+' · '+r.n_results+' plików</span></div>';
+    return '<div style=margin:2px 0><a class=link style=cursor:pointer '+attr+'>📂 '+r.id+'</a> <span class=muted>'+(r.date||'')+' · '+r.n_results+' files</span></div>';
   }).join('')||'<span class=muted>—</span>';
-  let h='<div class=card style="background:#eef6ff;margin-bottom:14px"><div class=row style="justify-content:space-between"><b>Porównania wyników</b>'
-       +'<button class=mini onclick="openManualCompare()">⚖️ Porównaj dowolne 2 runy</button></div>';
+  let h='<div class=card style="background:#eef6ff;margin-bottom:14px"><div class=row style="justify-content:space-between"><b>Result comparisons</b>'
+       +'<button class=mini onclick="openManualCompare()">&#9878; Compare any two runs</button></div>';
   if(!ps.length){
-    h+='<p class=muted style="margin-top:8px">Brak automatycznych par (ten sam prompt na NF i HF). Dowolne 2 runy porównasz przyciskiem wyżej.</p>';
+    h+='<p class=muted style="margin-top:8px">No automatic pairs yet (same prompt run on both engines). Use the button above to compare any two runs.</p>';
   }else{
-    h+='<div class=muted style="margin-top:6px">Automatyczne pary (te same wejścia) — otwórz folder albo zestaw wykresy:</div>'
-      +'<table style=margin-top:6px><tr><th>Wejście (intent)</th><th>Nextflow</th><th>HyperFlow</th><th>Porównanie</th></tr>';
+    h+='<div class=muted style="margin-top:6px">Automatic pairs (identical inputs) &mdash; open a folder or compare the charts:</div>'
+      +'<table style=margin-top:6px><tr><th>Input (intent)</th><th>Nextflow</th><th>HyperFlow</th><th>Comparison</th></tr>';
     for(const g of ps){
       const nfid=g.nf[0]?g.nf[0].id:'', hfid=g.hf[0]?g.hf[0].id:'';
-      const btn=(nfid&&hfid)?'<button class=mini data-a="nextflow|'+nfid+'" data-b="hyperflow|'+hfid+'" onclick="cmpBtn(this)">🔍 Porównaj wykresy</button>':'<span class=muted>—</span>';
+      const btn=(nfid&&hfid)?'<button class=mini data-a="nextflow|'+nfid+'" data-b="hyperflow|'+hfid+'" onclick="cmpBtn(this)">&#128269; Compare charts</button>':'<span class=muted>—</span>';
       h+='<tr><td>'+g.label+'</td><td>'+side(g.nf,'nf')+'</td><td>'+side(g.hf,'hf')+'</td><td>'+btn+'</td></tr>';
     }
     h+='</table>';
@@ -834,24 +834,24 @@ async function loadPairs(){
 }
 function closeCmp(){$('cmpview').innerHTML='';}
 async function cmp(aEng,aId,bEng,bId){
-  $('cmpview').innerHTML='<div class=card><span class=muted>Wypakowuję i zestawiam wyniki…</span></div>';
+  $('cmpview').innerHTML='<div class=card><span class=muted>Extracting and matching results&hellip;</span></div>';
   const q='a_eng='+aEng+'&a='+encodeURIComponent(aId)+'&b_eng='+bEng+'&b='+encodeURIComponent(bId);
   const r=await fetch('/api/compare?'+q);const j=await r.json();
-  if(!j.ok){$('cmpview').innerHTML='<div class=card><span class=muted>'+(j.msg||'nie udało się')+'</span></div>';return;}
-  let h='<div class=card><div class=row style="justify-content:space-between"><b>Porównanie wykresów</b>'
+  if(!j.ok){$('cmpview').innerHTML='<div class=card><span class=muted>'+(j.msg||'failed')+'</span></div>';return;}
+  let h='<div class=card><div class=row style="justify-content:space-between"><b>Chart comparison</b>'
        +'<button class="mini sec" onclick="closeCmp()">✕ zamknij</button></div>'
-       +'<div class=muted style="margin:4px 0">A: '+j.a_label+'  ·  B: '+j.b_label+'  ·  '+j.n_png+' wykresów ('+j.n_both+' par pasujących obie strony)</div>';
-  const img=p=>p?'<img class=cmpimg src="/file?p='+encodeURIComponent(p)+'">':'<span class=muted>(brak)</span>';
+       +'<div class=muted style="margin:4px 0">A: '+j.a_label+'  ·  B: '+j.b_label+'  ·  '+j.n_png+' charts ('+j.n_both+' matched on both sides)</div>';
+  const img=p=>p?'<img class=cmpimg src="/file?p='+encodeURIComponent(p)+'">':'<span class=muted>(none)</span>';
   for(const it of j.pngs){
     h+='<div class=cmprow><div class=cmptitle>'+it.title+'</div><div class=cmppair>'
       +'<figure><figcaption>'+j.a_label+'</figcaption>'+img(it.a)+'</figure>'
       +'<figure><figcaption>'+j.b_label+'</figcaption>'+img(it.b)+'</figure></div></div>';
   }
   if(j.txts&&j.txts.length){
-    h+='<details style=margin-top:8px><summary style="cursor:pointer;color:#1565c0">Pliki tekstowe ('+j.n_txt+') — otwórz obok siebie</summary><table style=margin-top:6px><tr><th>Plik</th><th>'+j.a_label+'</th><th>'+j.b_label+'</th></tr>';
+    h+='<details style=margin-top:8px><summary style="cursor:pointer;color:#1565c0">Text files ('+j.n_txt+') &mdash; open side by side</summary><table style=margin-top:6px><tr><th>File</th><th>'+j.a_label+'</th><th>'+j.b_label+'</th></tr>';
     for(const it of j.txts){
       const lnk=(p,l)=>p?'<a class=link target=_blank href="/file?p='+encodeURIComponent(p)+'">'+l+'</a>':'<span class=muted>—</span>';
-      h+='<tr><td>'+it.name+'</td><td>'+lnk(it.a,'otwórz')+'</td><td>'+lnk(it.b,'otwórz')+'</td></tr>';
+      h+='<tr><td>'+it.name+'</td><td>'+lnk(it.a,'open')+'</td><td>'+lnk(it.b,'open')+'</td></tr>';
     }
     h+='</table></details>';
   }
@@ -885,7 +885,7 @@ class H(BaseHTTPRequestHandler):
                 _open_in_file_manager(target)   # otwiera folder (mac/Linux/Windows)
                 self._send(200, "application/json", json.dumps({"ok": True}).encode())
             else:
-                self._send(200, "application/json", json.dumps({"ok": False, "msg": "brak folderu"}).encode())
+                self._send(200, "application/json", json.dumps({"ok": False, "msg": "no such folder"}).encode())
         elif u.path == "/api/hf_runs":
             self._send(200, "application/json", json.dumps(list_hf_runs()).encode())
         elif u.path == "/api/stop_hf":
@@ -896,7 +896,7 @@ class H(BaseHTTPRequestHandler):
             if d.exists():
                 _open_in_file_manager(d); self._send(200, "application/json", json.dumps({"ok": True}).encode())
             else:
-                self._send(200, "application/json", json.dumps({"ok": False, "msg": "brak folderu"}).encode())
+                self._send(200, "application/json", json.dumps({"ok": False, "msg": "no such folder"}).encode())
         elif u.path == "/api/pairs":
             self._send(200, "application/json", json.dumps(list_pairs()).encode())
         elif u.path == "/api/compare":
@@ -932,4 +932,8 @@ class H(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     print(f"GUI na http://localhost:{PORT}")
-    ThreadingHTTPServer(("127.0.0.1", PORT), H).serve_forever()
+    # Loopback by default. Under WSL, set GUI_HOST=0.0.0.0 to reach the server
+    # from a Windows browser when localhost forwarding is not in play.
+    host = os.environ.get("GUI_HOST", "127.0.0.1")
+    print(f"binding {host}:{PORT}")
+    ThreadingHTTPServer((host, PORT), H).serve_forever()
