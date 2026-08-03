@@ -99,6 +99,8 @@ def main() -> int:
 
     run_dir = THIS_DIR / "runs" / datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir.mkdir(parents=True, exist_ok=True)
+    # The GUI reads this to label a run with the question that produced it.
+    (run_dir / "prompt.txt").write_text(args.prompt)
     nextflow = _find_nextflow()
     backend = get_backend("nextflow")
     print(f"[composer] run dir: {run_dir}")
