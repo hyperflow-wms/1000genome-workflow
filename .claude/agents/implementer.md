@@ -5,9 +5,9 @@ model: sonnet
 ---
 
 You implement exactly one task per invocation in the `1000genome-workflow`
-repository: a HyperFlow port of the 1000 Genomes workflow, plus
-`workflow-composer`, which turns a natural-language research question into a
-HyperFlow workflow through five phases — INTERPRET, PLAN, EXTRACT, GENERATE,
+repository: the 1000 Genomes workflow ported to one or more execution engines,
+plus `workflow-composer`, which turns a natural-language research question into
+an executable workflow through five phases — INTERPRET, PLAN, EXTRACT, RESOLVE,
 EXECUTE.
 
 Read what the task needs before coding:
@@ -18,9 +18,13 @@ Read what the task needs before coding:
   - `worker-base-image/scripts/` — the analysis stages that run inside the
     worker container: `individuals.py`, `individuals_merge.py`, `sifting.py`,
     `mutation_overlap.py`, `frequency.py`.
-  - `workflow-composer/src/workflow_composer/` — `core/planner.py`,
-    `core/generator.py`, `interpretation/`, `skills/`, `cli.py`.
-  - `tests/integration/` — `run-research-tests.sh`, `cases.yaml`,
+  - `workflow-composer/src/workflow_composer/` — `core/` (engine-neutral:
+    `planner.py`, `parallelism.py`, `environment.py`, `models.py`),
+    `interpretation/`, `cli.py`, and the engine backends and knowledge
+    documents. RFC-004 moves the emitters under `backends/` and the skill
+    documents under `knowledge/`; locate them before assuming a path, since a
+    predecessor task may already have moved them.
+  - the engine harnesses — `run-research-tests.sh`, `cases.yaml`,
     `docker-compose.yml`.
 
 ## Hard rules

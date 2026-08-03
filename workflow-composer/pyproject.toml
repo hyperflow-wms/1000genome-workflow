@@ -44,7 +44,7 @@ packages = ["src/workflow_composer"]
 [tool.hatch.build]
 include = [
     "src/workflow_composer/**/*.py",
-    "src/workflow_composer/skills/*.md",
+    "src/workflow_composer/knowledge/**/*.md",
     "src/workflow_composer/data/populations/*",
     "src/workflow_composer/scripts/*.sh",
 ]

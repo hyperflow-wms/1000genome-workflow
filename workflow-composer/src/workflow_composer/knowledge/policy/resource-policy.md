@@ -2,11 +2,11 @@
 
 This is the resource half of parallelism policy: the numbers
 that describe the target machine, as opposed to domain policy (which
-populations and regions a question implies — that half stays in `SKILL.md`
-and `research-contexts.md`).
+populations and regions a question implies — that half lives in
+`interpretation.md` and `research-contexts.md`).
 
 **Owner: whoever knows the target machine** — the person deploying or
-operating the HyperFlow engine, not the genomics curator who writes the
+operating the execution engine, not the genomics curator who writes the
 domain-policy prose. A curator cannot sensibly choose a memory budget or a
 vCPU count without knowing the host; conversely, whoever sets these numbers
 does not need to know what HLA or AFR means. Keeping the two apart means
@@ -44,7 +44,7 @@ dataclass should be resource policy that this file omits.
 | `name` | Which shipped profile this is (`"local"`, `"aws"`, `"gcp"`) | whoever knows the target machine |
 | `vcpus` | vCPUs available on the target host, before reserving any for the engine | whoever knows the target machine |
 | `host_mem_mb` | Total host memory in MB, before reserving any for the OS | whoever knows the target machine |
-| `engine_reserve` | Cores reserved for the HyperFlow engine, Redis, and the merge step, subtracted from `vcpus` before sizing tasks | whoever knows the target machine |
+| `engine_reserve` | Cores reserved for the engine's own coordination, subtracted from `vcpus` before sizing tasks. What that coordination consists of is engine-specific, so each backend reports its own figure through `Backend.reserve()` (`backends/base.py`) rather than this file naming one engine's | whoever knows the target machine |
 | `host_reserve_mb` | Host memory in MB reserved for the OS and anything that is not an individuals-stage task, subtracted from `host_mem_mb` before sizing concurrency | whoever knows the target machine |
 | `mem_budget_mb` | Memory ceiling for a single task; usually set via the `"small"`/`"medium"`/`"large"` preset rather than a raw number | whoever knows the target machine |
 
@@ -74,7 +74,7 @@ the host's usable memory (`host_mem_mb - host_reserve_mb`) — a per-task
 budget larger than the host budget allows is rejected rather than silently
 producing a workflow that cannot run its own first task. It also refuses
 `vcpus <= engine_reserve`, which would leave zero cores for individuals-stage
-tasks after reserving the engine, Redis, and the merge step. It does not
+tasks after reserving the engine's own coordination cost. It does not
 check that *concurrent* tasks fit collectively — that is
 `recommend_parallelism`'s job at plan time, once the actual workload
 (variant and individual counts) is known, not something knowable from the

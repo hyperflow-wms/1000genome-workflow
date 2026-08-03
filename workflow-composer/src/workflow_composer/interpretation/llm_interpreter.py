@@ -74,6 +74,10 @@ def interpret_research_question(
         config = LLMConfig()
 
     client = get_client()
+    # No `backend=` here, deliberately: this is the interpreter-isolation
+    # property in RFC-004 §2.4. Extraction must not see engine-specific
+    # knowledge, so the extracted ResearchIntent cannot be influenced by
+    # which engine will eventually run it. See test_interpreter_isolation.py.
     skill_context = load_skill_context()
 
     system_prompt = f"""You are a genomics research workflow planning assistant.
