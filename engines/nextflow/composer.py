@@ -79,7 +79,11 @@ def count_individuals(columns_txt: str) -> int:
 def main() -> int:
     p = argparse.ArgumentParser(description="1000genome composer (Nextflow backend)")
     p.add_argument("prompt", help="Research question in natural language")
-    p.add_argument("--model", default="gemini/gemini-2.5-flash")
+    # No pinned default: LLMConfig's is a floating alias, overridable through
+    # WORKFLOW_COMPOSER_MODEL. Pinning a dated Gemini model here makes every
+    # interpretation fail with a 404 once Google retires it.
+    p.add_argument("--model", default=None,
+                   help="LLM to interpret with (default: LLMConfig / WORKFLOW_COMPOSER_MODEL)")
     p.add_argument("--env", default="local", choices=["local", "aws", "gcp"],
                    help="Compute environment profile sizing the parallelism")
     p.add_argument("--intent-json", type=Path,
@@ -101,7 +105,9 @@ def main() -> int:
         print(f"  loaded intent from {args.intent_json}")
     else:
         config = LLMConfig()
-        config.model = args.model
+        if args.model:
+            config.model = args.model
+        print(f"  model: {config.model}")
         intent = interpret_research_question(args.prompt, config)
     (run_dir / "intent.json").write_text(intent.model_dump_json(indent=2))
     params = intent_to_params(intent)
@@ -136,7 +142,11 @@ def main() -> int:
 
     # ---- RESOLVE -------------------------------------------------------
     print("\n[composer] Phase 3: RESOLVE")
-    data_csv = extract_dir / "data.csv" if params.regions else DEFAULT_DATA_CSV
+    # main.nf's EXTRACT publishes under "${outdir}/extracted", so the VCFs sit
+    # one level below the measurements file. data.csv must live beside them:
+    # generate_columns_txt resolves VCF paths relative to it.
+    vcf_dir = extract_dir / "extracted"
+    data_csv = vcf_dir / "data.csv" if params.regions else DEFAULT_DATA_CSV
     if params.regions:
         # main.nf publishes the extracted VCFs; name them the way
         # generate_columns_txt expects so it can read a real #CHROM header.

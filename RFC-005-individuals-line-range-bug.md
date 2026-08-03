@@ -187,3 +187,30 @@ chunk archives from the old 1-based convention, including
 `chr6n-166051-182656.tar.gz` whose range runs past the 166052-variant
 threshold. Only the first chunk is exercised by a test and it has been
 regenerated; the rest are stale and should not be treated as reference data.
+
+### APOE end to end, the worst case
+
+APOE is the smallest region in the evaluation at 113 variants, fewer than a
+VCF's 253 header lines, so before the fix the individuals stage processed none
+of it and wrote one empty file per individual while exiting 0.
+
+Run on both engines from a natural-language question, with live tabix
+extraction from the 1000 Genomes FTP release:
+
+| | HyperFlow | Nextflow |
+|---|---|---|
+| Variants measured | 113 | 113 |
+| individuals tasks | 1, args `19 0 113 113` | `ind_jobs=1` from `recommend_parallelism` |
+| Rows in merged output | 275 | 275 |
+| Non-empty individual files | 48 of 91 | 48 of 91 |
+
+`chr19n.tar.gz` is byte-identical across the two engines, and
+`compare-results.sh` reports EQUIVALENT. Before the fix this region produced
+0 rows and 91 empty files on HyperFlow.
+
+43 individuals having no qualifying variant across 113 sites is expected, not
+a residue of the bug: the files are present and the merged archive is
+non-empty.
+
+The case is now `apoe-gbr` in the harness, carrying a `mock_intent` so it runs
+without an API key.

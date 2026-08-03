@@ -1,313 +1,346 @@
-# End-to-End Integration Test Cases
-#
-# Each test case represents a research question that exercises the 5-phase pipeline:
-#   INTERPRET → PLAN → EXTRACT → GENERATE → EXECUTE
-#
-# A case never declares its own transfer volume. The PLAN phase estimates it and
-# reports it as data_preparation.estimated_transfer_mb in plan.json; the harness
-# compares that against volume_thresholds below to decide where to stop.
-#
-# Those thresholds weigh download size only. They say nothing about disk
-# footprint or compute cost, and the three diverge sharply: the HLA region
-# transfers ~25 MB compressed but expands to ~1.6 GB on disk. Treat a case
-# passing the "run end-to-end" gate as "cheap to fetch", not "cheap to run".
-
-version: "1.0"
-
+version: '1.0'
 defaults:
-  # Per-task memory ceiling, not a task count: small=256MB, medium=512MB,
-  # large=1024MB. It bounds how much work one individuals task may hold, so it
-  # only changes the task count for memory-bound workloads (whole chromosomes).
-  # Region-sized cases are bounded by core count instead, and pick the same
-  # ind_jobs under all three presets.
   parallelism: small
-  populations_dir: "${REPO_ROOT}/workflow-generator/data/populations"
+  populations_dir: ${REPO_ROOT}/workflow-generator/data/populations
   compute_environment: local
-
 volume_thresholds:
   stop_before_extract_mb: 500
   stop_before_execute_mb: 50
-
 test_cases:
-  # ============================================================================
-  # Case 1: EUR vs AFR deleterious mutations on chr22 (MODERATE - ~190 MB)
-  # ============================================================================
-  - id: eur-afr-chr22
-    name: "European vs African deleterious mutations on chromosome 22"
-    description: |
-      Tests population comparison workflow for a single chromosome.
-      Chromosome 22 is the smallest autosome. PLAN estimates ~190 MB transfer
-      and ~3.8 GB on disk, which clears the 50 MB execute threshold, so this
-      stops before execution by default.
+- id: eur-afr-chr22
+  name: European vs African deleterious mutations on chromosome 22
+  description: 'Tests population comparison workflow for a single chromosome.
 
-    prompt: |
-      Do European and African populations show different patterns of shared
-      deleterious mutations on chromosome 22? This is relevant for understanding
-      population-specific disease risks.
+    Chromosome 22 is the smallest autosome. PLAN estimates ~190 MB transfer
 
-    expected_intent:
-      analysis_type: population_comparison
-      populations: [EUR, AFR]
-      chromosomes: ["22"]
-      focus: deleterious
+    and ~3.8 GB on disk, which clears the 50 MB execute threshold, so this
 
-    mock_intent:
-      analysis_type: population_comparison
-      populations: [EUR, AFR]
-      chromosomes: ["22"]
-      regions: null
-      focus: deleterious
+    stops before execution by default.
 
-    expected_outputs:
-      - "chr22-EUR.tar.gz"
-      - "chr22-AFR.tar.gz"
-      - "chr22-EUR-freq.tar.gz"
-      - "chr22-AFR-freq.tar.gz"
+    '
+  prompt: 'Do European and African populations show different patterns of shared
 
-  # ============================================================================
-  # Case 2: Genome-wide null distribution (LARGE - estimate only by default)
-  # ============================================================================
-  - id: genome-wide-null
-    name: "Genome-wide mutation sharing null distribution"
-    description: |
-      Establishes statistical baseline for mutation sharing patterns.
-      This requires ALL chromosomes (PLAN estimates ~13.8 GB transfer, ~270 GB on
-      disk) and is too large for routine testing.
-      By default, stops after ESTIMATE phase.
+    deleterious mutations on chromosome 22? This is relevant for understanding
 
-    prompt: |
-      What is the genome-wide null distribution of mutation sharing across all
-      populations? This provides the statistical baseline needed to evaluate
-      whether disease-associated mutations show unusual sharing patterns.
+    population-specific disease risks.
 
-    expected_intent:
-      analysis_type: multi_population
-      populations: [AFR, ALL, AMR, EAS, EUR, GBR, SAS]
-      chromosomes: null
-      focus: all_variants
+    '
+  expected_intent:
+    analysis_type: population_comparison
+    populations:
+    - EUR
+    - AFR
+    chromosomes:
+    - '22'
+    focus: deleterious
+  mock_intent:
+    analysis_type: population_comparison
+    populations:
+    - EUR
+    - AFR
+    chromosomes:
+    - '22'
+    regions: null
+    focus: deleterious
+  expected_outputs:
+  - chr22-EUR.tar.gz
+  - chr22-AFR.tar.gz
+  - chr22-EUR-freq.tar.gz
+  - chr22-AFR-freq.tar.gz
+- id: genome-wide-null
+  name: Genome-wide mutation sharing null distribution
+  description: 'Establishes statistical baseline for mutation sharing patterns.
 
-    mock_intent:
-      analysis_type: multi_population
-      populations: [AFR, ALL, AMR, EAS, EUR, GBR, SAS]
-      chromosomes: null
-      regions: null
-      focus: all_variants
+    This requires ALL chromosomes (PLAN estimates ~13.8 GB transfer, ~270 GB on
 
-  # ============================================================================
-  # Case 3: EAS HLA region autoimmune analysis (SMALL - full e2e safe)
-  # ============================================================================
-  - id: eas-hla-autoimmune
-    name: "East Asian HLA region autoimmune susceptibility"
-    description: |
-      Tests region-based analysis with the well-known HLA region.
-      The HLA region spans ~5 Mb and transfers ~25 MB compressed, which keeps it
-      under the run-end-to-end threshold. It expands to ~1.6 GB on disk, so the
-      run is cheap to fetch but not free to execute.
+    disk) and is too large for routine testing.
 
-    prompt: |
-      Do East Asian populations show distinct mutation sharing patterns in the
-      HLA immune region that could explain population-specific autoimmune
-      disease susceptibilities?
+    By default, stops after ESTIMATE phase.
 
-    expected_intent:
-      analysis_type: region_analysis
-      populations: [EAS]
-      regions:
-        - name: HLA
-          chromosome: "6"
-      focus: all_variants
+    '
+  prompt: 'What is the genome-wide null distribution of mutation sharing across all
 
-    mock_intent:
-      analysis_type: region_analysis
-      populations: [EAS]
-      chromosomes: null
-      regions:
-        - name: HLA
-          chromosome: "6"
-          start: 28477797
-          end: 33448354
-          context: "immune function"
-      focus: all_variants
+    populations? This provides the statistical baseline needed to evaluate
 
-    expected_outputs:
-      - "chr6-EAS.tar.gz"
-      - "chr6-EAS-freq.tar.gz"
+    whether disease-associated mutations show unusual sharing patterns.
 
-  # ============================================================================
-  # Case 4: Micro test (legacy compatibility - bypasses NL interpretation)
-  # ============================================================================
-  - id: micro
-    name: "Micro dataset smoke test"
-    description: |
-      Minimal test using pre-existing micro dataset (10,000 variants).
-      This bypasses the INTERPRET and EXTRACT phases entirely.
-      Used for rapid smoke testing of the generator and execution.
+    '
+  expected_intent:
+    analysis_type: multi_population
+    populations:
+    - AFR
+    - ALL
+    - AMR
+    - EAS
+    - EUR
+    - GBR
+    - SAS
+    chromosomes: null
+    focus: all_variants
+  mock_intent:
+    analysis_type: multi_population
+    populations:
+    - AFR
+    - ALL
+    - AMR
+    - EAS
+    - EUR
+    - GBR
+    - SAS
+    chromosomes: null
+    regions: null
+    focus: all_variants
+- id: eas-hla-autoimmune
+  name: East Asian HLA region autoimmune susceptibility
+  description: 'Tests region-based analysis with the well-known HLA region.
 
-    prompt: null
-    skip_interpret: true
-    skip_extract: true
-    data_csv: "${SCRIPT_DIR}/data-micro.csv"
+    The HLA region spans ~5 Mb and transfers ~25 MB compressed, which keeps it
 
-    mock_intent:
-      analysis_type: multi_population
-      populations: [AFR, ALL, AMR, EAS, EUR, GBR, SAS]
-      chromosomes: ["1"]
-      regions: null
-      focus: all_variants
+    under the run-end-to-end threshold. It expands to ~1.6 GB on disk, so the
 
-    expected_outputs:
-      - "chr1-AFR.tar.gz"
-      - "chr1-ALL.tar.gz"
-      - "chr1-AMR.tar.gz"
-      - "chr1-EAS.tar.gz"
-      - "chr1-EUR.tar.gz"
-      - "chr1-GBR.tar.gz"
-      - "chr1-SAS.tar.gz"
-      - "chr1-AFR-freq.tar.gz"
-      - "chr1-ALL-freq.tar.gz"
-      - "chr1-AMR-freq.tar.gz"
-      - "chr1-EAS-freq.tar.gz"
-      - "chr1-EUR-freq.tar.gz"
-      - "chr1-GBR-freq.tar.gz"
-      - "chr1-SAS-freq.tar.gz"
+    run is cheap to fetch but not free to execute.
 
-  # ============================================================================
-  # Case 5: EUR vs AFR in HLA region (SMALL - good for full testing)
-  # ============================================================================
-  - id: eur-afr-hla
-    name: "European vs African HLA region comparison"
-    description: |
-      Population comparison in a specific genomic region.
-      Combines region-based extraction with population comparison.
-      Good balance of coverage and execution time.
+    '
+  prompt: 'Do East Asian populations show distinct mutation sharing patterns in the
 
-    prompt: |
-      Compare the patterns of genetic variation between European and African
-      populations in the HLA region. Are there population-specific variants
-      that might explain differences in immune response?
+    HLA immune region that could explain population-specific autoimmune
 
-    expected_intent:
-      analysis_type: population_comparison
-      populations: [EUR, AFR]
-      regions:
-        - name: HLA
-          chromosome: "6"
-      focus: all_variants
+    disease susceptibilities?
 
-    mock_intent:
-      analysis_type: population_comparison
-      populations: [EUR, AFR]
-      chromosomes: null
-      regions:
-        - name: HLA
-          chromosome: "6"
-          start: 28477797
-          end: 33448354
-          context: "immune function"
-      focus: all_variants
+    '
+  expected_intent:
+    analysis_type: region_analysis
+    populations:
+    - EAS
+    regions:
+    - name: HLA
+      chromosome: '6'
+    focus: all_variants
+  mock_intent:
+    analysis_type: region_analysis
+    populations:
+    - EAS
+    chromosomes: null
+    regions:
+    - name: HLA
+      chromosome: '6'
+      start: 28477797
+      end: 33448354
+      context: immune function
+    focus: all_variants
+  expected_outputs:
+  - chr6-EAS.tar.gz
+  - chr6-EAS-freq.tar.gz
+- id: micro
+  name: Micro dataset smoke test
+  description: 'Minimal test using pre-existing micro dataset (10,000 variants).
 
-    expected_outputs:
-      - "chr6-EUR.tar.gz"
-      - "chr6-AFR.tar.gz"
-      - "chr6-EUR-freq.tar.gz"
-      - "chr6-AFR-freq.tar.gz"
+    This bypasses the INTERPRET and EXTRACT phases entirely.
 
-  # ============================================================================
-  # Case 6: BRCA genes breast cancer analysis (SMALL)
-  # ============================================================================
-  - id: brca-breast-cancer
-    name: "BRCA1/BRCA2 breast cancer variant analysis"
-    description: |
-      Analyzes breast cancer susceptibility genes across all populations.
-      Tests multi-region extraction (BRCA1 on chr17, BRCA2 on chr13).
+    Used for rapid smoke testing of the generator and execution.
 
-    prompt: |
-      What variants exist in the BRCA1 and BRCA2 breast cancer genes across
-      different populations? Are there population-specific patterns that might
-      inform targeted screening recommendations?
+    '
+  prompt: null
+  skip_interpret: true
+  skip_extract: true
+  data_csv: ${SCRIPT_DIR}/data-micro.csv
+  mock_intent:
+    analysis_type: multi_population
+    populations:
+    - AFR
+    - ALL
+    - AMR
+    - EAS
+    - EUR
+    - GBR
+    - SAS
+    chromosomes:
+    - '1'
+    regions: null
+    focus: all_variants
+  expected_outputs:
+  - chr1-AFR.tar.gz
+  - chr1-ALL.tar.gz
+  - chr1-AMR.tar.gz
+  - chr1-EAS.tar.gz
+  - chr1-EUR.tar.gz
+  - chr1-GBR.tar.gz
+  - chr1-SAS.tar.gz
+  - chr1-AFR-freq.tar.gz
+  - chr1-ALL-freq.tar.gz
+  - chr1-AMR-freq.tar.gz
+  - chr1-EAS-freq.tar.gz
+  - chr1-EUR-freq.tar.gz
+  - chr1-GBR-freq.tar.gz
+  - chr1-SAS-freq.tar.gz
+- id: eur-afr-hla
+  name: European vs African HLA region comparison
+  description: 'Population comparison in a specific genomic region.
 
-    expected_intent:
-      analysis_type: multi_population
-      populations: [AFR, EUR, EAS, SAS, AMR]
-      regions:
-        - name: BRCA1
-          chromosome: "17"
-        - name: BRCA2
-          chromosome: "13"
-      focus: all_variants
+    Combines region-based extraction with population comparison.
 
-    mock_intent:
-      analysis_type: multi_population
-      populations: [AFR, EUR, EAS, SAS, AMR]
-      chromosomes: null
-      regions:
-        - name: BRCA1
-          chromosome: "17"
-          start: 43044295
-          end: 43125483
-          context: "breast cancer"
-        - name: BRCA2
-          chromosome: "13"
-          start: 32315086
-          end: 32400266
-          context: "breast cancer"
-      focus: all_variants
+    Good balance of coverage and execution time.
 
-    expected_outputs:
-      - "chr17-AFR.tar.gz"
-      - "chr17-EUR.tar.gz"
-      - "chr17-EAS.tar.gz"
-      - "chr17-SAS.tar.gz"
-      - "chr17-AMR.tar.gz"
-      - "chr13-AFR.tar.gz"
-      - "chr13-EUR.tar.gz"
-      - "chr13-EAS.tar.gz"
-      - "chr13-SAS.tar.gz"
-      - "chr13-AMR.tar.gz"
-      - "chr17-AFR-freq.tar.gz"
-      - "chr17-EUR-freq.tar.gz"
-      - "chr17-EAS-freq.tar.gz"
-      - "chr17-SAS-freq.tar.gz"
-      - "chr17-AMR-freq.tar.gz"
-      - "chr13-AFR-freq.tar.gz"
-      - "chr13-EUR-freq.tar.gz"
-      - "chr13-EAS-freq.tar.gz"
-      - "chr13-SAS-freq.tar.gz"
-      - "chr13-AMR-freq.tar.gz"
+    '
+  prompt: 'Compare the patterns of genetic variation between European and African
 
-  # ============================================================================
-  # Case 7: BRCA1 British - minimal fast test (TINY)
-  # ============================================================================
-  - id: brca1-gbr
-    name: "BRCA1 variants in British population"
-    description: |
-      Minimal test case: single gene region (BRCA1 on chr17), single small
-      population (GBR, 91 individuals). Designed to be the fastest possible
-      end-to-end test. ~8 tasks, runs in under a minute.
+    populations in the HLA region. Are there population-specific variants
 
-    prompt: |
-      Analyze BRCA1 gene variants in the British population.
+    that might explain differences in immune response?
 
-    expected_intent:
-      analysis_type: region_analysis
-      populations: [GBR]
-      regions:
-        - name: BRCA1
-          chromosome: "17"
-      focus: all_variants
+    '
+  expected_intent:
+    analysis_type: population_comparison
+    populations:
+    - EUR
+    - AFR
+    regions:
+    - name: HLA
+      chromosome: '6'
+    focus: all_variants
+  mock_intent:
+    analysis_type: population_comparison
+    populations:
+    - EUR
+    - AFR
+    chromosomes: null
+    regions:
+    - name: HLA
+      chromosome: '6'
+      start: 28477797
+      end: 33448354
+      context: immune function
+    focus: all_variants
+  expected_outputs:
+  - chr6-EUR.tar.gz
+  - chr6-AFR.tar.gz
+  - chr6-EUR-freq.tar.gz
+  - chr6-AFR-freq.tar.gz
+- id: brca-breast-cancer
+  name: BRCA1/BRCA2 breast cancer variant analysis
+  description: 'Analyzes breast cancer susceptibility genes across all populations.
 
-    mock_intent:
-      analysis_type: region_analysis
-      populations: [GBR]
-      chromosomes: null
-      regions:
-        - name: BRCA1
-          chromosome: "17"
-          start: 43044295
-          end: 43125483
-          context: "breast cancer"
-      focus: all_variants
+    Tests multi-region extraction (BRCA1 on chr17, BRCA2 on chr13).
 
-    expected_outputs:
-      - "chr17-GBR.tar.gz"
-      - "chr17-GBR-freq.tar.gz"
+    '
+  prompt: 'What variants exist in the BRCA1 and BRCA2 breast cancer genes across
+
+    different populations? Are there population-specific patterns that might
+
+    inform targeted screening recommendations?
+
+    '
+  expected_intent:
+    analysis_type: multi_population
+    populations:
+    - AFR
+    - EUR
+    - EAS
+    - SAS
+    - AMR
+    regions:
+    - name: BRCA1
+      chromosome: '17'
+    - name: BRCA2
+      chromosome: '13'
+    focus: all_variants
+  mock_intent:
+    analysis_type: multi_population
+    populations:
+    - AFR
+    - EUR
+    - EAS
+    - SAS
+    - AMR
+    chromosomes: null
+    regions:
+    - name: BRCA1
+      chromosome: '17'
+      start: 43044295
+      end: 43125483
+      context: breast cancer
+    - name: BRCA2
+      chromosome: '13'
+      start: 32315086
+      end: 32400266
+      context: breast cancer
+    focus: all_variants
+  expected_outputs:
+  - chr17-AFR.tar.gz
+  - chr17-EUR.tar.gz
+  - chr17-EAS.tar.gz
+  - chr17-SAS.tar.gz
+  - chr17-AMR.tar.gz
+  - chr13-AFR.tar.gz
+  - chr13-EUR.tar.gz
+  - chr13-EAS.tar.gz
+  - chr13-SAS.tar.gz
+  - chr13-AMR.tar.gz
+  - chr17-AFR-freq.tar.gz
+  - chr17-EUR-freq.tar.gz
+  - chr17-EAS-freq.tar.gz
+  - chr17-SAS-freq.tar.gz
+  - chr17-AMR-freq.tar.gz
+  - chr13-AFR-freq.tar.gz
+  - chr13-EUR-freq.tar.gz
+  - chr13-EAS-freq.tar.gz
+  - chr13-SAS-freq.tar.gz
+  - chr13-AMR-freq.tar.gz
+- id: brca1-gbr
+  name: BRCA1 variants in British population
+  description: 'Minimal test case: single gene region (BRCA1 on chr17), single small
+
+    population (GBR, 91 individuals). Designed to be the fastest possible
+
+    end-to-end test. ~8 tasks, runs in under a minute.
+
+    '
+  prompt: 'Analyze BRCA1 gene variants in the British population.
+
+    '
+  expected_intent:
+    analysis_type: region_analysis
+    populations:
+    - GBR
+    regions:
+    - name: BRCA1
+      chromosome: '17'
+    focus: all_variants
+  mock_intent:
+    analysis_type: region_analysis
+    populations:
+    - GBR
+    chromosomes: null
+    regions:
+    - name: BRCA1
+      chromosome: '17'
+      start: 43044295
+      end: 43125483
+      context: breast cancer
+    focus: all_variants
+  expected_outputs:
+  - chr17-GBR.tar.gz
+  - chr17-GBR-freq.tar.gz
+- id: apoe-gbr
+  name: APOE variants in British population
+  prompt: 'Analyze APOE gene variants associated with Alzheimer''s disease in the
+    British population.
+
+    '
+  description: 'Smallest region in the evaluation at 113 variants, fewer than a VCF''s
+    253 header lines. Before RFC-005 the individuals stage processed none of them
+    and emitted one empty file per individual while still exiting 0.
+
+    '
+  mock_intent:
+    analysis_type: region_analysis
+    populations:
+    - GBR
+    chromosomes: null
+    regions:
+    - name: APOE
+      chromosome: '19'
+      start: 44905796
+      end: 44909393
+      context: Alzheimer's
+    focus: all_variants
