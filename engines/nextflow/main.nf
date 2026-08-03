@@ -113,7 +113,7 @@ process CHUNK_VCF {
     tag "chr${chrom}:${counter}-${stop}"
     input:
         tuple val(chrom), path(vcf), val(counter), val(stop), val(chunk_size),
-              val(total), path(columns)
+              val(total), path(columns, stageAs: 'columns.txt')
     output:
         tuple val(chrom), path("chunk.chr${chrom}.${counter}-${stop}.vcf"),
               val(counter), val(stop), val(chunk_size), path("columns.txt")
@@ -130,7 +130,7 @@ process INDIVIDUALS {
     tag "chr${chrom}:${counter}-${stop}"
     maxForks params.ind_max_forks.toInteger()
     input:
-        tuple val(chrom), path(vcf), val(counter), val(stop), val(chunk_size), path(columns)
+        tuple val(chrom), path(vcf), val(counter), val(stop), val(chunk_size), path(columns, stageAs: 'columns.txt')
     output:
         tuple val(chrom), path("chr${chrom}n-${counter}-${stop}.tar.gz")
     script:
@@ -141,7 +141,11 @@ process INDIVIDUALS {
 }
 
 process INDIVIDUALS_MERGE {
+    // Publikowane, bo scalone wyjscie individuals to jedyny w pelni
+    // deterministyczny etap — jedyny, ktory da sie porownac miedzy silnikami
+    // bajt w bajt (mutation_overlap i frequency losuja bez ziarna).
     tag "chr${chrom}"
+    publishDir "${params.outdir}", mode: 'copy'
     input:
         tuple val(chrom), path(chunks)
     output:
@@ -168,7 +172,7 @@ process MUTATION_OVERLAP {
     tag "chr${chrom}:${pop}"
     publishDir "${params.outdir}", mode: 'copy'
     input:
-        tuple val(chrom), path(merged), path(sifted), val(pop), path(popfile), path(columns)
+        tuple val(chrom), path(merged), path(sifted), val(pop), path(popfile), path(columns, stageAs: 'columns.txt')
     output:
         path "chr${chrom}-${pop}.tar.gz"
     script:
@@ -181,7 +185,7 @@ process FREQUENCY {
     tag "chr${chrom}:${pop}"
     publishDir "${params.outdir}", mode: 'copy'
     input:
-        tuple val(chrom), path(merged), path(sifted), val(pop), path(popfile), path(columns)
+        tuple val(chrom), path(merged), path(sifted), val(pop), path(popfile), path(columns, stageAs: 'columns.txt')
     output:
         path "chr${chrom}-${pop}-freq.tar.gz"
     script:
