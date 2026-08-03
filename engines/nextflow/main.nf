@@ -261,7 +261,7 @@ workflow {
         int mv = params.max_variants as int
         int total = (mv > 0) ? Math.min(total_raw, mv) : total_raw   // TRYB SZYBKI: limit wariantow
         int ind_jobs = Math.max(1, params.ind_jobs as int)
-        int step = Math.max(1, (int) Math.ceil(total / (double) ind_jobs))
+        int step = Math.max(1, (total + ind_jobs - 1).intdiv(ind_jobs))
         def chunks = []
         int counter = 1
         while (counter <= total) {
