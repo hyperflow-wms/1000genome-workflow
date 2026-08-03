@@ -209,8 +209,7 @@ Population files are bundled in the package (no external data container needed).
                         },
                         "ind_jobs": {
                             "type": "integer",
-                            "description": "Explicit individuals jobs per chromosome "
-                                           "(overrides the computed recommendation)"
+                            "description": "Explicit individuals jobs per chromosome. Prefer omitting it: the value is computed from `parallelism` plus the measured variant and individual counts. Clamping is one-sided -- a value above the memory-safe maximum is reduced, but a value below it is NOT raised, so proposing too few tasks silently costs throughput (1 instead of 15 on an HLA-sized workload). Give each task at least ~10,000 variants for a cohort of ~1,000 individuals, scaling inversely with cohort size; see knowledge/policy/individuals-parallelism.md."
                         },
                         "compute_environment": {
                             "type": "string",

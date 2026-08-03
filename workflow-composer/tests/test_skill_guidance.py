@@ -28,6 +28,7 @@ task prompt:
 from __future__ import annotations
 
 import dataclasses
+import pathlib
 import re
 
 import pytest
@@ -243,4 +244,54 @@ def test_per_task_memory_budget_in_prose_matches_medium_preset():
     window = section[max(0, idx - 200): idx + 200]
     assert "calibrated" in window or "budget" in window, (
         f"{medium_mb!r} in the guidance section has no nearby justification"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Policy has to reach the agent where it decides, not only where it is stored.
+#
+# The knowledge documents are exposed as MCP resources, which a client may
+# never read. The tool schema is the one surface guaranteed to be in context
+# when ind_jobs is chosen, and the clamp does not cover the mistake that
+# matters: clamp_ind_jobs is max(1, min(hint, recommended)), so a hint above
+# the safe maximum is reduced while one below it survives untouched. A too-low
+# hint therefore costs throughput silently, and only the description can
+# prevent it.
+# ---------------------------------------------------------------------------
+
+def _ind_jobs_description() -> str:
+    from workflow_composer import mcp_server
+    src = pathlib.Path(mcp_server.__file__).read_text()
+    match = re.search(r'"ind_jobs":\s*\{(.*?)\}', src, re.S)
+    assert match, "no ind_jobs parameter found in the MCP tool schema"
+    return " ".join(match.group(1).split())
+
+
+def test_ind_jobs_description_warns_that_clamping_is_one_sided():
+    text = _ind_jobs_description().lower()
+    assert "not raised" in text or "one-sided" in text, (
+        "the ind_jobs description must say a low hint is not corrected upwards; "
+        "without it an agent has no reason to expect a silent throughput loss"
+    )
+
+
+def test_ind_jobs_description_carries_the_work_floor():
+    text = _ind_jobs_description()
+    assert "10,000" in text and "1,000" in text, (
+        "the ind_jobs description must state the work floor, the guidance that "
+        "keeps a hint from being far too low"
+    )
+
+
+def test_clamp_does_not_raise_a_low_hint():
+    """The behaviour the description warns about, asserted directly."""
+    from workflow_composer.backends.hyperflow.generator import clamp_ind_jobs
+    from workflow_composer.core.environment import ComputeEnvironment
+
+    env = ComputeEnvironment.resolve("local")
+    effective, recommended = clamp_ind_jobs(1, row_count=166052, individuals=1153, env=env)
+    assert recommended.ind_jobs > 1, "expected the policy to recommend more than one task here"
+    assert effective == 1, (
+        "clamp_ind_jobs raised a low hint; if this ever changes, the warning in "
+        "the ind_jobs description is obsolete and should be revised"
     )
