@@ -42,7 +42,10 @@ __all__ = [
 # Where RFC-004 section 3 places the pipeline once the second port is merged.
 DEFAULT_PIPELINE_PATH = "engines/nextflow/main.nf"
 
-EXTRACT_CSV_HEADER = "region,chromosome,start,end,populations"
+# main.nf parses extract.csv with a bare splitCsv() and reads row[0], row[1],
+# row[2] as chromosome, "chrom:start-end" and a lowercase region name. It is
+# headerless by construction, and populations reach the pipeline through
+# --populations rather than through this file.
 
 # Standard VCF fixed columns preceding the per-sample columns, shared by
 # columns.txt and the worker scripts that read it.
@@ -122,20 +125,16 @@ def intent_to_params(
 
 
 def write_extract_csv(params: NextflowParams) -> str:
-    """Render extract.csv: one row per region to extract, each carrying the
-    validated (post-drop) population set.
+    """Render extract.csv: one headerless row per region to extract.
 
-    Columns: `region,chromosome,start,end,populations`, with `populations`
-    a `;`-joined list (a plain CSV field, needing no quoting, since none of
-    the bundled population codes contain a comma or semicolon).
+    Columns are `chromosome,region,name`, exactly what main.nf's EXTRACT
+    process consumes -- `name` lowercased because it becomes part of the
+    output filename `ALL.chr<c>.<name>.vcf`.
     """
-    pop_field = ";".join(params.populations)
-    lines = [EXTRACT_CSV_HEADER]
-    for region in params.regions:
-        lines.append(
-            f"{region.name},{region.chromosome},{region.start},{region.end},{pop_field}"
-        )
-    return "\n".join(lines) + "\n"
+    return "".join(
+        f"{r.chromosome},{r.chromosome}:{r.start}-{r.end},{r.name.lower()}\n"
+        for r in params.regions
+    )
 
 
 def _placeholder_columns_txt(populations_dir: Path = BUNDLED_POPULATIONS_DIR) -> str:
@@ -157,6 +156,9 @@ def build_command(
     params: NextflowParams,
     resolution: Parallelism,
     pipeline_path: str = DEFAULT_PIPELINE_PATH,
+    *,
+    nextflow_bin: str = "nextflow",
+    outdir: str | None = None,
 ) -> list[str]:
     """Render the `nextflow run` invocation.
 
@@ -169,10 +171,9 @@ def build_command(
       at launch.
     - `est_peak_mb` -> `--task_mem`, the `memory` directive.
     """
-    return [
-        "nextflow", "run", pipeline_path,
+    cmd = [
+        nextflow_bin, "run", pipeline_path,
         "--populations", ",".join(params.populations),
-        "--extract_csv", "extract.csv",
         # main.nf declares this as params.columns; the name is part of the
         # pipeline's documented CLI, so the backend matches it rather than
         # introducing a second spelling.
@@ -181,6 +182,14 @@ def build_command(
         "--ind_max_forks", str(resolution.max_parallelism),
         "--task_mem", f"{resolution.est_peak_mb}MB",
     ]
+    # Only pass --extract_csv when there is a region to extract. An empty file
+    # would send main.nf down the EXTRACT branch with no rows and produce an
+    # empty run, where omitting the flag correctly falls back to data.csv.
+    if params.regions:
+        cmd.extend(["--extract_csv", "extract.csv"])
+    if outdir is not None:
+        cmd.extend(["--outdir", outdir])
+    return cmd
 
 
 class NextflowBackend:

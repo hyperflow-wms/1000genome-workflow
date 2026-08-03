@@ -127,33 +127,35 @@ def test_intent_to_params_falls_back_to_whole_chromosome_when_no_region():
 # write_extract_csv: one correctly formatted row
 # ---------------------------------------------------------------------------
 
-def test_write_extract_csv_header():
+def test_write_extract_csv_is_headerless():
+    """main.nf reads extract.csv with a bare splitCsv(), so a header row would
+    be parsed as data and become a bogus extraction target."""
     params = intent_to_params(_eur_afr_brca1_intent())
-    csv_text = write_extract_csv(params)
-    lines = csv_text.strip("\n").split("\n")
-    assert lines[0] == "region,chromosome,start,end,populations"
+    lines = write_extract_csv(params).strip("\n").split("\n")
+    assert len(lines) == 1
+    assert not lines[0].startswith("region,")
 
 
 def test_write_extract_csv_has_exactly_one_data_row_for_one_region():
     params = intent_to_params(_eur_afr_brca1_intent())
-    csv_text = write_extract_csv(params)
-    lines = csv_text.strip("\n").split("\n")
-    assert len(lines) == 2  # header + one row
+    lines = write_extract_csv(params).strip("\n").split("\n")
+    assert len(lines) == 1
 
 
-def test_write_extract_csv_row_is_correctly_formatted():
+def test_write_extract_csv_row_matches_the_format_main_nf_parses():
+    """Columns are chromosome, "chrom:start-end", lowercase name -- read by
+    main.nf as row[0], row[1], row[2]."""
     params = intent_to_params(_eur_afr_brca1_intent())
-    csv_text = write_extract_csv(params)
-    _, row = csv_text.strip("\n").split("\n")
-    assert row == "BRCA1,17,43044295,43125483,EUR;AFR"
+    row = write_extract_csv(params).strip("\n")
+    assert row == "17,17:43044295-43125483,brca1"
 
 
-def test_write_extract_csv_excludes_dropped_populations():
+def test_write_extract_csv_carries_no_populations():
+    """Populations reach the pipeline through --populations, not this file."""
     params = intent_to_params(_eur_afr_brca1_intent(populations=["EUR", "ZZZ"]))
-    csv_text = write_extract_csv(params)
-    _, row = csv_text.strip("\n").split("\n")
-    assert "ZZZ" not in row
-    assert row == "BRCA1,17,43044295,43125483,EUR"
+    row = write_extract_csv(params).strip("\n")
+    assert "EUR" not in row and "ZZZ" not in row
+    assert row == "17,17:43044295-43125483,brca1"
 
 
 # ---------------------------------------------------------------------------
@@ -220,8 +222,8 @@ def test_materialize_extract_csv_has_one_correctly_formatted_row():
         intent=_eur_afr_brca1_intent(), measurements=None, resolution=RESOLUTION,
     )
     lines = spec.files["extract.csv"].strip("\n").split("\n")
-    assert len(lines) == 2
-    assert lines[1] == "BRCA1,17,43044295,43125483,EUR;AFR"
+    assert len(lines) == 1
+    assert lines[0] == "17,17:43044295-43125483,brca1"
 
 
 def test_materialize_command_carries_both_populations():

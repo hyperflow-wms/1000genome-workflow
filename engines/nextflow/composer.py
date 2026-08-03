@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
-"""
-1000genome Composer dla Nextflow.
+"""1000genome composer, Nextflow backend.
 
-NL prompt -> ResearchIntent (REUSE llm_interpreter z HyperFlow composera)
-          -> parametry pipeline'u -> nextflow run -> wyniki naukowe.
+Research question -> ResearchIntent -> measured data -> resolved parallelism
+-> `nextflow run`.
 
-KLUCZOWY PUNKT: przednia polowa (NL -> intent) jest DOSLOWNIE zaimportowana
-z pakietu workflow_composer (ten sam kod co napedza composer HyperFlow).
-Nowy jest tylko backend: zamiast generowac workflow.json (HyperFlow),
-generujemy parametry i wolamy `nextflow run` na naszym porcie 1000genome.
+The phases mirror the HyperFlow harness, and everything up to RESOLVE is the
+shared, engine-neutral half of the composer: intent interpretation, the
+knowledge layer behind it, and `recommend_parallelism`. Only the final step is
+Nextflow-specific, and it lives in the `nextflow` backend rather than here.
 
-To realizuje teze: ten sam ResearchIntent -> dwa silniki -> te same wyniki.
+  INTERPRET  natural language -> ResearchIntent          (shared)
+  EXTRACT    acquire the data and measure it             (nextflow -entry extract)
+  RESOLVE    measurements + environment -> Parallelism   (shared)
+  EXECUTE    launch with the resolved dials              (nextflow run)
+
+RESOLVE has to precede EXECUTE rather than run inside the pipeline because
+`maxForks` binds when a process is instantiated: a value produced by an
+upstream channel cannot drive it. Splitting extraction into its own entry
+point is what makes the measurement available in time.
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import shutil
@@ -23,149 +31,198 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# ---- REUSE: przednia polowa composera HyperFlow (bez modyfikacji) ----
+# ---- Shared, engine-neutral half of the composer ----
 from workflow_composer.interpretation.llm_interpreter import (
     interpret_research_question,
     LLMConfig,
 )
 from workflow_composer.core.models import ResearchIntent
+from workflow_composer.core.environment import ComputeEnvironment
+from workflow_composer.core.parallelism import recommend_parallelism
+from workflow_composer.backends import get_backend
+from workflow_composer.backends.nextflow.params import intent_to_params, write_extract_csv
 
 THIS_DIR = Path(__file__).parent.resolve()
-
-def _find_nextflow():
-    # 1) jawnie przez env; 2) wrapper obok (nextflow-experiments); 3) z PATH.
-    env_bin = os.environ.get("NEXTFLOW_BIN")
-    if env_bin:
-        return env_bin
-    wrapper = THIS_DIR.parent / "nextflow-experiments" / "bin" / "nextflow"
-    if wrapper.exists():
-        return str(wrapper)
-    return shutil.which("nextflow") or str(wrapper)
-
-NEXTFLOW_BIN = _find_nextflow()
+MAIN_NF = THIS_DIR / "main.nf"
+DEFAULT_DATA_CSV = THIS_DIR / "testdata" / "data.csv"
 NXF_VER = os.environ.get("NXF_VER", "25.10.2")
 
-# Populacje dla ktorych mamy pliki (testdata/populations)
-AVAILABLE_POPULATIONS = {"AFR", "ALL", "AMR", "EAS", "EUR", "GBR", "SAS"}
+
+def _find_nextflow() -> str:
+    return os.environ.get("NEXTFLOW_BIN") or shutil.which("nextflow") or "nextflow"
 
 
-def intent_to_params(intent: ResearchIntent) -> dict:
-    """Mapuje ResearchIntent -> parametry pipeline'u Nextflow.
-
-    - POPULACJE z promptu -> parametr --populations (napedzaja mutation_overlap + frequency)
-    - REGIONY z promptu   -> faza EXTRACT (tabix generuje dane z 1000 Genomes)
-      Gdy prompt nie wskazuje regionu, uzywamy pre-wygenerowanych danych testowych.
-    """
-    pops = [p for p in intent.populations if p in AVAILABLE_POPULATIONS]
-    if not pops:
-        pops = ["GBR"]  # fallback
-    dropped = [p for p in intent.populations if p not in AVAILABLE_POPULATIONS]
-
-    # Regiony -> wiersze extract.csv: chrom,region,name
-    extract_rows = []
-    if intent.regions:
-        for r in intent.regions:
-            region_str = f"{r.chromosome}:{r.start}-{r.end}"
-            extract_rows.append((r.chromosome, region_str, r.name.lower()))
-
-    return {
-        "populations": ",".join(pops),
-        "dropped_populations": dropped,
-        "extract_rows": extract_rows,
-    }
+def _run(cmd: list[str], cwd: Path, log_path: Path) -> int:
+    env = os.environ.copy()
+    env["NXF_VER"] = NXF_VER
+    with open(log_path, "w") as log:
+        return subprocess.run(
+            cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(cwd), env=env
+        ).returncode
 
 
-def write_extract_csv(extract_rows: list, run_dir: Path) -> Path:
-    csv_path = run_dir / "extract.csv"
-    with open(csv_path, "w") as f:
-        for chrom, region, name in extract_rows:
-            f.write(f"{chrom},{region},{name}\n")
-    return csv_path
+def read_measurements(path: Path) -> dict[str, int]:
+    """Read `chromosome,variants` rows written by main.nf's extract entry."""
+    measurements: dict[str, int] = {}
+    with open(path) as f:
+        for row in csv.reader(f):
+            if len(row) >= 2 and row[0].strip():
+                measurements[row[0].strip()] = int(row[1])
+    return measurements
 
 
-def build_command(populations: str, run_dir: Path, extract_csv: Path | None,
-                  max_variants: int = 0, n_runs: int = 0) -> list[str]:
-    cmd = [
-        str(NEXTFLOW_BIN),
-        "run", str(THIS_DIR / "main.nf"),
-        "--populations", populations,
-        "--outdir", str(run_dir / "results"),
-    ]
-    if extract_csv is not None:
-        cmd.extend(["--extract_csv", str(extract_csv)])
-    if max_variants and int(max_variants) > 0:
-        cmd.extend(["--max_variants", str(int(max_variants))])   # tryb szybki: limit wariantow
-    if n_runs and int(n_runs) > 0:
-        cmd.extend(["--n_runs", str(int(n_runs))])               # tryb szybki: mniej iteracji Monte Carlo
-    return cmd
+def count_individuals(columns_txt: str) -> int:
+    """Individuals in a columns.txt header: fields after the 9 fixed VCF ones."""
+    return max(0, len(columns_txt.rstrip("\n").split("\t")) - 9)
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="1000genome Composer (Nextflow backend)")
-    p.add_argument("prompt", help="Pytanie badawcze w jezyku naturalnym")
-    p.add_argument("--model", default="gemini/gemini-2.5-flash", help="LLM (litellm)")
-    p.add_argument("--dry-run", action="store_true", help="Tylko intent + komenda, bez uruchamiania")
-    p.add_argument("--max-variants", type=int, default=0, help="TRYB SZYBKI: limit wariantow (0 = bez limitu)")
-    p.add_argument("--n-runs", type=int, default=0, help="TRYB SZYBKI: iteracje Monte Carlo (0 = domyslne 1000)")
+    p = argparse.ArgumentParser(description="1000genome composer (Nextflow backend)")
+    p.add_argument("prompt", help="Research question in natural language")
+    p.add_argument("--model", default="gemini/gemini-2.5-flash")
+    p.add_argument("--env", default="local", choices=["local", "aws", "gcp"],
+                   help="Compute environment profile sizing the parallelism")
+    p.add_argument("--intent-json", type=Path,
+                   help="Skip the LLM and load a ResearchIntent from this file")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Stop after RESOLVE; print the command without running it")
     args = p.parse_args()
 
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    run_dir = THIS_DIR / "runs" / timestamp
+    run_dir = THIS_DIR / "runs" / datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir.mkdir(parents=True, exist_ok=True)
+    nextflow = _find_nextflow()
+    backend = get_backend("nextflow")
+    print(f"[composer] run dir: {run_dir}")
 
-    print(f"[composer] Run dir: {run_dir}")
-    print(f"[composer] Prompt:  {args.prompt}")
-
-    # ---- FAZA 1: INTERPRET (REUSE) ----
-    print(f"\n[composer] Faza 1: INTERPRET (reuse workflow_composer, model={args.model})")
-    config = LLMConfig()
-    config.model = args.model
-    intent = interpret_research_question(args.prompt, config)
-    (run_dir / "intent.json").write_text(intent.model_dump_json(indent=2))
-    print(intent.model_dump_json(indent=2))
-
-    # ---- FAZA 2: MAP intent -> params ----
-    params = intent_to_params(intent)
-    print(f"\n[composer] Faza 2: MAPOWANIE intent -> parametry Nextflow")
-    print(f"  populacje: {params['populations']}")
-    if params["dropped_populations"]:
-        print(f"  ⚠️  pominiete (brak pliku populacji): {params['dropped_populations']}")
-
-    extract_csv = None
-    if params["extract_rows"]:
-        extract_csv = write_extract_csv(params["extract_rows"], run_dir)
-        regions_desc = ", ".join(f"{n} ({c}:{r.split(':')[1]})" for c, r, n in params["extract_rows"])
-        print(f"  region(y) -> EXTRACT (tabix z 1000 Genomes): {regions_desc}")
+    # ---- INTERPRET -----------------------------------------------------
+    print("\n[composer] Phase 1: INTERPRET")
+    if args.intent_json:
+        intent = ResearchIntent.model_validate_json(args.intent_json.read_text())
+        print(f"  loaded intent from {args.intent_json}")
     else:
-        print(f"  brak regionu w promptcie -> dane testowe (chr17/BRCA1)")
+        config = LLMConfig()
+        config.model = args.model
+        intent = interpret_research_question(args.prompt, config)
+    (run_dir / "intent.json").write_text(intent.model_dump_json(indent=2))
+    params = intent_to_params(intent)
+    print(f"  populations: {', '.join(params.populations) or '(none)'}")
+    if params.dropped_populations:
+        print(f"  dropped (no population file): {', '.join(params.dropped_populations)}")
+    print(f"  regions: {', '.join(r.name for r in params.regions) or '(none, using test data)'}")
 
-    cmd = build_command(params["populations"], run_dir, extract_csv,
-                        max_variants=args.max_variants, n_runs=args.n_runs)
-    if args.max_variants or args.n_runs:
-        print(f"[composer] TRYB SZYBKI: max_variants={args.max_variants or 'bez limitu'}, "
-              f"n_runs={args.n_runs or 'domyslne 1000'}")
-    (run_dir / "command.sh").write_text("#!/bin/bash\nNXF_VER=%s %s\n" % (NXF_VER, " ".join(cmd)))
-    print(f"\n[composer] Komenda:\n  {' '.join(cmd)}")
+    # ---- EXTRACT -------------------------------------------------------
+    # Runs the pipeline's own extract entry, so acquisition stays inside the
+    # DAG rather than being reimplemented here, and reports the variant count
+    # RESOLVE needs.
+    print("\n[composer] Phase 2: EXTRACT")
+    extract_dir = run_dir / "extracted"
+    extract_cmd = [nextflow, "run", str(MAIN_NF), "-entry", "extract",
+                   "--outdir", str(extract_dir)]
+    if params.regions:
+        (run_dir / "extract.csv").write_text(write_extract_csv(params))
+        extract_cmd.extend(["--extract_csv", str(run_dir / "extract.csv")])
+    rc = _run(extract_cmd, run_dir, run_dir / "extract.log")
+    if rc != 0:
+        print(f"  FAILED (exit {rc}) -- see {run_dir / 'extract.log'}")
+        return rc
 
+    measurements_path = extract_dir / "measurements.csv"
+    if not measurements_path.exists():
+        print(f"  FAILED: {measurements_path} not produced")
+        return 1
+    measurements = read_measurements(measurements_path)
+    for chrom, variants in sorted(measurements.items()):
+        print(f"  chr{chrom}: {variants:,} variants")
+
+    # ---- RESOLVE -------------------------------------------------------
+    print("\n[composer] Phase 3: RESOLVE")
+    data_csv = extract_dir / "data.csv" if params.regions else DEFAULT_DATA_CSV
+    if params.regions:
+        # main.nf publishes the extracted VCFs; name them the way
+        # generate_columns_txt expects so it can read a real #CHROM header.
+        rows = [
+            f"ALL.chr{r.chromosome}.{r.name.lower()}.vcf,"
+            f"{measurements.get(r.chromosome, 0)},"
+            f"ALL.chr{r.chromosome}.{r.name.lower()}.annotation.vcf"
+            for r in params.regions
+        ]
+        data_csv.write_text("\n".join(rows) + "\n")
+
+    # A throwaway resolution just to render columns.txt, which is what the
+    # individual count comes from; the real resolution needs that count.
+    spec_preview = backend.materialize(
+        intent, measurements,
+        recommend_parallelism(variants=1, individuals=1, vcpus=2, host_mem_mb=4096),
+        data_csv=data_csv if data_csv.exists() else None,
+    )
+    individuals = count_individuals(spec_preview.files["columns.txt"])
+
+    # ind_jobs is per chromosome, so size against the largest single
+    # chromosome rather than the sum, which belongs to no chromosome.
+    variants = max(measurements.values()) if measurements else 0
+    if variants <= 0 or individuals <= 0:
+        print(f"  FAILED: variants={variants} individuals={individuals}")
+        return 1
+
+    reserve = backend.reserve()
+    env = ComputeEnvironment.resolve(args.env)
+    resolution = recommend_parallelism(
+        variants=variants,
+        individuals=individuals,
+        vcpus=env.vcpus,
+        host_mem_mb=env.host_mem_mb,
+        chromosomes=max(1, len(measurements)),
+        mem_budget_mb=env.mem_budget_mb,
+        engine_reserve=reserve.cores,
+        host_reserve_mb=reserve.host_mb,
+    )
+    print(f"  {resolution.reason}")
+    print(f"  engine reserve: {reserve.cores} core(s), {reserve.host_mb} MB "
+          f"({reserve.rationale})")
+
+    # ---- EXECUTE -------------------------------------------------------
+    spec = backend.materialize(
+        intent, measurements, resolution,
+        data_csv=data_csv if data_csv.exists() else None,
+    )
+    for name, content in spec.files.items():
+        (run_dir / name).write_text(content)
+
+    command = list(spec.command)
+    command[0] = nextflow
+    command[2] = str(MAIN_NF)
+    command.extend(["--outdir", str(run_dir / "results"), "-resume"])
+
+    (run_dir / "plan.json").write_text(json.dumps({
+        "intent": intent.model_dump(),
+        "measurements": measurements,
+        "individuals": individuals,
+        "resolution": {
+            "ind_jobs": resolution.ind_jobs,
+            "max_parallelism": resolution.max_parallelism,
+            "est_peak_mb": resolution.est_peak_mb,
+            "binding": resolution.binding,
+            "reason": resolution.reason,
+        },
+        "engine_reserve": {
+            "cores": reserve.cores, "host_mb": reserve.host_mb,
+            "rationale": reserve.rationale,
+        },
+        "command": command,
+    }, indent=2))
+
+    print(f"\n[composer] Phase 4: EXECUTE\n  {' '.join(command)}")
     if args.dry_run:
-        print("\n[composer] --dry-run -> koniec bez uruchamiania.")
+        print("\n[composer] --dry-run: stopping before execution.")
         return 0
 
-    # ---- FAZA 3: EXECUTE (Nextflow) ----
-    print(f"\n[composer] Faza 3: EXECUTE (nextflow run)")
-    log_path = run_dir / "nextflow.log"
-    env = os.environ.copy()
-    env["NXF_VER"] = NXF_VER
-    print(f"[composer] Log na zywo -> {log_path}")
-    with open(log_path, "w") as logf:
-        rc = subprocess.run(cmd, stdout=logf, stderr=subprocess.STDOUT, env=env, cwd=str(run_dir)).returncode
-
+    rc = _run(command, run_dir, run_dir / "execute.log")
     if rc == 0:
-        print(f"\n[composer] SUKCES — wyniki:")
+        print("\n[composer] SUCCESS -- results:")
         for f in sorted((run_dir / "results").glob("*.tar.gz")):
             print(f"  {f.name}")
     else:
-        print(f"\n[composer] FAIL (exit {rc}) — log: {log_path}")
+        print(f"\n[composer] FAILED (exit {rc}) -- see {run_dir / 'execute.log'}")
     return rc
 
 
