@@ -593,7 +593,7 @@ tbody tr:hover{background:#fafcff}
       <label><input type=radio name=engine value=hyperflow> HyperFlow</label>
       <label><input type=radio name=engine value=both> Both</label>
     </span>
-    <button class=sec onclick=dry()>Preview intent (dry run, ~3s)</button>
+    <button class=sec onclick=dry()>Preview intent (dry run)</button>
     <button onclick=runSelected()>Run &#9654;</button>
     <label style="font-size:13px;display:flex;align-items:center;gap:5px"><input type=checkbox id=fast> fast mode (Nextflow: &#8804;3000 variants, 100 iterations)</label>
   </div>

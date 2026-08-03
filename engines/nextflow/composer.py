@@ -49,7 +49,26 @@ NXF_VER = os.environ.get("NXF_VER", "25.10.2")
 
 
 def _find_nextflow() -> str:
-    return os.environ.get("NEXTFLOW_BIN") or shutil.which("nextflow") or "nextflow"
+    """Locate the Nextflow launcher, or explain how to supply one.
+
+    Left to fail later, a missing launcher surfaces as a bare FileNotFoundError
+    from deep inside subprocess, which says nothing about what to install.
+    """
+    explicit = os.environ.get("NEXTFLOW_BIN")
+    if explicit:
+        if Path(explicit).is_file():
+            return explicit
+        sys.exit(f"[composer] NEXTFLOW_BIN points at a missing file: {explicit}")
+    found = shutil.which("nextflow")
+    if found:
+        return found
+    sys.exit(
+        "[composer] Nextflow not found on PATH.\n"
+        "  Install it:  curl -fsSL -o ~/.local/bin/nextflow \\\n"
+        f"                 https://github.com/nextflow-io/nextflow/releases/download/v{NXF_VER}/nextflow \\\n"
+        "               && chmod +x ~/.local/bin/nextflow\n"
+        "  Or point at an existing one:  export NEXTFLOW_BIN=/path/to/nextflow"
+    )
 
 
 def _run(cmd: list[str], cwd: Path, log_path: Path) -> int:
@@ -88,8 +107,14 @@ def main() -> int:
                    help="Compute environment profile sizing the parallelism")
     p.add_argument("--intent-json", type=Path,
                    help="Skip the LLM and load a ResearchIntent from this file")
+    # Two different kinds of "do not run it". --dry-run is the cheap one the
+    # GUI's intent preview relies on: interpretation only, a few seconds, no
+    # Docker, no network, no Nextflow. --plan-only goes as far as RESOLVE,
+    # which means it does extract and measure the data first.
     p.add_argument("--dry-run", action="store_true",
-                   help="Stop after RESOLVE; print the command without running it")
+                   help="Stop after INTERPRET and print the intent (seconds, no execution)")
+    p.add_argument("--plan-only", action="store_true",
+                   help="Stop after RESOLVE; extracts and measures, prints the command")
     # -resume reuses the extraction this run already performed. It also makes a
     # repeated run replay the first one's cached tasks, so anything checking
     # that unseeded stages really do vary between runs must turn it off.
@@ -101,7 +126,6 @@ def main() -> int:
     run_dir.mkdir(parents=True, exist_ok=True)
     # The GUI reads this to label a run with the question that produced it.
     (run_dir / "prompt.txt").write_text(args.prompt)
-    nextflow = _find_nextflow()
     backend = get_backend("nextflow")
     print(f"[composer] run dir: {run_dir}")
 
@@ -123,11 +147,18 @@ def main() -> int:
         print(f"  dropped (no population file): {', '.join(params.dropped_populations)}")
     print(f"  regions: {', '.join(r.name for r in params.regions) or '(none, using test data)'}")
 
+    if args.dry_run:
+        # Printed in full because callers parse it back out of stdout.
+        print(intent.model_dump_json(indent=2))
+        print("\n[composer] --dry-run: interpretation only, nothing executed.")
+        return 0
+
     # ---- EXTRACT -------------------------------------------------------
     # Runs the pipeline's own extract entry, so acquisition stays inside the
     # DAG rather than being reimplemented here, and reports the variant count
     # RESOLVE needs.
     print("\n[composer] Phase 2: EXTRACT")
+    nextflow = _find_nextflow()   # not needed by --dry-run, which returned above
     extract_dir = run_dir / "extracted"
     extract_cmd = [nextflow, "run", str(MAIN_NF), "-entry", "extract",
                    "--outdir", str(extract_dir)]
@@ -231,8 +262,8 @@ def main() -> int:
     }, indent=2))
 
     print(f"\n[composer] Phase 4: EXECUTE\n  {' '.join(command)}")
-    if args.dry_run:
-        print("\n[composer] --dry-run: stopping before execution.")
+    if args.plan_only:
+        print("\n[composer] --plan-only: stopping before execution.")
         return 0
 
     rc = _run(command, run_dir, run_dir / "execute.log")
