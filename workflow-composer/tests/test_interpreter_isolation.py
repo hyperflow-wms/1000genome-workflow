@@ -115,7 +115,7 @@ def test_load_skill_context_with_backend_includes_its_fragment():
     assert fragment_text in context
 
 
-def test_load_skill_context_with_backend_still_includes_domain_and_policy():
+def test_load_skill_context_with_backend_appends_rather_than_substitutes():
     # The backend fragment is appended, not substituted: everything the
     # backend-free call would return is still present.
     default_context = load_skill_context()
@@ -172,3 +172,50 @@ def test_interpreter_prompt_carries_domain_knowledge(monkeypatch, anchor, descri
         f"{anchor!r} ({description}) never reached the system prompt, so the "
         "model is interpreting on parametric knowledge alone."
     )
+
+
+# ---------------------------------------------------------------------------
+# Policy knowledge is for the stage that sizes parallelism, not for the one
+# that reads a research question. A ResearchIntent has no resource fields, so
+# these documents cannot change the interpreter's output -- they can only crowd
+# the vocabulary the interpretation actually depends on.
+# ---------------------------------------------------------------------------
+
+POLICY_MARKERS = [
+    ("mem_budget_mb", "a ComputeEnvironment field from resource-policy.md"),
+    ("engine_reserve", "the engine's core reservation"),
+    ("recommend_parallelism", "the sizing entry point named in individuals-parallelism.md"),
+]
+
+
+@pytest.mark.parametrize("marker,description", POLICY_MARKERS)
+def test_policy_is_absent_from_the_default_context(marker, description):
+    assert marker not in load_skill_context(), (
+        f"{marker!r} ({description}) reached the interpretation context, which "
+        "cannot act on it."
+    )
+
+
+@pytest.mark.parametrize("marker,description", POLICY_MARKERS)
+def test_policy_is_available_when_asked_for(marker, description):
+    """Gating it must not lose it: the sizing stage still gets these."""
+    assert marker in load_skill_context(include_policy=True), (
+        f"{marker!r} ({description}) is unreachable even with include_policy=True"
+    )
+
+
+@pytest.mark.skipif(
+    not llm_interpreter.HAS_LLM_DEPS,
+    reason="instructor/litellm not installed; interpret_research_question is unusable without them",
+)
+def test_interpreter_prompt_carries_no_policy(monkeypatch):
+    stub_client = _CapturingClient()
+    monkeypatch.setattr(llm_interpreter, "get_client", lambda: stub_client)
+
+    llm_interpreter.interpret_research_question("Compare BRCA1 variants in British individuals.")
+
+    prompt = stub_client.completions.system_prompt
+    for marker, description in POLICY_MARKERS:
+        assert marker not in prompt, (
+            f"{marker!r} ({description}) reached the system prompt"
+        )

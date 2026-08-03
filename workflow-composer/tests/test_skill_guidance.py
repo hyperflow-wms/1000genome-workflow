@@ -10,12 +10,12 @@ to whoever knows the target machine and lives in resource-policy.md. This
 file guards both halves of that split plus the acceptance criteria in the
 task prompt:
 
-1. ``load_skill_context()`` includes the guidance section, and it mentions
+1. ``load_skill_context(include_policy=True)`` includes the guidance section, and it mentions
    ``recommend_parallelism``, the ~10,000-variants-per-task floor, the
    cohort-size scaling, and that the value is clamped.
 2. No file under ``knowledge/`` still states an absolute preset task count.
 3. ``resource-policy.md`` exists, is registered in ``SKILL_FILES``, appears
-   in ``load_skill_context()`` output, names an owner for each resource
+   in ``load_skill_context(include_policy=True)`` output, names an owner for each resource
    field, and documents every ``ComputeEnvironment`` field.
 4. The guidance does not restate the clamp formula (``clamp(``,
    ``max_work``, ``1.2``) -- the mechanism stays in code.
@@ -50,10 +50,10 @@ def _next_heading_index(text: str, start: int) -> int:
 
 def _guidance_section() -> str:
     """Extract the "Choosing individuals parallelism" section from the
-    skill context returned by ``load_skill_context()`` (not the raw file),
+    skill context returned by ``load_skill_context(include_policy=True)`` (not the raw file),
     so this test exercises the same text an agent actually receives.
     """
-    context = load_skill_context()
+    context = load_skill_context(include_policy=True)
     start = context.find(GUIDANCE_HEADING)
     assert start != -1, "SKILL.md is missing the 'Choosing individuals parallelism' section"
     end = _next_heading_index(context, start + len(GUIDANCE_HEADING))
@@ -65,7 +65,7 @@ def _guidance_section() -> str:
 # ---------------------------------------------------------------------------
 
 def test_load_skill_context_includes_guidance_section():
-    context = load_skill_context()
+    context = load_skill_context(include_policy=True)
     assert GUIDANCE_HEADING in context
 
 
@@ -142,7 +142,7 @@ def test_resource_policy_registered_in_skill_files():
 
 
 def test_resource_policy_appears_in_skill_context():
-    context = load_skill_context()
+    context = load_skill_context(include_policy=True)
     assert "# resource-policy.md" in context
 
 

@@ -74,15 +74,29 @@ SKILL_FILES = [
 ]
 
 
-def load_skill_context(backend: str | None = None) -> str:
-    """Compose domain + policy knowledge, plus one backend fragment.
+def load_skill_context(backend: str | None = None, *, include_policy: bool = False) -> str:
+    """Compose the knowledge a given stage needs.
 
-    With ``backend=None`` this loads only ``knowledge/domain/`` and
-    ``knowledge/policy/`` documents -- never anything under
-    ``knowledge/backends/``. This is the interpreter-isolation property from
-    RFC-004 §2.4: the extracted ``ResearchIntent`` must not be influenced by
-    which engine will eventually run it, so the interpretation call path must
-    never pass a backend here.
+    Domain knowledge is always included. Policy and backend knowledge are
+    opt-in, because each is useful at exactly one stage and inert at the
+    others.
+
+    ``include_policy`` adds ``knowledge/policy/`` -- memory budgets, vCPU
+    profiles, work per task. It is off by default because the stage that calls
+    this with defaults is interpretation, and a ``ResearchIntent`` carries no
+    resource fields for that knowledge to inform: it made up 44% of the
+    interpreter's context while unable to change its output. That is not
+    merely wasted context. The Skills ablation records GPT-4.1-mini scoring
+    8.7pp lower with the full document set than with vocabulary alone, its
+    clarification accuracy falling from 53% to 13%, which is what surplus
+    context does to this task. Whoever chooses parallelism wants these
+    documents; the MCP server exposes them as resources for exactly that.
+
+    With ``backend=None`` nothing under ``knowledge/backends/`` is loaded.
+    This is the interpreter-isolation property from RFC-004 §2.4: the
+    extracted ``ResearchIntent`` must not be influenced by which engine will
+    eventually run it, so the interpretation call path must never pass a
+    backend here.
 
     With a ``backend`` name, the one fragment that backend declares (its
     ``skill_fragment``, looked up through the backend registry so it always
@@ -98,6 +112,8 @@ def load_skill_context(backend: str | None = None) -> str:
         filepath = SKILL_DIR / filename
         if filepath.is_relative_to(BACKENDS_DIR):
             continue  # engine-specific: never part of the default context
+        if filepath.is_relative_to(POLICY_DIR) and not include_policy:
+            continue  # sizing knowledge: only for the stage that sizes
         if filepath.exists():
             content = filepath.read_text()
             parts.append(f"# {filename}\n\n{content}")

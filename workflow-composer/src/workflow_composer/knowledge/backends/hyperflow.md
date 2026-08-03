@@ -136,3 +136,20 @@ bash extract-data.sh --plan plan.json --output-dir /path/to/workdir [--docker-im
 2. Runs the commands (natively or via Docker)
 3. Builds `data.csv` from extracted VCF files
 4. Prints the `g1kwf generate` command to run next
+
+## Data Extraction with extract-data.sh
+
+The recommended way to extract data is using the `extract-data.sh` resource
+(available via MCP resources). It takes a `plan.json` from `plan_workflow` and
+handles all extraction automatically:
+
+```bash
+bash extract-data.sh --plan plan.json --output-dir /path/to/workdir
+```
+
+The script runs the tabix commands from the plan, builds `data.csv`, and prints
+the `g1kwf generate` command to run next. It does NOT require `g1kwf` installed.
+
+The Nextflow backend does not use this: it acquires data inside its own DAG
+through the pipeline's `extract` entry point, so the equivalent step there is
+`nextflow run main.nf -entry extract`.

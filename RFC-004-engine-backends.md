@@ -103,10 +103,10 @@ number.
 | `knowledge/policy/` | memory budgets, vCPU profiles, work per task | whoever knows the machine | no |
 | `knowledge/backends/` | how to invoke this engine, what artifact it consumes | backend maintainer | yes |
 
-### 2.4 Interpreter isolation
+### 2.4 Knowledge reaches the stage that can act on it
 
-`interpret_research_question` loads domain and policy knowledge only, never a
-backend fragment. The extracted intent therefore cannot be influenced by which
+`interpret_research_question` loads domain knowledge only: never a backend
+fragment, and no longer policy either. The extracted intent therefore cannot be influenced by which
 engine will run it. This is the property that makes engine independence
 checkable rather than asserted, and it must be enforced by a test.
 
@@ -231,3 +231,34 @@ sample count, not 2504.
   that the backend parameterises; generating it would reintroduce the
   artifact-centric coupling this RFC removes.
 - Moving the repository out of the `hyperflow-wms` organisation.
+
+
+## 9. Refinement: policy is opt-in, not default
+
+Measured after the split: resource policy made up 44% of the interpreter's
+context -- `resource-policy.md` 30.4%, `individuals-parallelism.md` 13.5% --
+while a `ResearchIntent` carries no resource field any of it could inform. The
+Skills ablation records what surplus context costs this task: GPT-4.1-mini
+scored 8.7pp lower with the full document set than with vocabulary alone, its
+T4 clarification accuracy falling from 53% to 13%.
+
+`load_skill_context` therefore gates policy behind `include_policy=True`. The
+interpretation path takes the default and gets domain vocabulary only; whoever
+sizes parallelism asks for policy explicitly, and the MCP server continues to
+expose every document as a resource regardless.
+
+Two documents also held content belonging to a different stage, which the
+original split moved wholesale rather than by ownership:
+
+- `domain/interpretation.md` ended with "Always call plan_workflow with the
+  extracted parameters", an instruction the interpreter cannot follow -- it
+  does structured extraction through `instructor` and has no tools.
+- `domain/data-sources.md` carried a "Data Extraction" section documenting
+  `extract-data.sh`, `plan_workflow` and `g1kwf generate`. Where the data
+  lives is domain knowledge; driving one engine's toolchain is not, and
+  Nextflow extracts inside its own DAG instead.
+
+Both moved to `backends/hyperflow.md`. The interpretation context fell from
+14,988 to 8,089 characters with every vocabulary anchor intact, and tests now
+assert both that policy is absent from the default context and that it remains
+reachable with `include_policy=True`.

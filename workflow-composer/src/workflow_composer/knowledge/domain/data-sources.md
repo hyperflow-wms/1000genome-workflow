@@ -22,19 +22,6 @@ s3://1000genomes/release/20130502/
 gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502/
 ```
 
-## Data Extraction
-
-The recommended way to extract data is using the `extract-data.sh` resource
-(available via MCP resources). It takes a `plan.json` from `plan_workflow` and
-handles all extraction automatically:
-
-```bash
-bash extract-data.sh --plan plan.json --output-dir /path/to/workdir
-```
-
-The script runs the tabix commands from the plan, builds `data.csv`, and prints
-the `g1kwf generate` command to run next. It does NOT require `g1kwf` installed.
-
 ### Manual Data Access Patterns
 
 #### Full Chromosome Download

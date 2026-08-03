@@ -20,5 +20,6 @@ When a user describes their research, extract:
    - Specific region mentioned → use that region only
    - No region → whole chromosome or genome-wide
 
-Always call plan_workflow with the extracted parameters. Do not fabricate data
-or make assumptions about results.
+Do not fabricate data or make assumptions about results. Extract only what the
+question supports; where a required parameter is missing or a term maps to no
+valid code, say so through `clarification_needed` rather than guessing.
