@@ -50,19 +50,38 @@ GNUBIN = os.environ.get("GUI_GNUBIN",
     ("/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:"
      "/opt/homebrew/opt/grep/libexec/gnubin") if _MAC else "")
 
+def _is_wsl():
+    try:
+        return "microsoft" in Path("/proc/version").read_text().lower()
+    except OSError:
+        return False
+
+
 def _open_in_file_manager(path):
-    """Otwiera folder w menedzerze plikow — cross-platform (mac/Linux/Windows)."""
+    """Open a directory in the desktop file manager. Returns (ok, message).
+
+    Under WSL the browser is on Windows while this server is on Linux, and the
+    distro usually has no desktop session, so xdg-open silently does nothing.
+    Hand the path to Windows Explorer instead, translated with wslpath.
+    """
     path = str(path)
     try:
+        if _is_wsl():
+            win = subprocess.run(["wslpath", "-w", path],
+                                 capture_output=True, text=True, check=True).stdout.strip()
+            # Explorer reports failure even when it succeeds, so its exit
+            # status says nothing and is deliberately ignored.
+            subprocess.run(["/mnt/c/Windows/explorer.exe", win])
+            return True, f"opened in Windows Explorer: {win}"
         if sys.platform == "darwin":
-            subprocess.run(["open", path])
+            subprocess.run(["open", path], check=True)
         elif sys.platform.startswith("win"):
             os.startfile(path)  # type: ignore[attr-defined]
         else:
-            subprocess.run(["xdg-open", path])
-        return True
-    except Exception:
-        return False
+            subprocess.run(["xdg-open", path], check=True)
+        return True, f"opened: {path}"
+    except Exception as e:
+        return False, f"could not open {path}: {e}"
 ACTIVE_HF = {}   # {case_id: {"proc":Popen, "tmp_yaml":str}}
 
 def launch_hyperflow(prompt, model):
@@ -887,8 +906,8 @@ class H(BaseHTTPRequestHandler):
             rel = parse_qs(u.query).get("p", [""])[0]
             target = _resolve_served(rel)
             if target is not None:
-                _open_in_file_manager(target)   # otwiera folder (mac/Linux/Windows)
-                self._send(200, "application/json", json.dumps({"ok": True}).encode())
+                ok, msg = _open_in_file_manager(target)
+                self._send(200, "application/json", json.dumps({"ok": ok, "msg": msg}).encode())
             else:
                 self._send(200, "application/json", json.dumps({"ok": False, "msg": "no such folder"}).encode())
         elif u.path == "/api/hf_runs":
@@ -899,7 +918,8 @@ class H(BaseHTTPRequestHandler):
             cid = parse_qs(u.query).get("id", [""])[0]
             d = HF_INTEG / f"workflow-{cid}"
             if d.exists():
-                _open_in_file_manager(d); self._send(200, "application/json", json.dumps({"ok": True}).encode())
+                ok, msg = _open_in_file_manager(d)
+                self._send(200, "application/json", json.dumps({"ok": ok, "msg": msg}).encode())
             else:
                 self._send(200, "application/json", json.dumps({"ok": False, "msg": "no such folder"}).encode())
         elif u.path == "/api/pairs":
