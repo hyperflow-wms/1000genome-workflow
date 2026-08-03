@@ -35,7 +35,7 @@ flowchart LR
 | **INTERPRET** | LLM parses research question → `ResearchIntent` |
 | **PLAN** | Resolves data sources, estimates costs → advisory plan + estimated workflow |
 | **EXTRACT** | Downloads/extracts VCF data via tabix → `data.csv` |
-| **GENERATE** | Creates workflow from actual variant counts → `workflow.json` |
+| **RESOLVE** | Sizes parallelism from the measured variant counts, then commits it in the form the engine binds: `workflow.json` for HyperFlow, a parameter vector for Nextflow |
 | **EXECUTE** | Runs workflow via HyperFlow → output archives |
 
 ## Installation
@@ -150,7 +150,7 @@ tabix -h "https://ftp.1000genomes.ebi.ac.uk/.../ALL.chr6...vcf.gz" \
 
 Produces VCF files + `data.csv` manifest with actual variant counts.
 
-### GENERATE — Create production workflow
+### RESOLVE — Size parallelism and commit it
 
 Regenerates workflow with exact task boundaries from actual data:
 

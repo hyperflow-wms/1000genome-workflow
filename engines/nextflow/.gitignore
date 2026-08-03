@@ -6,6 +6,7 @@
 runs/
 work/
 results/
+results-*/
 .nextflow/
 .nextflow.log*
 report-*.html

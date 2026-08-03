@@ -13,7 +13,7 @@ task prompt:
 1. ``load_skill_context()`` includes the guidance section, and it mentions
    ``recommend_parallelism``, the ~10,000-variants-per-task floor, the
    cohort-size scaling, and that the value is clamped.
-2. No file under ``skills/`` still states an absolute preset task count.
+2. No file under ``knowledge/`` still states an absolute preset task count.
 3. ``resource-policy.md`` exists, is registered in ``SKILL_FILES``, appears
    in ``load_skill_context()`` output, names an owner for each resource
    field, and documents every ``ComputeEnvironment`` field.
@@ -94,7 +94,7 @@ def test_guidance_states_value_is_clamped():
 
 
 # ---------------------------------------------------------------------------
-# Acceptance criterion 2: no absolute preset task counts anywhere in skills/
+# Acceptance criterion 2: no absolute preset task counts anywhere in knowledge/
 # ---------------------------------------------------------------------------
 
 STALE_PRESET_PATTERNS = [

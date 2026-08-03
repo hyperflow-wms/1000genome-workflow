@@ -1,54 +1,72 @@
 #!/usr/bin/env bash
-# Bootstrap srodowiska dla GUI/composera 1000genome (Nextflow + HyperFlow).
-# Buduje lokalny obraz worker-nf, pobiera obrazy HyperFlow, sprawdza narzedzia.
-# Uruchom RAZ po sklonowaniu: bash setup.sh   (potem: ./run-gui.sh)
+# One-time bootstrap for running either engine locally: builds the worker
+# images, pulls what the HyperFlow harness needs, and checks the tooling.
+#
+#   bash engines/nextflow/setup.sh
 set -uo pipefail
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ok(){ echo "  [OK] $*"; }
-warn(){ echo "  [!!] $*"; }
+REPO_ROOT="$(cd "$THIS_DIR/../.." && pwd)"
+ok(){   echo "  [ok]   $*"; }
+warn(){ echo "  [warn] $*"; }
 
-echo "== 1. Narzedzia =="
-command -v docker  >/dev/null && ok "docker: $(docker --version 2>/dev/null)" || warn "brak docker — zainstaluj Docker Desktop"
-command -v conda   >/dev/null && ok "conda: $(conda --version 2>/dev/null)"   || warn "brak conda — zainstaluj Miniconda"
-[ -x "$THIS_DIR/../nextflow-experiments/bin/nextflow" ] && ok "nextflow wrapper obecny" || warn "brak ../nextflow-experiments/bin/nextflow (NXF_VER=25.10.2)"
-if [ "$(uname)" = "Darwin" ]; then
-  [ -d /opt/homebrew/opt/coreutils/libexec/gnubin ] && ok "coreutils (gnubin) obecne" || warn "brak coreutils — 'brew install coreutils gnu-sed grep bash'"
+# The Nextflow worker derives from the shared base, so its tag follows
+# worker-base-image rather than being pinned here.
+BASE_VERSION="$(grep -E '^VERSION' "$REPO_ROOT/worker-base-image/Makefile" | head -1 | tr -d ' ' | cut -d= -f2)"
+NF_IMAGE="1000genome-worker-nf:${BASE_VERSION}"
+
+echo "== 1. Tooling =="
+command -v docker >/dev/null && ok "docker: $(docker --version 2>/dev/null)" \
+  || warn "docker missing -- install Docker Desktop and enable WSL integration"
+if command -v nextflow >/dev/null; then
+  ok "nextflow: $(nextflow -version 2>&1 | grep -oE 'version [0-9.]+' | head -1)"
 else
-  command -v xdg-open >/dev/null && ok "xdg-open obecne" || warn "brak xdg-open — 'sudo apt install xdg-utils' (otwieranie folderow w GUI)"
+  warn "nextflow missing. Install it:
+         curl -fsSL -o ~/.local/bin/nextflow \\
+           https://github.com/nextflow-io/nextflow/releases/download/v25.10.2/nextflow
+         chmod +x ~/.local/bin/nextflow
+       Pin NXF_VER=25.10.2; 26.x does not parse nf-core style configs."
 fi
-command -v nextflow >/dev/null || [ -x "$THIS_DIR/../nextflow-experiments/bin/nextflow" ] || warn "brak nextflow w PATH i brak wrappera — zainstaluj Nextflow (NXF_VER=25.10.2)"
+[ -f "$REPO_ROOT/.env" ] && ok "LLM key file present ($REPO_ROOT/.env)" \
+  || warn "no $REPO_ROOT/.env -- interpretation needs GEMINI_API_KEY, or pass --intent-json"
 
-echo "== 2. Lokalny obraz worker-nf (streaming individuals.py + ANNOTATE) =="
-if [ ! -f "$THIS_DIR/individuals.streaming.py" ]; then
-  warn "brak individuals.streaming.py — wymagany do COPY w worker-nf.Dockerfile"
+echo "== 2. Worker images =="
+# The base carries the analysis scripts and both engines build on it. Build it
+# rather than pulling: a change under worker-base-image/scripts/ bumps the
+# version, and that tag does not exist in the registry until it is published.
+if make -C "$REPO_ROOT/worker-base-image" image >/dev/null 2>&1; then
+  ok "built hyperflowwms/1000genome-worker-base:${BASE_VERSION}"
 else
-  docker build --platform linux/amd64 -f "$THIS_DIR/worker-nf.Dockerfile" \
-    -t 1000genome-worker-nf:1.3 "$THIS_DIR" && ok "zbudowano 1000genome-worker-nf:1.3" || warn "build worker-nf nieudany"
+  warn "could not build the base image"
 fi
+if make -C "$REPO_ROOT/worker-image" image >/dev/null 2>&1; then
+  ok "built the HyperFlow worker image"
+else
+  warn "could not build the HyperFlow worker image"
+fi
+if docker build --platform linux/amd64 -f "$THIS_DIR/worker-nf.Dockerfile" \
+     -t "$NF_IMAGE" "$THIS_DIR" >/dev/null 2>&1; then
+  ok "built $NF_IMAGE"
+else
+  warn "could not build $NF_IMAGE"
+fi
+echo "  (nextflow.config must name $NF_IMAGE)"
 
-echo "== 3. Obrazy HyperFlow / dane (pobieranie) =="
-IMAGES=(
-  "hyperflowwms/1000genome-worker:1.3-je1.4.2"   # streaming worker (HyperFlow EXECUTE)
-  "hyperflowwms/hyperflow:v1.11.1"               # silnik HyperFlow
-  "redis:7-alpine"                               # kolejka HyperFlow
-  "hyperflowwms/1000genome-data:1.0"             # dane micro
-  "broadinstitute/gatk:4.4.0.0"                  # tabix (harness EXTRACT)
-)
-for img in "${IMAGES[@]}"; do
-  if docker image inspect "$img" >/dev/null 2>&1; then ok "jest: $img"
-  else echo "  pobieram $img ..."; docker pull "$img" >/dev/null 2>&1 && ok "pobrano: $img" || warn "nie pobrano: $img"; fi
+echo "== 3. Images the HyperFlow harness pulls =="
+for img in "hyperflowwms/hyperflow:v1.11.1" "redis:7-alpine" \
+           "hyperflowwms/1000genome-data:1.0" "broadinstitute/gatk:4.4.0.0"; do
+  if docker image inspect "$img" >/dev/null 2>&1; then ok "present: $img"
+  else docker pull "$img" >/dev/null 2>&1 && ok "pulled: $img" || warn "could not pull: $img"; fi
 done
-echo "  (obraz htslib do Nextflow EXTRACT pobiera sie sam przy pierwszym runie)"
+echo "  (the htslib image used by EXTRACT is pulled on first run)"
 
-echo "== 4. Pakiety Python (conda env) =="
-if command -v conda >/dev/null; then
-  echo "  Utworz env i zainstaluj zaleznosci (jednorazowo):"
-  echo "    conda create -y -n 1000genome python=3.11"
-  echo "    conda run -n 1000genome pip install -r '$THIS_DIR/requirements.txt'"
-  echo "    conda run -n 1000genome pip install -e '$THIS_DIR/../1000genome-workflow/workflow-composer'"
+echo "== 4. Python =="
+if python3 -c "import workflow_composer" >/dev/null 2>&1; then
+  ok "workflow_composer importable"
+else
+  warn "workflow_composer not importable -- pip install -e $REPO_ROOT/workflow-composer"
 fi
 
 echo
-echo "== Gotowe. Nastepnie: =="
-echo "  1) wpisz klucz LLM do  ../1000genome-workflow/.env   (GEMINI_API_KEY=...)"
-echo "  2) ./run-gui.sh   ->   http://localhost:8765"
+echo "Done. Next:"
+echo "  engines/nextflow/run-composer.sh \"Analyze BRCA1 variants in the British population.\""
+echo "  GUI_HOST=0.0.0.0 gui/run-gui.sh     # then http://localhost:8765"

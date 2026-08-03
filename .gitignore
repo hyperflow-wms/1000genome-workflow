@@ -18,3 +18,6 @@ engines/hyperflow/harness/workflow-*.tar.gz
 # GUI: server logs and the extracted png/txt cache behind chart comparison
 gui/gui-*.log
 gui/.compare-cache/
+
+# Temporary case files the GUI injects for a HyperFlow run
+engines/hyperflow/harness/.cases-*.yaml

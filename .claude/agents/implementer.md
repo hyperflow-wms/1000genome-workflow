@@ -68,13 +68,18 @@ bitten before:
    those, or compare the merged `chr*n.tar.gz`.
 
 A preserved reference run lives at
-`tests/integration/workflow-eur-afr-hla-baseline/` — 11 individuals tarballs
+`engines/hyperflow/harness/workflow-eur-afr-hla-baseline/` — 11 individuals tarballs
 over 1153 individuals, plus the annotated input VCF and `columns.txt`. You can
 replay a single chunk against it without Docker:
 
 ```
 python3 worker-base-image/scripts/individuals.py ALL.chr6.hla.vcf 6 <start> <stop> 166052
 ```
+
+`<start>`/`<stop>` are a 0-based half-open range over *variants*, not file
+lines (RFC-005). Only `chr6n-0-16605.tar.gz` in that directory was regenerated
+under this convention; the other archives predate it and are not reference
+data.
 
 ## Memory and parallelism
 
@@ -95,7 +100,7 @@ So a script change requires rebuilding both images.
 **Bump the version rather than overwriting**, so the previous image remains
 available for comparison: `VERSION` in `worker-base-image/Makefile` and
 `worker-image/Makefile`, the `FROM` line in `worker-image/Dockerfile`, and the
-default in `tests/integration/docker-compose.yml`. Build locally with
+default in `engines/hyperflow/harness/docker-compose.yml`. Build locally with
 `make -C worker-base-image image` then `make -C worker-image image` — the
 `image` targets do not push.
 

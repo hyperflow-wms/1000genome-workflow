@@ -38,7 +38,7 @@ implementer used a valid method:
   valid check is the union: per-individual rows concatenated across chunks in
   ascending start offset, or the merged `chr*n.tar.gz`.
 
-The reference baseline is `tests/integration/workflow-eur-afr-hla-baseline/`
+The reference baseline is `engines/hyperflow/harness/workflow-eur-afr-hla-baseline/`
 (11 chunks, 1153 individuals, 12,683 per-individual files). Report how many
 files you actually compared. "Identical" over 3 spot-checked files is a weaker
 claim than the implementer probably made.

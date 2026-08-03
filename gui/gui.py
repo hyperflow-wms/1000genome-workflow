@@ -943,7 +943,7 @@ class H(BaseHTTPRequestHandler):
         ln = int(self.headers.get("Content-Length", 0))
         data = json.loads(self.rfile.read(ln) or b"{}")
         prompt = (data.get("prompt") or "").strip()
-        model = data.get("model") or "gemini/gemini-2.5-flash"
+        model = data.get("model") or os.environ.get("WORKFLOW_COMPOSER_MODEL", "gemini/gemini-flash-latest")
         if not prompt:
             self._send(400, "application/json", json.dumps({"ok": False}).encode()); return
         if u.path == "/api/dry":

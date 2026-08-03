@@ -344,7 +344,7 @@ def populations():
     if pop_file.exists():
         click.echo(pop_file.read_text())
     else:
-        click.echo("Population data not available. See skills/populations.md")
+        click.echo("Population data not available. See knowledge/domain/populations.md")
 
 
 if __name__ == "__main__":
