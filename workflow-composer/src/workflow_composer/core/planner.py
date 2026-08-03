@@ -130,7 +130,7 @@ def _estimate_max_variants_per_chromosome(intent: ResearchIntent) -> int:
     every chromosome the intent touches. So V here must be a per-chromosome
     figure, never a sum across chromosomes -- summing (regions first, then
     explicit chromosomes, then all 22 autosomes, mirroring
-    ``tests/integration/lib/test_framework.py:estimate_total_variants``) feeds
+    ``engines/hyperflow/harness/lib/test_framework.py:estimate_total_variants``) feeds
     ``recommend_parallelism`` a V that belongs to no single chromosome. For a
     multi-region/multi-chromosome intent that inflates ind_jobs far past what
     any individual chromosome's real variant count supports, silently

@@ -173,7 +173,10 @@ def build_command(
         "nextflow", "run", pipeline_path,
         "--populations", ",".join(params.populations),
         "--extract_csv", "extract.csv",
-        "--columns_txt", "columns.txt",
+        # main.nf declares this as params.columns; the name is part of the
+        # pipeline's documented CLI, so the backend matches it rather than
+        # introducing a second spelling.
+        "--columns", "columns.txt",
         "--ind_jobs", str(resolution.ind_jobs),
         "--ind_max_forks", str(resolution.max_parallelism),
         "--task_mem", f"{resolution.est_peak_mb}MB",

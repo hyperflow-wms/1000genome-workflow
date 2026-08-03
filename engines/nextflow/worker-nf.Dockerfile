@@ -1,16 +1,22 @@
-# Cienki obraz pochodny worker 1000genome dla Nextflow.
-# Nextflow wymaga bash w kontenerze; oryginalny obraz (Alpine) ma tylko sh
-# i entrypoint dumb-init, ktory koliduje z wrapperem Nextflow.
-# Dodajemy bash i czyscimy entrypoint. Nauka (skrypty) bez zmian.
-FROM hyperflowwms/1000genome-worker:1.1-latest
+# Worker image for the Nextflow port.
+#
+# Derives from the shared base image -- node:20-alpine plus python and the five
+# analysis scripts (worker-base-image/) -- rather than from
+# hyperflowwms/1000genome-worker, which adds the HyperFlow job executor that
+# Nextflow does not use. Both engines therefore run the same scripts from the
+# same layer, so "the science is identical" is a property of the image graph
+# rather than a claim about two copies staying in sync.
+FROM hyperflowwms/1000genome-worker-base:1.3
+
+# Nextflow requires bash in the container; the base is Alpine, which ships ash.
 RUN apk add --no-cache bash
-# TRYB SZYBKI (opcjonalny): frequency.py czyta liczbe iteracji Monte Carlo ze zmiennej N_RUNS.
-# Domyslnie 1000 (jak oryginal) -> bez N_RUNS zachowanie identyczne. Nextflow moze podac mniej.
+
+# Optional fast mode: frequency.py reads its Monte Carlo iteration count from
+# N_RUNS. Without the variable the count stays 1000, so behaviour is unchanged
+# and only an explicit opt-in shortens it. Runs used for output equivalence
+# must leave N_RUNS unset.
 RUN sed -i "s/^n_runs = 1000/n_runs = int(os.environ.get('N_RUNS', 1000))/" /1000genome/scripts/frequency.py
-# PORT FIXU Z HYPERFLOW (upstream commit ee112c1 "Stream the VCF in individuals.py"):
-# stara wersja wczytywala caly VCF do pamieci (readfile) i trzymala kolumny genotypow
-# w liscie -> ~4.7 GB RAM/job na regionie HLA, przy rownoleglosci OOM-kill = brak wynikow.
-# Nowa wersja streamuje plik przez itertools.islice (peak ~19 MB/job), wynik bajtowo
-# identyczny. To ta sama poprawka co na HyperFlow -> silnik wymienny, nauka ta sama.
-COPY individuals.streaming.py /1000genome/scripts/individuals.py
+
+# The base sets no entrypoint; clear it explicitly so a future base change
+# cannot collide with the wrapper Nextflow injects.
 ENTRYPOINT []

@@ -57,14 +57,14 @@ from workflow_composer.core.planner import (
 # exact V in the first worked example (V=166,052,
 # I=1153, 16 vCPUs -> ind_jobs=15, max_parallelism=15, core-bound,
 # est_peak=27MB/task).
-BASELINE_DIR = Path(__file__).parent.parent.parent / "tests" / "integration" / "workflow-eur-afr-hla-baseline"
+BASELINE_DIR = Path(__file__).parent.parent.parent / "engines" / "hyperflow" / "harness" / "workflow-eur-afr-hla-baseline"
 HLA_DATA_CSV = BASELINE_DIR / "data.csv"
 HLA_ROW_COUNT = 166_052
 HLA_INDIVIDUALS = 1153
 
 pytestmark = pytest.mark.skipif(
     not HLA_DATA_CSV.exists(),
-    reason="tests/integration/workflow-eur-afr-hla-baseline/data.csv not available",
+    reason="engines/hyperflow/harness/workflow-eur-afr-hla-baseline/data.csv not available",
 )
 
 HLA_REGION = GenomicRegion(name="HLA", chromosome="6", start=28477797, end=33448354, context="immune function")

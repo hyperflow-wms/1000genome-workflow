@@ -18,9 +18,11 @@ params.data_dir         = "${projectDir}/testdata"
 params.columns          = "${projectDir}/testdata/columns.txt"
 params.populations_dir  = "${projectDir}/testdata/populations"
 params.populations      = "GBR"          // lista przez przecinek, np. "EUR,AFR"
+// ind_jobs i ind_max_forks poda composer z recommend_parallelism (RFC-004).
+// Ponizsze wartosci to tylko awaryjne domyslne dla recznego uruchomienia.
 params.ind_jobs         = 10             // ile chunkow individuals na chromosom
-params.ind_chunk_lines  = 5000           // maks. liczba linii VCF na chunk individuals
-params.ind_max_forks    = 2              // limit rownoleglych zadan individuals na laptopie
+params.ind_max_forks    = 2              // limit rownoleglych zadan individuals
+params.task_mem         = null           // szacowany szczyt pamieci na zadanie, np. "220MB"
 params.max_variants     = 0              // TRYB SZYBKI: limit wariantow do liczenia (0 = bez limitu)
 params.n_runs           = 0              // TRYB SZYBKI: iteracje Monte Carlo we frequency (0 = domyslne 1000)
 params.outdir           = "${projectDir}/results"
@@ -193,8 +195,10 @@ process FREQUENCY {
 // WORKFLOW — okablowanie DAG-u
 // ============================================================================
 
-workflow {
-    columns_file = file(params.columns)
+// Pozyskanie danych, wspolne dla obu wejsc (-entry extract i pelnego runu).
+// Emituje (chrom, vcf, total, annotation) po adnotacji rs ID.
+workflow acquire {
+    main:
 
     // 1) Zrodlo danych: albo EXTRACT (generacja tabixem), albo pre-wygenerowany data.csv.
     //    Oba dają ten sam ksztalt kanalu: (chrom, vcf, total, annotation).
@@ -228,13 +232,36 @@ workflow {
     //     Obejmuje obie sciezki (EXTRACT i testdata). Ksztalt kanalu bez zmian.
     rows = ANNOTATE(rows)
 
-    // 2) SCATTER: rozbij kazdy chromosom na chunki individuals
+    emit:
+    rows
+}
+
+// Faza EXTRACT sama: pozyskuje dane i zapisuje zmierzone liczby wariantow.
+// Composer czyta measurements.csv, liczy ind_jobs/max_parallelism przez
+// recommend_parallelism i dopiero wtedy startuje pelny run — maxForks wiaze
+// sie przy starcie procesu i nie da sie go ustawic z kanalu.
+workflow extract {
+    acquire()
+    acquire.out
+        .map { chrom, vcf, total, annotation -> "${chrom},${total}" }
+        .collectFile(name: 'measurements.csv', storeDir: params.outdir, newLine: true)
+}
+
+workflow {
+    columns_file = file(params.columns)
+
+    acquire()
+    rows = acquire.out
+
+    // 2) SCATTER: rozbij kazdy chromosom na chunki individuals.
+    //    Podzial na rowne czesci sufitem — ta sama arytmetyka co generator
+    //    HyperFlow (step = ceil(total / ind_jobs)), zeby oba silniki tnaly
+    //    identycznie dla tego samego ind_jobs.
     ind_input = rows.flatMap { chrom, vcf, total_raw, annotation ->
         int mv = params.max_variants as int
         int total = (mv > 0) ? Math.min(total_raw, mv) : total_raw   // TRYB SZYBKI: limit wariantow
-        int ind_jobs = params.ind_jobs as int
-        int ind_chunk_lines = params.ind_chunk_lines as int
-        int step = Math.max(1, Math.min(total.intdiv(ind_jobs), ind_chunk_lines))
+        int ind_jobs = Math.max(1, params.ind_jobs as int)
+        int step = Math.max(1, (int) Math.ceil(total / (double) ind_jobs))
         def chunks = []
         int counter = 1
         while (counter <= total) {

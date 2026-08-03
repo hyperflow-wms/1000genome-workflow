@@ -10,27 +10,35 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 BASE = Path(__file__).parent.resolve()
-RUNS = BASE / "runs"
-COMPOSER = BASE / "composer.py"
-REF_HF = BASE / "reference-hyperflow"   # referencyjne wyniki HyperFlow (chr17-GBR-freq)
+REPO = BASE.parent                      # gui/ sits at the repository root
+NEXTFLOW_DIR = REPO / "engines" / "nextflow"
+RUNS = NEXTFLOW_DIR / "runs"
+COMPOSER = NEXTFLOW_DIR / "composer.py"
+# Reference HyperFlow results (chr17-GBR-freq) used for cross-engine comparison.
+REF_HF = REPO / "tests" / "equivalence" / "reference" / "hyperflow"
 PORT = 8765
 
 # rejestr aktywnych przebiegów {run_id: Popen}
 ACTIVE = {}
 
 # --- HyperFlow (harness) ---
-# Domyslnie repo workflow2 (git pull od Bartosza): streaming worker 1.3-je1.4.2,
-# engine v1.11.1, completion-transport=stream, adnotacja rs ID. Stary fork mial na
-# sztywno wolny worker 1.0. Sciezki mozna nadpisac zmiennymi srodowiskowymi (patrz SETUP.md).
-def _default_hf_integ():
-    # obsluguje uklad 3-katalogowy (workflow2) i uproszczony 2-katalogowy (jedno repo obok).
-    for c in (BASE.parent / "1000genome-workflow2" / "1000genome-workflow" / "tests" / "integration",
-              BASE.parent / "1000genome-workflow" / "tests" / "integration"):
-        if c.exists():
-            return c
-    return BASE.parent / "1000genome-workflow" / "tests" / "integration"
+# Both engines live in this repository, so the harness is a fixed path rather
+# than a search across sibling checkouts. GUI_HF_INTEG still overrides it.
+HF_INTEG = Path(os.environ.get("GUI_HF_INTEG", str(REPO / "engines" / "hyperflow" / "harness")))
 
-HF_INTEG = Path(os.environ.get("GUI_HF_INTEG", str(_default_hf_integ())))
+# Served paths resolve against two roots: this directory holds the GUI's own
+# logs, engines/nextflow/ holds the run artifacts. is_relative_to is the
+# containment check rather than a string prefix, which would accept a sibling
+# directory whose name merely starts with the root's.
+SERVE_ROOTS = (BASE, NEXTFLOW_DIR)
+
+def _resolve_served(rel):
+    """Resolve a client-supplied relative path inside an allowed root, or None."""
+    for root in SERVE_ROOTS:
+        target = (root / rel).resolve()
+        if target.is_relative_to(root.resolve()) and target.exists():
+            return target
+    return None
 HARNESS  = HF_INTEG / "run-research-tests.sh"
 CASES_YAML = HF_INTEG / "cases.yaml"
 _MAC = sys.platform == "darwin"
@@ -373,7 +381,7 @@ def stop_run(run_id):
 
 def run_composer_dry(prompt, model):
     cp = subprocess.run([sys.executable, str(COMPOSER), "--dry-run", "--model", model, prompt],
-                        capture_output=True, text=True, cwd=str(BASE))
+                        capture_output=True, text=True, cwd=str(NEXTFLOW_DIR))
     txt = cp.stdout + "\n" + cp.stderr
     m = re.search(r'\{.*?"clarification_needed".*?\}', txt, re.S)
     intent = None
@@ -389,7 +397,7 @@ def launch_full(prompt, model, fast=False):
     if fast:  # tryb szybki: mniej wariantow + mniej iteracji Monte Carlo
         cmd += ["--max-variants", "3000", "--n-runs", "100"]
     cmd += [prompt]
-    proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(BASE),
+    proc = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, cwd=str(NEXTFLOW_DIR),
                             start_new_session=True)  # własna grupa procesów -> da się zatrzymać
     run_id = None
     for _ in range(40):  # do 20s na pojawienie się katalogu runu
@@ -696,8 +704,8 @@ class H(BaseHTTPRequestHandler):
             self._send(200, "application/json", json.dumps(stop_run(rid)).encode())
         elif u.path == "/api/open":
             rel = parse_qs(u.query).get("p", [""])[0]
-            target = (BASE / rel).resolve()
-            if str(target).startswith(str(BASE)) and target.exists():
+            target = _resolve_served(rel)
+            if target is not None:
                 _open_in_file_manager(target)   # otwiera folder (mac/Linux/Windows)
                 self._send(200, "application/json", json.dumps({"ok": True}).encode())
             else:
@@ -717,8 +725,8 @@ class H(BaseHTTPRequestHandler):
             self._send(200, "application/json", json.dumps(list_pairs()).encode())
         elif u.path == "/file":
             p = parse_qs(u.query).get("p", [""])[0]
-            target = (BASE / p).resolve()
-            if not str(target).startswith(str(BASE)) or not target.exists():
+            target = _resolve_served(p)
+            if target is None:
                 self._send(404, "text/plain", b"not found"); return
             ctype = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
             self._send(200, ctype, target.read_bytes())

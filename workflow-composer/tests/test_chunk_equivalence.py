@@ -46,7 +46,7 @@ from workflow_composer.core.generator import (
 from workflow_composer.core.environment import ComputeEnvironment
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-BASELINE_DIR = REPO_ROOT / "tests" / "integration" / "workflow-eur-afr-hla-baseline"
+BASELINE_DIR = REPO_ROOT / "engines" / "hyperflow" / "harness" / "workflow-eur-afr-hla-baseline"
 INDIVIDUALS_SCRIPT = REPO_ROOT / "worker-base-image" / "scripts" / "individuals.py"
 
 HLA_ROW_COUNT = 166052
@@ -54,7 +54,7 @@ HLA_INDIVIDUALS = 1153
 HLA_C_NUM = "6"
 
 pytestmark = pytest.mark.skipif(
-    not BASELINE_DIR.exists(), reason="tests/integration/workflow-eur-afr-hla-baseline not available"
+    not BASELINE_DIR.exists(), reason="engines/hyperflow/harness/workflow-eur-afr-hla-baseline not available"
 )
 
 
@@ -205,7 +205,7 @@ def test_individuals_output_is_a_pure_function_of_its_args(tmp_path):
     shutil.copy2(baseline_vcf, work_dir / "ALL.chr6.hla.vcf")
     shutil.copy2(baseline_columns, work_dir / "columns.txt")
 
-    # Exact args recorded in tests/integration/workflow-eur-afr-hla-baseline/workflow.json
+    # Exact args recorded in engines/hyperflow/harness/workflow-eur-afr-hla-baseline/workflow.json
     # for the first individuals task on chr6.
     args = ["ALL.chr6.hla.vcf", "6", "1", "16606", "166052"]
     result = subprocess.run(

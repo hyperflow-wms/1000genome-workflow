@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "tests" / "integration" / "lib"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "engines" / "hyperflow" / "harness" / "lib"))
 
 from test_framework import compare_estimated_to_final
 

@@ -35,15 +35,15 @@ from workflow_composer.core.generator import (
 from workflow_composer.core.parallelism import recommend_parallelism
 
 # The preserved HLA baseline: one chromosome (6), row_count=166052,
-# 1153 individuals in columns.txt (see tests/integration/
+# 1153 individuals in columns.txt (see engines/hyperflow/harness/
 # workflow-eur-afr-hla-baseline/{data.csv,columns.txt}).
-BASELINE_DIR = Path(__file__).parent.parent.parent / "tests" / "integration" / "workflow-eur-afr-hla-baseline"
+BASELINE_DIR = Path(__file__).parent.parent.parent / "engines" / "hyperflow" / "harness" / "workflow-eur-afr-hla-baseline"
 HLA_DATA_CSV = BASELINE_DIR / "data.csv"
 HLA_ROW_COUNT = 166052
 HLA_INDIVIDUALS = 1153
 
 pytestmark = pytest.mark.skipif(
-    not HLA_DATA_CSV.exists(), reason="tests/integration/workflow-eur-afr-hla-baseline/data.csv not available"
+    not HLA_DATA_CSV.exists(), reason="engines/hyperflow/harness/workflow-eur-afr-hla-baseline/data.csv not available"
 )
 
 

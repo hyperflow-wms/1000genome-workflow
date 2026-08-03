@@ -5,7 +5,7 @@ and deleting the duplicate rule.
 Covers the acceptance criteria:
 
 1. The superseded ``compute_adaptive_parallelism`` rule is gone
-   from ``tests/integration/lib/test_framework.py``, not merely bypassed.
+   from ``engines/hyperflow/harness/lib/test_framework.py``, not merely bypassed.
 2. The harness's ``generate_estimated_workflow`` and the composer's
    ``planner.resolve_parallelism`` agree on the individuals task count for
    the same intent and environment -- the divergence
@@ -35,15 +35,15 @@ import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-sys.path.insert(0, str(REPO_ROOT / "tests" / "integration" / "lib"))
+sys.path.insert(0, str(REPO_ROOT / "engines" / "hyperflow" / "harness" / "lib"))
 
 import test_framework  # noqa: E402  (path-inserted import)
 
 from workflow_composer.core.models import GenomicRegion, ResearchIntent  # noqa: E402
 from workflow_composer.core.planner import resolve_parallelism  # noqa: E402
 
-RUN_RESEARCH_TESTS_SH = REPO_ROOT / "tests" / "integration" / "run-research-tests.sh"
-FRAMEWORK_PY = REPO_ROOT / "tests" / "integration" / "lib" / "test_framework.py"
+RUN_RESEARCH_TESTS_SH = REPO_ROOT / "engines" / "hyperflow" / "harness" / "run-research-tests.sh"
+FRAMEWORK_PY = REPO_ROOT / "engines" / "hyperflow" / "harness" / "lib" / "test_framework.py"
 
 HLA_REGION_DICT = {
     "name": "HLA",

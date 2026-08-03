@@ -1,6 +1,8 @@
 # 1000genome-workflow
 
-HyperFlow port of the Pegasus 1000genome workflow for identifying mutational overlaps using data from the 1000 Genomes Project.
+The Pegasus 1000genome workflow for identifying mutational overlaps in 1000 Genomes Project data, with an agentic composer that turns a natural-language research question into an executed workflow.
+
+The workflow runs on two engines, HyperFlow and Nextflow, from the same intent and the same analysis scripts. The composer's intent interpretation and its domain knowledge are shared; each engine contributes only a backend (`workflow-composer/src/workflow_composer/backends/`) and a pipeline definition under `engines/`.
 
 ## Overview
 
@@ -51,12 +53,12 @@ flowchart LR
         C["Data via tabix"]
     end
 
-    subgraph Step4["4. GENERATE"]
-        D["workflow.json"]
+    subgraph Step4["4. RESOLVE"]
+        D["parallelism +<br/>engine artifact"]
     end
 
     subgraph Step5["5. EXECUTE"]
-        E["HyperFlow"]
+        E["HyperFlow<br/>or Nextflow"]
     end
 
     A --> B --> C --> D --> E
@@ -73,8 +75,8 @@ flowchart LR
 | **INTERPRET** | Parse natural language research question into structured intent |
 | **PLAN** | Create advisory plan with estimated workflow for validation |
 | **EXTRACT** | Acquire genomic data via tabix remote extraction |
-| **GENERATE** | Create final workflow.json from actual data counts |
-| **EXECUTE** | Run workflow with HyperFlow + Docker workers |
+| **RESOLVE** | Size parallelism from the measured data, then commit it in the form the engine binds: `workflow.json` for HyperFlow, a parameter vector for Nextflow |
+| **EXECUTE** | Run the workflow on the selected engine with Docker workers |
 
 See [workflow-composer/README.md](workflow-composer/README.md) for detailed phase documentation.
 
@@ -82,12 +84,16 @@ See [workflow-composer/README.md](workflow-composer/README.md) for detailed phas
 
 ```
 1000genome-workflow/
-├── workflow-composer/      # Native workflow generator + MCP server (recommended)
-├── worker-base-image/      # Base Docker image with analysis scripts
-├── worker-image/           # HyperFlow worker image (Kubernetes)
-├── workflow-generator/     # Legacy DAG generation (Pegasus-based)
+├── workflow-composer/      # Engine-neutral composer: intent, knowledge, backends
+├── engines/
+│   ├── hyperflow/harness/  # HyperFlow pipeline driver + Docker Compose
+│   └── nextflow/           # Nextflow pipeline (main.nf) + its test data
+├── gui/                    # Local dual-engine GUI
+├── worker-base-image/      # Base image with the analysis scripts (both engines)
+├── worker-image/           # HyperFlow worker image (adds the job executor)
+├── workflow-generator/     # Original Pegasus DAG generation
 ├── data-container/         # Input data + workflow.json (~1.7GB image)
-├── tests/integration/      # Integration tests with Docker Compose
+├── tests/equivalence/      # Cross-engine result comparison + reference bundles
 ├── scripts/                # Utility scripts
 └── fargate/                # AWS Fargate-specific components (legacy)
 ```
@@ -204,7 +210,7 @@ Add to Claude Desktop configuration:
 Run integration tests to validate the complete pipeline:
 
 ```bash
-cd tests/integration
+cd engines/hyperflow/harness
 
 # Test with the micro dataset (fast, ~2-3 minutes)
 ./run-research-tests.sh -y micro
@@ -213,7 +219,7 @@ cd tests/integration
 ./run-research-tests.sh --mock-llm -y brca1-gbr
 ```
 
-See [tests/integration/README.md](tests/integration/README.md) for detailed documentation on the end-to-end workflow execution pipeline.
+See [engines/hyperflow/harness/README.md](engines/hyperflow/harness/README.md) for detailed documentation on the end-to-end workflow execution pipeline.
 
 ## License
 
