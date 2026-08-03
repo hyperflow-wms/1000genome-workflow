@@ -404,7 +404,7 @@ class TestRemainderHandling:
         assert total == 2487, "Total should be 2487"
 
         # Ranges are contiguous and every task has rows to process
-        assert ranges[0][0] == 1, "First task should start at 1"
+        assert ranges[0][0] == 0, "First task should start at 0 (RFC-005: 0-based variant ranges)"
         for (_, prev_stop), (start, _) in zip(ranges, ranges[1:]):
             assert start == prev_stop, f"Gap or overlap at {prev_stop} -> {start}"
         for start, stop in ranges:

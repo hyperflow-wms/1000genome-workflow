@@ -114,7 +114,11 @@ class TestBoundaryMoveEquivalence:
         # since the last task's raw `stop` can run past the end of the file.
         clipped = [(start, min(stop, HLA_ROW_COUNT)) for start, stop in ranges]
 
-        assert clipped[0][0] == 1, f"hint={ind_jobs_hint}: first range must start at 1"
+        # 0-based half-open over variants (RFC-005), so the union is
+        # [0, threshold) and covers every variant. The former 1-based start
+        # left the range one short and, because the script sliced raw file
+        # lines, dropped a header's worth of variants off the tail.
+        assert clipped[0][0] == 0, f"hint={ind_jobs_hint}: first range must start at 0"
         for (_, prev_stop), (start, _) in zip(clipped, clipped[1:]):
             assert start == prev_stop, (
                 f"hint={ind_jobs_hint}: gap or overlap between ranges at {prev_stop} -> {start}"
@@ -196,8 +200,8 @@ def test_individuals_output_is_a_pure_function_of_its_args(tmp_path):
     """
     baseline_vcf = BASELINE_DIR / "ALL.chr6.hla.vcf"
     baseline_columns = BASELINE_DIR / "columns.txt"
-    baseline_tarball = BASELINE_DIR / "chr6n-1-16606.tar.gz"
-    assert baseline_tarball.exists(), "preserved baseline chr6n-1-16606.tar.gz missing"
+    baseline_tarball = BASELINE_DIR / "chr6n-0-16605.tar.gz"
+    assert baseline_tarball.exists(), "preserved baseline chr6n-0-16605.tar.gz missing"
 
     work_dir = tmp_path / "work"
     work_dir.mkdir()
@@ -207,7 +211,10 @@ def test_individuals_output_is_a_pure_function_of_its_args(tmp_path):
 
     # Exact args recorded in engines/hyperflow/harness/workflow-eur-afr-hla-baseline/workflow.json
     # for the first individuals task on chr6.
-    args = ["ALL.chr6.hla.vcf", "6", "1", "16606", "166052"]
+    # 0-based half-open variant range (RFC-005). The baseline was
+    # regenerated with the corrected script: the previous one recorded
+    # a raw-line range and so omitted a header's worth of variants.
+    args = ["ALL.chr6.hla.vcf", "6", "0", "16605", "166052"]
     result = subprocess.run(
         [sys.executable, str(INDIVIDUALS_SCRIPT), *args],
         cwd=work_dir,
@@ -219,7 +226,7 @@ def test_individuals_output_is_a_pure_function_of_its_args(tmp_path):
         f"individuals.py failed:\nstdout={result.stdout}\nstderr={result.stderr}"
     )
 
-    fresh_tarball = work_dir / "chr6n-1-16606.tar.gz"
+    fresh_tarball = work_dir / "chr6n-0-16605.tar.gz"
     assert fresh_tarball.exists(), f"expected output not produced: {fresh_tarball}"
 
     fresh_files = _extract(fresh_tarball, tmp_path / "fresh_extract")

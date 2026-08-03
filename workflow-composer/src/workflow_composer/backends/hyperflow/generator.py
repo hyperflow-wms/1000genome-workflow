@@ -348,7 +348,12 @@ class HyperFlowGenerator:
             # === INDIVIDUALS JOBS ===
             # (mirrors daxgen.py lines 108-124)
             individuals_output_signals = []
-            counter = 1
+            individuals_output_names = []
+            # 0-based half-open variant ranges, matching individuals.py's
+            # [counter, ending) over data lines. The Nextflow backend already
+            # uses this convention; before RFC-005 this side started at 1 and
+            # the script applied the range to raw file lines.
+            counter = 0
 
             while counter < threshold:
                 stop = counter + step
@@ -356,6 +361,7 @@ class HyperFlowGenerator:
                 out_name = f"chr{c_num}n-{counter}-{stop}.tar.gz"
                 out_signal = self._get_or_create_signal(out_name)
                 individuals_output_signals.append(out_signal)
+                individuals_output_names.append(out_name)
 
                 self._add_process(
                     name="individuals",
@@ -373,10 +379,10 @@ class HyperFlowGenerator:
             merged_signal = self._get_or_create_signal(merged_name)
             individuals_merged_signals.append(merged_signal)
 
-            merge_args = [c_num] + [
-                f"chr{c_num}n-{1 + i*step}-{1 + (i+1)*step}.tar.gz"
-                for i in range(len(individuals_output_signals))
-            ]
+            # Reuse the names the loop above emitted rather than recomputing
+            # them from step: a second copy of the formula is how the merge
+            # step comes to reference files no individuals task ever wrote.
+            merge_args = [c_num] + individuals_output_names
 
             self._add_process(
                 name="individuals_merge",

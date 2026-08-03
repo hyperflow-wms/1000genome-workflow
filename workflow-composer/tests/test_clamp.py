@@ -133,7 +133,9 @@ def test_hint_above_row_count_is_capped_at_row_count():
     # boundary, not of the clamp -- see TestRemainderHandling in
     # test_generator.py, which exercises the same loop unchanged.
     assert wf["metadata"]["parallelism"][0]["ind_jobs"] == HLA_ROW_COUNT
-    assert _individuals_task_count(wf) == HLA_ROW_COUNT - 1
+    # RFC-005: 0-based ranges emit exactly ind_jobs tasks. The former
+    # 1-based start produced one fewer, leaving a variant unprocessed.
+    assert _individuals_task_count(wf) == HLA_ROW_COUNT
 
 
 @pytest.mark.parametrize("hint", [1, 10, 50, 250, 100_000])

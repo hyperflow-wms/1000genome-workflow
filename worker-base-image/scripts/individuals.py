@@ -34,8 +34,14 @@ def processing(inputfile, columfile, c, counter, stop, total):
     # if not os.path.exists(unzipped):
     #     decompress(inputfile, unzipped)
 
-    # This job handles the line range [counter, ending). When total == -1 the
-    # range simply runs to EOF (matching the original min(stop, len(file))).
+    # This job handles the VARIANT range [counter, ending), 0-based and half
+    # open, counting only data lines. When total == -1 the range runs to EOF.
+    #
+    # The range must never be applied to raw file lines. A VCF carries a header
+    # (253 lines in the 20130502 release) that would occupy the front of the
+    # window, so the tail of the region would silently go unprocessed -- and a
+    # region with fewer variants than the header would process nothing at all
+    # while still exiting 0 and writing its archive. See RFC-005.
     ending = stop if total == -1 else min(stop, total)
 
     ### step 2
@@ -62,9 +68,9 @@ def processing(inputfile, columfile, c, counter, stop, total):
     buffers = [[] for _ in range(end_data)]
     n_lines = 0
     with open(inputfile) as f:
-        for line in itertools.islice(f, counter, ending):
-            if line.startswith('#'):
-                continue
+        # Drop headers before slicing, so [counter, ending) indexes variants.
+        data_lines = (line for line in f if not line.startswith('#'))
+        for line in itertools.islice(data_lines, counter, ending):
             fields = line.rstrip('\n').split('\t')
             try:
                 af_value = fields[7].split(';')[8].split('=')[1]

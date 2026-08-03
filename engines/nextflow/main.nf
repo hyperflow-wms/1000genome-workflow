@@ -132,7 +132,7 @@ process INDIVIDUALS {
     input:
         tuple val(chrom), path(vcf), val(counter), val(stop), val(chunk_size), path(columns, stageAs: 'columns.txt')
     output:
-        tuple val(chrom), path("chr${chrom}n-${counter}-${stop}.tar.gz")
+        tuple val(chrom), val(counter), path("chr${chrom}n-${counter}-${stop}.tar.gz")
     script:
     """
     python3 ${SCRIPTS}/individuals.py ${vcf} ${chrom} 0 ${chunk_size} ${chunk_size}
@@ -280,8 +280,19 @@ workflow {
     vcf_chunks = CHUNK_VCF(ind_input)
     individuals_out = INDIVIDUALS(vcf_chunks)
 
-    // 3) GATHER: zbierz chunki per chromosom -> merge
-    merged = INDIVIDUALS_MERGE(individuals_out.groupTuple())
+    // 3) GATHER: zbierz chunki per chromosom -> merge.
+    //    groupTuple oddaje chunki w kolejnosci ZAKONCZENIA zadan, wiec bez
+    //    posortowania kolejnosc wierszy w scalonym wyniku rozni sie miedzy
+    //    przebiegami tego samego wejscia. Sortujemy po numerycznym poczatku
+    //    chunka, co daje kolejnosc pliku wejsciowego — te sama, ktora dostaje
+    //    HyperFlow, gdzie merge dostaje chunki w kolejnosci rosnacych offsetow.
+    merged_input = individuals_out
+        .groupTuple()
+        .map { chrom, counters, files ->
+            def ordered = [counters, files].transpose().sort { it[0] as int }.collect { it[1] }
+            tuple(chrom, ordered)
+        }
+    merged = INDIVIDUALS_MERGE(merged_input)
 
     // 4) SIFTING: osobna galaz (chrom, annotation)
     sift_input = rows.map { chrom, vcf, total, annotation -> tuple(chrom, annotation) }

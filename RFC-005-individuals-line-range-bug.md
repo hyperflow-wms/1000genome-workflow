@@ -1,6 +1,6 @@
 # RFC-005: individuals.py slices file lines with variant indices
 
-Status: diagnosed, fix designed, not yet applied
+Status: fixed and verified
 Severity: silent scientific data loss on every HyperFlow run
 
 ## 1. Summary
@@ -142,3 +142,48 @@ is and both engines index identically.
   `engines/hyperflow/harness/workflow-eur-afr-hla-baseline/` were produced by
   the current behaviour, so they encode the truncation and must be regenerated
   rather than treated as ground truth.
+
+
+## 8. Verification results
+
+Applied and confirmed on BRCA1/GBR, 91 individuals, both engines run from this
+repository against the same input.
+
+`individuals.py` now filters headers before slicing, and the HyperFlow
+generator emits 0-based ranges, matching the convention the Nextflow backend
+already used. Worker images were rebuilt as 1.4 rather than overwriting 1.3.
+
+| Comparison | `chr17n.tar.gz` | analysis bundles |
+|---|---|---|
+| HyperFlow vs Nextflow | **identical, 91 files** | same shape |
+| Nextflow vs Nextflow, same input | identical, 91 files | same shape |
+
+Before the fix HyperFlow stopped at position 43117462, exactly the 2116th
+variant; both engines now reach the same final variant, and no row is unique
+to either side.
+
+The same-engine control is what licenses the claim. `mutation_overlap` and
+`frequency` draw with `random.sample()` and no seed, and every file they emit
+descends from those draws, so their contents differ between two runs of one
+engine just as they do between engines. Comparing them would report a
+difference that says nothing about the engine, so the comparison checks their
+structure instead.
+
+Two further differences turned out not to be scientific:
+
+- Nextflow's `groupTuple` emitted chunks in completion order, so its merged
+  output row order varied between runs of identical input. Chunks are now
+  sorted by start offset, which is also the order HyperFlow merges in. Without
+  this the two engines held the same variants in a different order.
+- HyperFlow's `frequency` archive carries 10 extra files, exactly
+  `mutation_overlap`'s outputs. Both tasks share one working directory there,
+  so the archiving step sweeps up its neighbour's files; Nextflow isolates
+  each task. A packaging artifact of the execution model.
+
+### Remaining work
+
+`engines/hyperflow/harness/workflow-eur-afr-hla-baseline/` still holds ten
+chunk archives from the old 1-based convention, including
+`chr6n-166051-182656.tar.gz` whose range runs past the 166052-variant
+threshold. Only the first chunk is exercised by a test and it has been
+regenerated; the rest are stale and should not be treated as reference data.
