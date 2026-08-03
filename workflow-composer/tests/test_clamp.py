@@ -231,3 +231,48 @@ def test_clamp_ind_jobs_leaves_in_range_hint_untouched():
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+# ---------------------------------------------------------------------------
+# RFC-003 section 3.3 makes the clamp one-sided on purpose: a hint below the
+# safe maximum is respected, costing throughput rather than the host. Section
+# 2.1 attaches a condition to that -- prose may own a decision only where a
+# wrong answer is detectable -- and a too-low hint is not detectable in the
+# result: the run is correct, just slow. Section 5 is where the obligation
+# lands, so the artefact has to say the effective value fell short.
+# ---------------------------------------------------------------------------
+
+def _hla_reason(hint: int) -> str:
+    import tempfile
+    from pathlib import Path
+    from workflow_composer.backends.hyperflow.generator import (
+        BUNDLED_POPULATIONS_DIR, generate_workflow,
+    )
+    d = Path(tempfile.mkdtemp())
+    (d / "data.csv").write_text("ALL.chr6.hla.vcf,166052,ALL.chr6.hla.annotation.vcf\n")
+    wf = generate_workflow(d / "data.csv", BUNDLED_POPULATIONS_DIR, ind_jobs=hint,
+                           population_filter=["EUR"], individuals=1153,
+                           compute_environment="local")
+    return wf["metadata"]["parallelism"][0]["reason"]
+
+
+def test_a_hint_below_the_recommendation_is_recorded():
+    reason = _hla_reason(1)
+    assert "below recommended" in reason, (
+        "a too-low ind_jobs is accepted silently; the run is correct but slow, "
+        "so nothing downstream can catch it and no artefact states it"
+    )
+
+
+def test_the_shortfall_note_says_it_is_not_a_safety_problem():
+    assert "throughput" in _hla_reason(1), (
+        "the note must distinguish a throughput shortfall from the clamp, "
+        "which exists for host safety"
+    )
+
+
+def test_a_hint_at_or_above_the_recommendation_carries_no_shortfall_note():
+    for hint in (15, 250):
+        assert "below recommended" not in _hla_reason(hint), (
+            f"hint={hint} does not fall short and must not be annotated as if it did"
+        )

@@ -327,6 +327,19 @@ class HyperFlowGenerator:
                     )
                 if ind_jobs != actual_ind_jobs:
                     reason = f"{reason} [hint ind_jobs={ind_jobs} clamped to {actual_ind_jobs}]"
+                elif actual_ind_jobs < recommended.ind_jobs:
+                    # The clamp is one-sided by design (RFC-003 section 3.3): a
+                    # hint below the safe maximum is respected, costing
+                    # throughput rather than the host. But RFC-003 section 2.1
+                    # only allows prose to own a decision when a wrong answer is
+                    # detectable, and this one is not: the run is correct,
+                    # merely slow, and without this note the reason reads
+                    # "core-bound" while naming a task count no core count
+                    # implies. Record the shortfall so the artefact states it.
+                    reason = (
+                        f"{reason} [below recommended ind_jobs="
+                        f"{recommended.ind_jobs}; throughput only, not safety]"
+                    )
                 logger.info("chr%s: %s", c_num, reason)
                 parallelism_metadata.append({
                     "chromosome": c_num,
