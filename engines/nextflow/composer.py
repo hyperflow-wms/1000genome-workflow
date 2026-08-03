@@ -90,6 +90,11 @@ def main() -> int:
                    help="Skip the LLM and load a ResearchIntent from this file")
     p.add_argument("--dry-run", action="store_true",
                    help="Stop after RESOLVE; print the command without running it")
+    # -resume reuses the extraction this run already performed. It also makes a
+    # repeated run replay the first one's cached tasks, so anything checking
+    # that unseeded stages really do vary between runs must turn it off.
+    p.add_argument("--no-resume", action="store_true",
+                   help="Execute every task afresh instead of reusing cached ones")
     args = p.parse_args()
 
     run_dir = THIS_DIR / "runs" / datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -201,7 +206,9 @@ def main() -> int:
     command = list(spec.command)
     command[0] = nextflow
     command[2] = str(MAIN_NF)
-    command.extend(["--outdir", str(run_dir / "results"), "-resume"])
+    command.extend(["--outdir", str(run_dir / "results")])
+    if not args.no_resume:
+        command.append("-resume")
 
     (run_dir / "plan.json").write_text(json.dumps({
         "intent": intent.model_dump(),

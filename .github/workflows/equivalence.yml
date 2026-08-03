@@ -1,0 +1,145 @@
+# Runs one research question through both engines and compares the scientific
+# output. This is the check behind the claim that the workflow is portable: the
+# same intent, the same analysis scripts, two engines, one result.
+#
+# The case is APOE/GBR -- 113 variants, the smallest region in the evaluation
+# and the one that exposed RFC-005, where the individuals stage silently
+# processed nothing because a VCF header is longer than the region. It runs in
+# roughly 80 seconds per engine and needs no LLM: the HyperFlow harness reads
+# the case's mock_intent and the Nextflow composer takes the same intent as
+# JSON.
+#
+# It does reach the 1000 Genomes FTP release to extract the region with tabix,
+# so a failure here can mean the archive is unavailable rather than that the
+# engines disagree. The step is named so that is visible in the log.
+
+name: equivalence
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'worker-base-image/**'
+      - 'engines/**'
+      - 'workflow-composer/src/workflow_composer/backends/**'
+      - 'tests/equivalence/**'
+      - '.github/workflows/equivalence.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'worker-base-image/**'
+      - 'engines/**'
+      - 'workflow-composer/src/workflow_composer/backends/**'
+      - 'tests/equivalence/**'
+      - '.github/workflows/equivalence.yml'
+  workflow_dispatch:
+
+env:
+  NXF_VER: 25.10.2
+
+jobs:
+  cross-engine:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      HAVE_DOCKERHUB: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pulling counts against the anonymous rate limit, which shared runners
+      # routinely exhaust.
+      - name: Login to Docker Hub
+        if: env.HAVE_DOCKERHUB == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install workflow-composer
+        run: pip install -e workflow-composer
+
+      # Both engines take their scripts from this one image, which is what
+      # makes "the science is identical" a property of the build rather than a
+      # claim about two copies staying in sync.
+      - name: Build images
+        run: |
+          make -C worker-base-image image
+          make -C worker-image image
+          docker build --platform linux/amd64 \
+            -f engines/nextflow/worker-nf.Dockerfile \
+            -t 1000genome-worker-nf:1.4 engines/nextflow/
+
+      - name: Install Nextflow
+        run: |
+          curl -fsSL -o /usr/local/bin/nextflow \
+            "https://github.com/nextflow-io/nextflow/releases/download/v${NXF_VER}/nextflow"
+          chmod +x /usr/local/bin/nextflow
+          nextflow -version
+
+      - name: HyperFlow — APOE/GBR (extracts from the 1000 Genomes FTP release)
+        working-directory: engines/hyperflow/harness
+        run: bash run-research-tests.sh --mock-llm -y apoe-gbr
+
+      - name: Nextflow — APOE/GBR (extracts from the 1000 Genomes FTP release)
+        working-directory: engines/nextflow
+        run: |
+          cat > intent.json <<'JSON'
+          {"analysis_type": "region_analysis",
+           "populations": ["GBR"],
+           "chromosomes": null,
+           "regions": [{"name": "APOE", "chromosome": "19",
+                        "start": 44905796, "end": 44909393,
+                        "context": "Alzheimer's"}],
+           "focus": "all_variants",
+           "clarification_needed": false,
+           "clarification_reason": null}
+          JSON
+          python3 composer.py --intent-json intent.json \
+            "Analyze APOE gene variants in the British population."
+
+      # chr*n.tar.gz must match exactly: the individuals stage is the only
+      # fully deterministic one. mutation_overlap and frequency sample without
+      # a seed, and every file they write descends from those draws, so the
+      # comparison checks their structure instead -- see the control below.
+      - name: Compare engines
+        run: |
+          NF_RESULTS="$(ls -d engines/nextflow/runs/*/results | tail -1)"
+          echo "Nextflow results: $NF_RESULTS"
+          bash tests/equivalence/compare-results.sh \
+            "$NF_RESULTS" engines/hyperflow/harness/workflow-apoe-gbr
+
+      # Without this a reader cannot tell whether the unseeded bundles were
+      # excused legitimately. Two runs of one engine must show the same
+      # pattern the cross-engine comparison does. --no-resume matters: with
+      # Nextflow's cache the second run would replay the first one's tasks and
+      # the control would confirm nothing.
+      - name: Control — same engine, same input, run twice
+        working-directory: engines/nextflow
+        run: |
+          python3 composer.py --no-resume --intent-json intent.json \
+            "Analyze APOE gene variants in the British population."
+          cd ../..
+          RUNS=$(ls -d engines/nextflow/runs/*/results | tail -2)
+          echo "comparing: $RUNS"
+          bash tests/equivalence/compare-results.sh $RUNS
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: equivalence-results
+          path: |
+            engines/nextflow/runs/*/plan.json
+            engines/nextflow/runs/*/intent.json
+            engines/hyperflow/harness/workflow-apoe-gbr/workflow.json
+            engines/hyperflow/harness/workflow-apoe-gbr/data.csv
+          if-no-files-found: warn

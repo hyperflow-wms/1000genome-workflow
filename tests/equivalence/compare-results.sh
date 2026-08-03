@@ -66,10 +66,11 @@ done
 # mutation_overlap.py and frequency.py draw with random.sample() and no seed,
 # and every file they emit is downstream of those draws, so their contents are
 # not comparable -- not across engines, and not across two runs of the same
-# engine. Verified: running Nextflow twice on identical input reproduces
-# chr*n.tar.gz exactly while these bundles differ, the same pattern seen
-# between engines. Comparing their contents would therefore report a
-# difference that carries no information about the engine.
+# engine. Measured on APOE/GBR: two Nextflow runs of identical input reproduce
+# chr*n.tar.gz exactly, while 1000 of the 4002 files in the frequency bundle
+# differ -- precisely the random_indiv* draws. That is the same pattern seen
+# between engines, so comparing these contents would report a difference that
+# carries no information about the engine.
 #
 # What is checkable is structure: the same set of files, none of them empty.
 for archive in "$A"/chr*-*.tar.gz; do

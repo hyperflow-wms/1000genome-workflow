@@ -44,12 +44,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # The base carries the analysis scripts and worker-image builds FROM it,
+      # so build it here rather than pulling: a change to scripts/ bumps the
+      # base version, and the new tag exists nowhere until this job pushes it.
+      - name: Build base image
+        run: make -C worker-base-image image
+
       - name: Build worker image
         run: make -C worker-image image
 
       - name: Show built tags
-        run: docker images 'hyperflowwms/1000genome-worker'
+        run: docker images 'hyperflowwms/1000genome-worker*'
 
-      - name: Push
+      # Both images are published: a rebuild of worker-image outside CI
+      # resolves its FROM against the registry.
+      - name: Push base image
+        if: env.DO_PUSH == 'true' && env.HAVE_DOCKERHUB == 'true'
+        run: make -C worker-base-image push-only
+
+      - name: Push worker image
         if: env.DO_PUSH == 'true' && env.HAVE_DOCKERHUB == 'true'
         run: make -C worker-image push
