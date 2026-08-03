@@ -82,9 +82,13 @@ def load_skill_context(backend: str | None = None, *, include_policy: bool = Fal
     others.
 
     ``include_policy`` adds ``knowledge/policy/`` -- memory budgets, vCPU
-    profiles, work per task. It is off by default because the stage that calls
-    this with defaults is interpretation, and a ``ResearchIntent`` carries no
-    resource fields for that knowledge to inform: it made up 44% of the
+    profiles, work per task. It belongs to PLAN, where an agent picks the
+    memory-budget preset and may hint ``ind_jobs``; those choices then become
+    inputs to RESOLVE, which is deterministic code calling
+    ``recommend_parallelism`` on nine numbers and reads no prose at all. It is
+    off by default because the stage that calls this with defaults is
+    interpretation, and a ``ResearchIntent`` carries no resource fields for
+    that knowledge to inform: it made up 44% of the
     interpreter's context while unable to change its output. That is not
     merely wasted context. The Skills ablation records GPT-4.1-mini scoring
     8.7pp lower with the full document set than with vocabulary alone, its
