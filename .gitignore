@@ -11,6 +11,10 @@ __pycache__/
 .env
 node_modules
 
-# Integration test run outputs (WORKFLOW_DIR="$SCRIPT_DIR/workflow-$TEST_ID")
-tests/integration/workflow-*/
-tests/integration/workflow-*.tar.gz
+# Harness run outputs (WORKFLOW_DIR="$SCRIPT_DIR/workflow-$TEST_ID")
+engines/hyperflow/harness/workflow-*/
+engines/hyperflow/harness/workflow-*.tar.gz
+
+# GUI: server logs and the extracted png/txt cache behind chart comparison
+gui/gui-*.log
+gui/.compare-cache/
