@@ -551,7 +551,11 @@ a.link:hover{text-decoration:underline}
 button.mini{font-size:11.5px;padding:5px 10px;margin:2px 4px 2px 0;background:#eef3fa;color:#1565c0;border:1px solid #d3e0f2}
 button.mini.stop{background:#fbe9e9;color:#b02a2a;border-color:#f0cccc}
 .badge{font-size:11px;padding:2px 8px;border-radius:20px}
-.b-done{background:#e6f4ea;color:#1e7d34}.b-run{background:#fff4e0;color:#b26b00}.b-none{background:#fbe9e9;color:#b02a2a}
+.b-done{background:#e6f4ea;color:#1e7d34;border:1px solid #b7e0c2}
+.b-run{background:#e7f0fd;color:#1565c0;border:1px solid #cadef7}
+.b-warn{background:#fff4e0;color:#b26b00;border:1px solid #f0d8b3}
+.b-err{background:#fbe9e9;color:#b02a2a;border:1px solid #f0c4c4}
+.b-none{background:#eef1f5;color:#5b6577;border:1px solid #dde3ec}
 .muted{color:#6b7683;font-size:12.5px}
 h3{margin:0 0 10px}
 .help li{margin:4px 0;font-size:13px}
@@ -576,7 +580,7 @@ tbody tr:hover{background:#fafcff}
 .cmppair figcaption{font-size:11.5px;color:#41506a;margin-bottom:3px}
 .cmpimg{width:100%;max-width:460px;border:1px solid #e0e6ef;border-radius:6px;background:#fff}
 </style></head><body>
-<header><h1>Composer 1000genome → Nextflow</h1>
+<header><h1>1000genome Composer &mdash; Nextflow &amp; HyperFlow</h1>
 <p>A natural-language question becomes an intent (LLM), then tabix extraction, then a workflow, then results. The region and populations come from the prompt.</p></header>
 <div class=wrap>
 
@@ -721,7 +725,8 @@ async function runBoth(){
   $('out').innerHTML=msg+' &mdash; follow it in the runs table below.';
   refresh();
 }
-function badge(s){if(s=='gotowe')return '<span class="badge b-done">gotowe</span>';if(s=='w toku')return '<span class="badge b-run">w toku</span>';return '<span class="badge b-none">'+s+'</span>';}
+const BADGE={'done':'b-done','running':'b-run','no results':'b-warn','error':'b-err'};
+function badge(s){return '<span class="badge '+(BADGE[s]||'b-none')+'">'+(s=='running'?'&#9679; ':'')+s+'</span>';}
 function isummary(i){if(!i)return '<span class=muted>—</span>';const regs=(i.regions||[]).map(r=>r.name).join(',')||'—';return (i.analysis_type||'')+' · ['+(i.populations||[]).join(',')+'] · '+regs+' · '+(i.focus||'');}
 let RUNFILTER='all', ALLRUNS=[];
 function setFilter(f,btn){RUNFILTER=f;document.querySelectorAll('#filt button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderRuns();}
@@ -748,7 +753,7 @@ function progHtml(x){
   let st='<div class=pbar><div style="width:'+x.progress.pct+'%">'+x.progress.pct+'%</div></div>';
   if(x.progress.procs && x.progress.procs.length){
     let ph=x.progress.procs.map(p=>'<span class="'+(p.done?'d':(p.x<p.y?'a':''))+'">'+shortProc(p.name)+' '+p.x+'/'+p.y+'</span>').join(' · ');
-    let ex=(x.engine=='hyperflow'&&x.progress.phase&&x.progress.phase!='EXECUTE'&&x.progress.phase!='gotowe')?'<span class=a>'+x.progress.phase+'</span> · ':'';
+    let ex=(x.engine=='hyperflow'&&x.progress.phase&&x.progress.phase!='EXECUTE'&&x.progress.phase!='done')?'<span class=a>'+x.progress.phase+'</span> · ':'';
     st+='<div class=pmini>'+ex+ph+'</div>';
   }else if(x.progress.phase){
     st+='<div class=pmini>faza: <span class=a>'+x.progress.phase+'</span></div>';
