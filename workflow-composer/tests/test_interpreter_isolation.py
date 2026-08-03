@@ -121,3 +121,54 @@ def test_load_skill_context_with_backend_still_includes_domain_and_policy():
     default_context = load_skill_context()
     backend_context = load_skill_context(backend="hyperflow")
     assert default_context in backend_context
+
+
+# ---------------------------------------------------------------------------
+# The other direction. Asserting only that backend text is absent would pass
+# just as happily if the interpreter received no knowledge at all, which is
+# exactly how the knowledge layer could disappear unnoticed: intent extraction
+# would silently fall back to the model's parametric knowledge -- the paper's
+# S0 condition, 44% full-match against 83% with the vocabulary documents -- and
+# every remaining test would still be green, because the ones that read these
+# files skip when they are missing rather than failing.
+#
+# These anchors are deliberately concrete. A population code and a GRCh37
+# coordinate cannot be satisfied by an empty string, a stray heading, or a
+# directory that exists but holds nothing.
+# ---------------------------------------------------------------------------
+
+KNOWLEDGE_ANCHORS = [
+    ("GBR", "a population code from populations.md"),
+    ("BRCA1", "a gene name from genomic-regions.md"),
+    ("43044295", "BRCA1's GRCh37 start coordinate"),
+    ("HLA", "a named region"),
+]
+
+
+@pytest.mark.parametrize("anchor,description", KNOWLEDGE_ANCHORS)
+def test_domain_knowledge_reaches_the_skill_context(anchor, description):
+    context = load_skill_context()
+    assert anchor in context, (
+        f"{anchor!r} ({description}) is missing from the skill context. "
+        "The knowledge layer is not reaching intent interpretation."
+    )
+
+
+@pytest.mark.skipif(
+    not llm_interpreter.HAS_LLM_DEPS,
+    reason="instructor/litellm not installed; interpret_research_question is unusable without them",
+)
+@pytest.mark.parametrize("anchor,description", KNOWLEDGE_ANCHORS)
+def test_interpreter_prompt_carries_domain_knowledge(monkeypatch, anchor, description):
+    """The anchors must survive all the way into the prompt, not merely load."""
+    stub_client = _CapturingClient()
+    monkeypatch.setattr(llm_interpreter, "get_client", lambda: stub_client)
+
+    llm_interpreter.interpret_research_question("Compare BRCA1 variants in British individuals.")
+
+    prompt = stub_client.completions.system_prompt
+    assert prompt is not None, "the interpreter never issued a request"
+    assert anchor in prompt, (
+        f"{anchor!r} ({description}) never reached the system prompt, so the "
+        "model is interpreting on parametric knowledge alone."
+    )
