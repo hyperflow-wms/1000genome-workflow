@@ -13,7 +13,10 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-CASES_YAML="$SCRIPT_DIR/cases.yaml"
+# Overridable so a caller can inject a case without editing the file in
+# place: the GUI writes a temporary copy with its prompt appended and
+# points CASES_YAML at it.
+CASES_YAML="${CASES_YAML:-$SCRIPT_DIR/cases.yaml}"
 
 # Load .env file if present (for API keys)
 if [ -f "$REPO_ROOT/.env" ]; then
@@ -752,7 +755,26 @@ for p in json.load(sys.stdin)['problems']:
 
     cd "$SCRIPT_DIR"
 
-    if docker-compose up --abort-on-container-exit 2>&1; then
+    # docker-compose can exit non-zero while tearing down containers that have
+    # already stopped ("No such container"), which happens after the engine has
+    # reported the workflow finished and every task exited 0. Treating that as a
+    # failure reports a completed run, outputs and all, as failed -- so fall back
+    # to the engine's own verdict before believing the exit status.
+    COMPOSE_LOG="$WORKFLOW_DIR/compose.log"
+    EXECUTE_OK=true
+    set +e
+    docker-compose up --abort-on-container-exit 2>&1 | tee "$COMPOSE_LOG"
+    COMPOSE_RC=${PIPESTATUS[0]}
+    set -e
+    if [ "$COMPOSE_RC" -ne 0 ]; then
+        if grep -qE "Workflow \\[[0-9]+\\] finished\\." "$COMPOSE_LOG"; then
+            log_warning "docker-compose exited non-zero after the workflow finished (teardown race) -- judging by the engine instead"
+        else
+            EXECUTE_OK=false
+        fi
+    fi
+
+    if [ "$EXECUTE_OK" = true ]; then
         log_success "Workflow execution completed"
 
         # Verify outputs
