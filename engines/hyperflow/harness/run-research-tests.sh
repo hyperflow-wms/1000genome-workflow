@@ -27,8 +27,9 @@ fi
 FRAMEWORK_PY="$SCRIPT_DIR/lib/test_framework.py"
 
 # Container images
-TABIX_IMAGE="broadinstitute/gatk:4.4.0.0"
-DATA_IMAGE="hyperflowwms/1000genome-data:1.0"
+# EXTRACT runs only tabix in this image, so any image carrying htslib works.
+TABIX_IMAGE="${TABIX_IMAGE:-broadinstitute/gatk:4.4.0.0}"
+DATA_IMAGE="${DATA_IMAGE:-hyperflowwms/1000genome-data:1.0}"
 
 # Colors
 RED='\033[0;31m'
