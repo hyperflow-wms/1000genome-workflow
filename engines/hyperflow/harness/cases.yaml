@@ -344,6 +344,112 @@ test_cases:
       end: 44909393
       context: Alzheimer's
     focus: all_variants
+- id: q1-hla-brca1
+  name: HLA and BRCA1 across European, East Asian and African populations
+  prompt: 'Compare European, East Asian, and African populations in the HLA and BRCA1
+    regions.
+
+    '
+  description: 'Q1 of the end-to-end evaluation. The HLA region dominates: 166K variants
+    on chr6 against 2.4K on chr17, so the two chromosomes receive very different
+    individuals-stage parallelism from the same hint. The chr6 individuals_merge is
+    the tail-end bottleneck.
+
+    '
+  expected_intent:
+    analysis_type: population_comparison
+    populations:
+    - EUR
+    - EAS
+    - AFR
+    regions:
+    - name: HLA
+      chromosome: '6'
+    - name: BRCA1
+      chromosome: '17'
+    focus: all_variants
+  mock_intent:
+    analysis_type: population_comparison
+    populations:
+    - EUR
+    - EAS
+    - AFR
+    chromosomes: null
+    regions:
+    - name: HLA
+      chromosome: '6'
+      start: 28477797
+      end: 33448354
+      context: immune function
+    - name: BRCA1
+      chromosome: '17'
+      start: 43044295
+      end: 43125483
+      context: breast cancer
+    focus: all_variants
+  expected_outputs:
+  - chr6-EUR.tar.gz
+  - chr6-EAS.tar.gz
+  - chr6-AFR.tar.gz
+  - chr17-EUR.tar.gz
+  - chr17-EAS.tar.gz
+  - chr17-AFR.tar.gz
+  - chr6-EUR-freq.tar.gz
+  - chr6-EAS-freq.tar.gz
+  - chr6-AFR-freq.tar.gz
+  - chr17-EUR-freq.tar.gz
+  - chr17-EAS-freq.tar.gz
+  - chr17-AFR-freq.tar.gz
+- id: q2-brca-sas-amr
+  name: BRCA1 and BRCA2 in South Asian and American populations
+  prompt: 'Analyze BRCA1 and BRCA2 gene variants related to breast cancer in South
+    Asian and American populations.
+
+    '
+  description: 'Q2 of the end-to-end evaluation, and the smallest of the three. Naming
+    both genes explicitly is what makes it work: an earlier phrasing that said only
+    "breast cancer susceptibility" did not reach BRCA1 and BRCA2, and the run failed
+    with no chromosomes to extract.
+
+    '
+  expected_intent:
+    analysis_type: population_comparison
+    populations:
+    - SAS
+    - AMR
+    regions:
+    - name: BRCA1
+      chromosome: '17'
+    - name: BRCA2
+      chromosome: '13'
+    focus: all_variants
+  mock_intent:
+    analysis_type: population_comparison
+    populations:
+    - SAS
+    - AMR
+    chromosomes: null
+    regions:
+    - name: BRCA1
+      chromosome: '17'
+      start: 43044295
+      end: 43125483
+      context: breast cancer
+    - name: BRCA2
+      chromosome: '13'
+      start: 32315086
+      end: 32400266
+      context: breast cancer
+    focus: all_variants
+  expected_outputs:
+  - chr17-SAS.tar.gz
+  - chr17-AMR.tar.gz
+  - chr13-SAS.tar.gz
+  - chr13-AMR.tar.gz
+  - chr17-SAS-freq.tar.gz
+  - chr17-AMR-freq.tar.gz
+  - chr13-SAS-freq.tar.gz
+  - chr13-AMR-freq.tar.gz
 - id: q3-multi-region
   name: Sickle cell, cystic fibrosis and Alzheimer's across five super-populations
   prompt: 'Investigate HBB gene variants related to sickle cell trait, CFTR variants
@@ -387,3 +493,34 @@ test_cases:
       end: 44909393
       context: Alzheimer's
     focus: all_variants
+  expected_outputs:
+  - chr11-AFR.tar.gz
+  - chr11-AMR.tar.gz
+  - chr11-EAS.tar.gz
+  - chr11-EUR.tar.gz
+  - chr11-SAS.tar.gz
+  - chr7-AFR.tar.gz
+  - chr7-AMR.tar.gz
+  - chr7-EAS.tar.gz
+  - chr7-EUR.tar.gz
+  - chr7-SAS.tar.gz
+  - chr19-AFR.tar.gz
+  - chr19-AMR.tar.gz
+  - chr19-EAS.tar.gz
+  - chr19-EUR.tar.gz
+  - chr19-SAS.tar.gz
+  - chr11-AFR-freq.tar.gz
+  - chr11-AMR-freq.tar.gz
+  - chr11-EAS-freq.tar.gz
+  - chr11-EUR-freq.tar.gz
+  - chr11-SAS-freq.tar.gz
+  - chr7-AFR-freq.tar.gz
+  - chr7-AMR-freq.tar.gz
+  - chr7-EAS-freq.tar.gz
+  - chr7-EUR-freq.tar.gz
+  - chr7-SAS-freq.tar.gz
+  - chr19-AFR-freq.tar.gz
+  - chr19-AMR-freq.tar.gz
+  - chr19-EAS-freq.tar.gz
+  - chr19-EUR-freq.tar.gz
+  - chr19-SAS-freq.tar.gz
