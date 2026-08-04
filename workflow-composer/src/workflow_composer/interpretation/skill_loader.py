@@ -1,20 +1,26 @@
 """
 Load knowledge documents for LLM context.
 
-The documents are split by owner (RFC-004 §2.3) into three directories:
+The documents are split by owner (RFC-004 §2.3) into two directories:
 
 - ``knowledge/domain/``   — population codes, region coordinates, research
   contexts, data sources, interpretation guidelines. Owned by the genomics
   curator; never engine-specific.
-- ``knowledge/policy/``   — memory budgets, vCPU profiles, work-per-task
-  guidance. Owned by whoever knows the target machine; never engine-specific.
 - ``knowledge/backends/`` — how to invoke a given engine. Owned by the
   backend maintainer; engine-specific by definition.
+
+A third directory, ``knowledge/policy/``, used to carry memory-budget and
+parallelism guidance for whoever knows the target machine. It is gone:
+capacity is now computed deterministically from region estimates and
+calibrated coefficients (``core/capacity.py``), so there is no LLM-mediated
+decision left for that prose to inform. See
+``CAPACITY-IMPLEMENTATION-PLAN.md`` section 3.C for the rationale and
+``docs/capacity-model.md`` for what replaced it as maintainer documentation.
 
 Callers historically addressed a document by a flat basename (``SKILL_DIR /
 "populations.md"``). ``SKILL_DIR`` keeps that basename-addressed shape as a
 thin lookup over the split tree, so existing callers and tests do not need to
-know which of the three directories a document now lives in.
+know which of the two directories a document now lives in.
 """
 from pathlib import Path
 
@@ -22,17 +28,15 @@ PACKAGE_DIR = Path(__file__).parent.parent
 KNOWLEDGE_DIR = PACKAGE_DIR / "knowledge"
 
 DOMAIN_DIR = KNOWLEDGE_DIR / "domain"
-POLICY_DIR = KNOWLEDGE_DIR / "policy"
 BACKENDS_DIR = KNOWLEDGE_DIR / "backends"
 
 # Basename -> real location. "SKILL.md" is kept as a legacy alias for the
-# HyperFlow tool manual it used to contain in full (it is now split three
-# ways; the manual itself became knowledge/backends/hyperflow.md).
+# HyperFlow tool manual it used to contain in full (it is now split across
+# ``knowledge/domain/`` and ``knowledge/backends/``; the manual itself became
+# knowledge/backends/hyperflow.md).
 _LOCATIONS: dict[str, Path] = {
     "hyperflow.md": BACKENDS_DIR / "hyperflow.md",
     "SKILL.md": BACKENDS_DIR / "hyperflow.md",
-    "individuals-parallelism.md": POLICY_DIR / "individuals-parallelism.md",
-    "resource-policy.md": POLICY_DIR / "resource-policy.md",
     "interpretation.md": DOMAIN_DIR / "interpretation.md",
     "populations.md": DOMAIN_DIR / "populations.md",
     "genomic-regions.md": DOMAIN_DIR / "genomic-regions.md",
@@ -64,37 +68,21 @@ SKILL_DIR = _SkillDir()
 # below does NOT load all of these unconditionally -- see its docstring.
 SKILL_FILES = [
     "hyperflow.md",
-    "individuals-parallelism.md",
     "interpretation.md",
     "populations.md",
     "genomic-regions.md",
     "research-contexts.md",
     "data-sources.md",
-    "resource-policy.md",
 ]
 
 
-def load_skill_context(backend: str | None = None, *, include_policy: bool = False) -> str:
+def load_skill_context(backend: str | None = None) -> str:
     """Compose the knowledge a given stage needs.
 
-    Domain knowledge is always included. Policy and backend knowledge are
-    opt-in, because each is useful at exactly one stage and inert at the
-    others.
-
-    ``include_policy`` adds ``knowledge/policy/`` -- memory budgets, vCPU
-    profiles, work per task. It belongs to PLAN, where an agent picks the
-    memory-budget preset and may hint ``ind_jobs``; those choices then become
-    inputs to RESOLVE, which is deterministic code calling
-    ``recommend_parallelism`` on nine numbers and reads no prose at all. It is
-    off by default because the stage that calls this with defaults is
-    interpretation, and a ``ResearchIntent`` carries no resource fields for
-    that knowledge to inform: it made up 44% of the
-    interpreter's context while unable to change its output. That is not
-    merely wasted context. The Skills ablation records GPT-4.1-mini scoring
-    8.7pp lower with the full document set than with vocabulary alone, its
-    clarification accuracy falling from 53% to 13%, which is what surplus
-    context does to this task. Whoever chooses parallelism wants these
-    documents; the MCP server exposes them as resources for exactly that.
+    Domain knowledge is always included; backend knowledge is opt-in,
+    because it is useful at exactly one stage (RESOLVE/EXECUTE for a chosen
+    engine) and inert everywhere else -- including at interpretation, whose
+    default call (no ``backend``) must never see it.
 
     With ``backend=None`` nothing under ``knowledge/backends/`` is loaded.
     This is the interpreter-isolation property from RFC-004 §2.4: the
@@ -105,7 +93,7 @@ def load_skill_context(backend: str | None = None, *, include_policy: bool = Fal
     With a ``backend`` name, the one fragment that backend declares (its
     ``skill_fragment``, looked up through the backend registry so it always
     matches what `backends/__init__.py:get_backend` returns for 4.1/4.2
-    registered backends) is appended after the domain/policy content.
+    registered backends) is appended after the domain content.
 
     Raises:
         ValueError: if ``backend`` is given but not a registered backend name.
@@ -116,8 +104,6 @@ def load_skill_context(backend: str | None = None, *, include_policy: bool = Fal
         filepath = SKILL_DIR / filename
         if filepath.is_relative_to(BACKENDS_DIR):
             continue  # engine-specific: never part of the default context
-        if filepath.is_relative_to(POLICY_DIR) and not include_policy:
-            continue  # sizing knowledge: only for the stage that sizes
         if filepath.exists():
             content = filepath.read_text()
             parts.append(f"# {filename}\n\n{content}")

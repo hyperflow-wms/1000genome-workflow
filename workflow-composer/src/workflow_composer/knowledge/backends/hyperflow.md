@@ -58,10 +58,10 @@ the `g1kwf generate` command to run after data extraction.
   - `"gcp"`: Use GCS URLs (requires GCS configuration)
 
 - `parallelism`: Per-task memory budget preset — `"small"`, `"medium"`,
-  `"large"` (see resource-policy.md for the MB values each name resolves
-  to). `ind_jobs` is computed from this budget plus the estimated
-  variant/individual counts, not looked up from the preset name (default:
-  `"medium"`)
+  `"large"` (256/512/1024 MB; see `core/environment.py`'s
+  `MEMORY_BUDGET_PRESETS`). `ind_jobs` is computed from this budget plus the
+  estimated variant/individual counts, not looked up from the preset name
+  (default: `"medium"`)
 
 - `ind_jobs`: Explicit task-count override (overrides the computed
   recommendation)
@@ -82,10 +82,11 @@ Generate HyperFlow workflow JSON from chromosome data. Returns `workflow.json`,
 - `populations`: Population codes to include (default: all 7)
 
 - `parallelism`: Per-task memory budget preset — `"small"`, `"medium"`,
-  `"large"` (see resource-policy.md for the MB values each name resolves
-  to, and who owns choosing them). `ind_jobs` is computed from this budget
-  plus the actual variant/individual counts, not looked up from the preset
-  name — see "Choosing individuals parallelism" below (default: `"medium"`)
+  `"large"` (256/512/1024 MB; see `core/environment.py`'s
+  `MEMORY_BUDGET_PRESETS`). `ind_jobs` is computed from this budget plus the
+  actual variant/individual counts, not looked up from the preset name.
+  Prefer omitting it: capacity, not `ind_jobs`, is what a deterministic
+  model now sizes from the workflow's own shape (default: `"medium"`)
 
 - `ind_jobs`: Explicit ind_jobs value (overrides parallelism preset; still
   clamped to the memory-safe range, see below)

@@ -1,10 +1,11 @@
 # Nextflow backend
 
 How to invoke the Nextflow port of the pipeline, and what artifact it
-consumes. Domain and resource policy — which populations and regions a
-question implies, how much memory a task gets — are engine-neutral and live
-under `knowledge/domain/` and `knowledge/policy/`; this file covers only what
-is specific to launching this engine.
+consumes. Domain knowledge — which populations and regions a question
+implies — is engine-neutral and lives under `knowledge/domain/`. Resource
+sizing is deterministic configuration (`core/environment.py`,
+`core/capacity.py`), not a knowledge document; this file covers only what is
+specific to launching this engine.
 
 ## What `materialize` produces
 

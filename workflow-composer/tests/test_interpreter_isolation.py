@@ -2,7 +2,7 @@
 Tests for interpreter isolation (RFC-004 section 4.4, property from section 2.4).
 
 `interpret_research_question` must extract a `ResearchIntent` from the
-question text and domain/policy knowledge alone, never from a backend's
+question text and domain knowledge alone, never from a backend's
 "how to invoke this engine" fragment under `knowledge/backends/`. Otherwise
 the extracted intent could be influenced by which engine will eventually run
 it, and engine independence would be asserted rather than checkable.
@@ -175,16 +175,21 @@ def test_interpreter_prompt_carries_domain_knowledge(monkeypatch, anchor, descri
 
 
 # ---------------------------------------------------------------------------
-# Policy knowledge is for the stage that sizes parallelism, not for the one
-# that reads a research question. A ResearchIntent has no resource fields, so
-# these documents cannot change the interpreter's output -- they can only crowd
-# the vocabulary the interpretation actually depends on.
+# Resource sizing is for RESOLVE, not for the stage that reads a research
+# question. A ResearchIntent has no resource fields, so these implementation
+# details cannot change the interpreter's output -- they can only crowd the
+# vocabulary the interpretation actually depends on. There is no longer a
+# knowledge document that carries them into a prompt at all (capacity is
+# computed deterministically -- see CAPACITY-IMPLEMENTATION-PLAN.md section
+# 3.C and docs/capacity-model.md); this guards that they do not reappear by
+# some other route, such as domain knowledge growing a resource-sizing
+# section.
 # ---------------------------------------------------------------------------
 
 POLICY_MARKERS = [
-    ("mem_budget_mb", "a ComputeEnvironment field from resource-policy.md"),
+    ("mem_budget_mb", "a ComputeEnvironment field (core/environment.py)"),
     ("engine_reserve", "the engine's core reservation"),
-    ("recommend_parallelism", "the sizing entry point named in individuals-parallelism.md"),
+    ("recommend_parallelism", "the sizing entry point in core/parallelism.py"),
 ]
 
 
@@ -193,14 +198,6 @@ def test_policy_is_absent_from_the_default_context(marker, description):
     assert marker not in load_skill_context(), (
         f"{marker!r} ({description}) reached the interpretation context, which "
         "cannot act on it."
-    )
-
-
-@pytest.mark.parametrize("marker,description", POLICY_MARKERS)
-def test_policy_is_available_when_asked_for(marker, description):
-    """Gating it must not lose it: the sizing stage still gets these."""
-    assert marker in load_skill_context(include_policy=True), (
-        f"{marker!r} ({description}) is unreachable even with include_policy=True"
     )
 
 
