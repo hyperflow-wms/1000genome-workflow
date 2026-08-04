@@ -106,6 +106,32 @@ class ExecutionHints(BaseModel):
     parallelism_reason: str = ""
 
 
+class CapacityRecommendation(BaseModel):
+    """A capacity request in slots, computed from scientific intent alone.
+
+    This is a request, not an assumption: nothing in the composer consumes
+    it yet (see ``core.capacity``'s module docstring) -- it is carried on
+    the plan purely for visibility, ahead of the milestone that wires it
+    into task sizing.
+
+    ``ind_jobs`` here is per region, the ``J*`` values ``recommend_capacity``
+    would choose for each region under the span trade-off in
+    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 2.1.1. This is deliberately
+    *not* what the workflow was actually generated with -- that stays
+    ``parameters_used["ind_jobs"]``, the single global value
+    ``resolve_parallelism``/``generate_workflow`` produced, until milestone
+    M4 makes ``J*`` the thing task sizing actually uses.
+    """
+    slots: int                          # C* = max(1, ceil(W/S)), rounded
+    slots_exact: float                  # W/S before rounding
+    work_seconds: float                 # W, total compute across every region
+    span_seconds: float                 # S, the longest single region's branch
+    span_region: str                    # which region set S
+    ind_jobs: dict[str, int]            # region name -> J*_r (reported, not applied)
+    model_version: str                  # PerformanceModel.version used
+    reason: str                         # one line naming slots, W, S, and the spanning region
+
+
 # ============================================================================
 # Output Model (Complete Plan)
 # ============================================================================
@@ -122,6 +148,7 @@ class WorkflowPlan(BaseModel):
     workflow: dict                      # HyperFlow JSON (from generator.py)
     output_format: OutputFormat = OutputFormat.HYPERFLOW
     execution_hints: ExecutionHints
+    capacity: CapacityRecommendation | None = None
 
     # Metadata
     parameters_used: dict               # Input parameters (reproducibility)

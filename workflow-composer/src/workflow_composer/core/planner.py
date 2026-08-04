@@ -8,6 +8,7 @@ with descriptions, rationale, and execution hints.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from .models import (
     OutputFormat,
     ExecutionHints,
     DataPreparationPlan,
+    CapacityRecommendation,
 )
 from .generator import generate_workflow, BUNDLED_POPULATIONS_DIR, load_populations
 from .data_resolver import (
@@ -24,6 +26,8 @@ from .data_resolver import (
     estimate_variant_count,
     CHROMOSOME_VARIANT_COUNT,
 )
+from .capacity import RegionEstimate, recommend_capacity
+from .performance_model import DEFAULT_PERFORMANCE_MODEL
 from .environment import ComputeEnvironment, MEMORY_BUDGET_PRESETS, recommend_for_environment
 from .parallelism import Parallelism, format_parallelism_reason
 from .export import convert_workflow
@@ -163,6 +167,129 @@ def _estimate_max_variants_per_chromosome(intent: ResearchIntent) -> int:
         return max(estimate_variant_count(chromosome=c) for c in intent.chromosomes)
     else:
         return max(CHROMOSOME_VARIANT_COUNT.get(str(i), 3_000_000) for i in range(1, 23))
+
+
+def estimate_region_volumes(intent: ResearchIntent) -> list[RegionEstimate]:
+    """Estimate ``D_r = V_r * I`` per region, for ``recommend_capacity``.
+
+    ``_estimate_max_variants_per_chromosome`` collapses an intent to the
+    single largest chromosome because that is what ``recommend_parallelism``
+    needs (one global ``ind_jobs``). ``recommend_capacity`` needs the
+    opposite shape: one estimate per independent region branch, since its
+    ``W = sum_r work_r`` sums real work across every branch rather than
+    taking a maximum. This function returns that per-region view without
+    changing the existing scalar one.
+
+    Uses the same three-way fallback as ``_estimate_max_variants_per_chromosome``:
+    ``intent.regions`` first (one entry per named region, e.g. "HLA",
+    "BRCA1"), else ``intent.chromosomes`` (one entry per chromosome, named
+    after the chromosome), else all 22 autosomes (one entry each). Each
+    entry's ``variants`` comes from ``estimate_variant_count`` unchanged,
+    including its 1.2x safety margin, and ``individuals`` from
+    ``_estimate_individuals(intent.populations)`` unchanged, including its
+    documented over-count -- both fields carry the same estimation error
+    into the capacity model as they already carry into ``ind_jobs``.
+
+    These are pre-extraction estimates and known to run high: measured at
+    +6.4% on HLA and +17.6% on BRCA1 (see
+    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 7). That is the safe
+    direction to be wrong in: section 2.2's cost asymmetry means
+    over-estimating ``D`` (and so ``W`` and the recommended ``C*``) risks
+    paying for idle slots, while under-estimating risks a longer makespan --
+    which is why ``recommend_capacity`` rounds its recommendation down
+    rather than up.
+
+    Args:
+        intent: structured research intent.
+
+    Returns:
+        A non-empty list of ``RegionEstimate``, one per region, per
+        chromosome, or 22 for the genome-wide autosomal case. ``individuals``
+        is identical across every entry.
+    """
+    individuals = _estimate_individuals(intent.populations)
+    if intent.regions:
+        return [
+            RegionEstimate(
+                name=r.name,
+                chromosome=r.chromosome,
+                variants=estimate_variant_count(region=r),
+                individuals=individuals,
+            )
+            for r in intent.regions
+        ]
+    elif intent.chromosomes:
+        return [
+            RegionEstimate(
+                name=c,
+                chromosome=c,
+                variants=estimate_variant_count(chromosome=c),
+                individuals=individuals,
+            )
+            for c in intent.chromosomes
+        ]
+    else:
+        return [
+            RegionEstimate(
+                name=str(i),
+                chromosome=str(i),
+                variants=CHROMOSOME_VARIANT_COUNT.get(str(i), 3_000_000),
+                individuals=individuals,
+            )
+            for i in range(1, 23)
+        ]
+
+
+# Matches core.capacity.recommend_capacity's reason string, which names
+# the spanning region as `region {spanning_region!r}` -- e.g.
+# "...span set by region 'HLA')". Capacity itself carries no separate
+# spanning-region field (see its docstring), so this is the one place
+# that reconstructs it, shared by both plan builders below rather than
+# duplicated at each call site.
+_SPAN_REGION_RE = re.compile(r"span set by region '([^']*)'")
+
+
+def _recommend_capacity_for_intent(intent: ResearchIntent) -> CapacityRecommendation:
+    """Compute the plan's capacity recommendation from scientific intent alone.
+
+    Pure wiring: estimates per-region volumes via ``estimate_region_volumes``
+    and hands them to ``recommend_capacity`` with the shipped
+    ``DEFAULT_PERFORMANCE_MODEL``. Shared by ``plan_workflow`` and
+    ``create_advisory_plan`` so both builders compute the identical
+    recommendation for the same intent -- see
+    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 3, workstream B2.
+
+    Nothing here feeds ``resolve_parallelism``, ``generate_workflow``,
+    ``ExecutionHints``, or ``parameters_used``: this is milestone M1, which
+    only adds the computation and carries it on the plan. See
+    ``core.capacity``'s module docstring for what still consumes nothing.
+
+    Args:
+        intent: structured research intent.
+
+    Returns:
+        A ``CapacityRecommendation`` with the requested slots, the exact
+        work/span, the per-region ``J*`` (reported, not applied -- see
+        ``CapacityRecommendation``'s docstring), the model version, and the
+        one-line reason.
+    """
+    regions = estimate_region_volumes(intent)
+    populations = len(intent.populations) if intent.populations else 7
+    capacity = recommend_capacity(regions, populations, DEFAULT_PERFORMANCE_MODEL)
+
+    match = _SPAN_REGION_RE.search(capacity.reason)
+    span_region = match.group(1) if match else ""
+
+    return CapacityRecommendation(
+        slots=capacity.slots,
+        slots_exact=capacity.slots_exact,
+        work_seconds=capacity.work_seconds,
+        span_seconds=capacity.span_seconds,
+        span_region=span_region,
+        ind_jobs=capacity.ind_jobs,
+        model_version=capacity.model_version,
+        reason=capacity.reason,
+    )
 
 
 def _estimate_individuals(populations: list[str] | None) -> int:
@@ -414,11 +541,18 @@ def create_advisory_plan(
     description = generate_description(intent, data_plan, task_count)
     rationale = generate_rationale(intent, data_plan, compute_environment)
 
+    # Step 4.5: Capacity recommendation -- computed from scientific intent
+    # alone (K, P, per-region estimates), independent of resolved's
+    # machine-sized dials. Nothing downstream consumes it yet (M1) -- see
+    # _recommend_capacity_for_intent's docstring.
+    capacity = _recommend_capacity_for_intent(intent)
+
     # Emit the effective dials and the reason
     # wherever a workflow is planned, into the log -- not only into the
     # returned plan -- so the value actually recommended is visible even
     # when nobody inspects plan.json.
     logger.info(resolved.reason)
+    logger.info(capacity.reason)
 
     # Step 5: Calculate hints and estimates
     execution_hints = ExecutionHints(
@@ -441,6 +575,7 @@ def create_advisory_plan(
         workflow={},  # Empty - advisory only
         output_format=output_format,
         execution_hints=execution_hints,
+        capacity=capacity,
         parameters_used={
             "analysis_type": intent.analysis_type,
             "populations": intent.populations,
@@ -576,6 +711,13 @@ def plan_workflow(
     resolved = _effective_parallelism(workflow, resolved)
     logger.info(resolved.reason)
 
+    # Capacity recommendation -- computed from scientific intent alone,
+    # independent of resolved's machine-sized dials and of the workflow
+    # generate_workflow just built. Nothing downstream consumes it yet
+    # (M1) -- see _recommend_capacity_for_intent's docstring.
+    capacity = _recommend_capacity_for_intent(intent)
+    logger.info(capacity.reason)
+
     # Step 5: Convert format if needed
     if output_format != OutputFormat.HYPERFLOW:
         workflow = convert_workflow(workflow, output_format)
@@ -609,6 +751,7 @@ def plan_workflow(
         workflow=workflow,
         output_format=output_format,
         execution_hints=execution_hints,
+        capacity=capacity,
         parameters_used={
             "analysis_type": intent.analysis_type,
             "populations": intent.populations,
