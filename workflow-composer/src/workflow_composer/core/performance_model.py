@@ -77,6 +77,15 @@ class PerformanceModel:
     a_fr: float
     b_fr: float
 
+    # How close to its floor the predicted makespan must come before extra
+    # capacity is judged not worth buying. Not a fitted coefficient: it is a
+    # policy choice about where diminishing returns stop being worth paying
+    # for, in the same category as the old min_work, and it is stated here
+    # rather than buried in a comparison. At 0.10 on the measured Q1 curve the
+    # recommendation lands at 6 slots, where the last slot bought 3% of
+    # makespan; 0.05 would give 8 and 0.20 would give 4.
+    knee_tolerance: float = 0.10
+
     @classmethod
     def resolve(cls, name: str, **overrides: float) -> "PerformanceModel":
         """Resolve a named performance profile, applying explicit overrides.

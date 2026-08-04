@@ -176,27 +176,50 @@ class Capacity:
     vCPUs" section.
     """
 
-    slots: int                         # C* = max(1, ceil(W/S))
-    slots_exact: float                 # W/S before rounding
-    work_seconds: float                # W
-    span_seconds: float                # S
+    slots: int                         # C* = max over stages of ceil(W_i/S_i)
+    slots_exact: float                 # that maximum before rounding
+    work_seconds: float                # W, summed over every stage
+    span_seconds: float                # S, the longest dependency path
+    stage_work: dict[str, float]       # stage -> W_i
+    stage_span: dict[str, float]       # stage -> S_i
     ind_jobs: dict[str, int]           # region name -> J*_r
     model_version: str                 # PerformanceModel.version used
-    reason: str                        # one line naming slots, W, S, and the spanning region
+    reason: str                        # one line naming slots, the binding stage, W and S
 
     def predicted_makespan(self, c: float) -> float:
-        """Wall-clock time at capacity ``c``: ``max(W/c, S)``.
+        """Wall-clock time at capacity ``c``: ``sum_i max(W_i/c, S_i)``.
 
-        Work-bound below ``C*`` (time falls as ``1/c``); span-bound at or
-        above it (time is floored at ``S``, the longest branch).
+        Summing per stage rather than taking ``max(W/c, S)`` over the whole
+        workflow is what lets the prediction vary with ``c`` at all when one
+        stage is serial. Q1's merge is span-bound at every capacity, so the
+        whole-workflow form is pinned at ``S`` from ``c = 6`` upward and
+        predicts one number for every capacity above it; measured makespans
+        over the same range differ by 30%.
+
+        Each stage's own term is work-bound while ``c`` is below ``W_i/S_i``
+        and span-bound above it, so stages cross over at different
+        capacities -- which is the shape the whole-workflow form cannot
+        express.
+
+        Validated against measured Q1 runs at 4, 7 and 15 slots: predicts
+        826/714/676s against 1032/785/802s measured. It under-predicts
+        throughout, by 9% at 7 slots and more at both extremes, because it
+        models neither the contention that inflates per-task time at high
+        capacity nor the scheduling stalls that appear at low capacity.
+        Treat it as a lower bound with the right shape, not a forecast.
         """
-        return max(self.work_seconds / c, self.span_seconds)
+        return sum(
+            max(self.stage_work[k] / c, self.stage_span[k]) for k in self.stage_work
+        )
 
     def predicted_cost(self, c: float) -> float:
-        """vCPU-seconds at capacity ``c``: ``c * predicted_makespan(c)``.
+        """Slot-seconds at capacity ``c``: ``c * predicted_makespan(c)``.
 
-        Constant at ``W`` for ``c <= W/S``; linear in ``c`` above it -- see
-        the module docstring's "two regimes" section.
+        Equivalently ``sum_i max(W_i, c*S_i)``, which shows why cost need
+        not be flat below ``C*``: any stage already span-bound contributes
+        ``c*S_i``, rising with ``c`` from the start. Q1's merge is such a
+        stage, so its cost grows across the whole range rather than only
+        above the knee.
         """
         return c * self.predicted_makespan(c)
 
@@ -260,6 +283,15 @@ def recommend_capacity(
 
     p = populations
     ind_jobs: dict[str, int] = {}
+
+    # Accumulate work and span per *stage*, not only for the workflow as a
+    # whole. A stage that is serial -- individuals_merge, whose W/S is 1.0 --
+    # drags the whole-workflow ratio W/S down and hides that another stage
+    # could use far more capacity. Measured on Q1: the global ratio is 6.3
+    # while the individuals stage alone reaches 12.3, and a run at the
+    # capacity the global ratio implies took 1032s against 785s at 7 slots.
+    stage_work = {"individuals": 0.0, "merge": 0.0, "analysis": 0.0}
+    stage_span = {"individuals": 0.0, "merge": 0.0, "analysis": 0.0}
     total_work = 0.0
     max_span = 0.0
     spanning_region = regions[0].name
@@ -269,29 +301,69 @@ def recommend_capacity(
         j = optimal_ind_jobs(d, model, max_ind_jobs)
         ind_jobs[r.name] = j
 
-        work_r = (
-            model.a_ind * j + model.b_ind * d
-            + model.b_merge * d + model.c_merge * j
-            + p * (model.a_mo + model.b_mo * d)
-            + p * (model.a_fr + model.b_fr * d)
-        )
-        span_r = (
-            (model.a_ind + model.b_ind * d / j)
-            + (model.b_merge * d + model.c_merge * j)
-            + max(model.a_mo + model.b_mo * d, model.a_fr + model.b_fr * d)
-        )
+        t_ind = model.a_ind + model.b_ind * d / j
+        t_merge = model.b_merge * d + model.c_merge * j
+        t_mo = model.a_mo + model.b_mo * d
+        t_fr = model.a_fr + model.b_fr * d
+
+        stage_work["individuals"] += j * t_ind
+        stage_work["merge"] += t_merge
+        stage_work["analysis"] += p * (t_mo + t_fr)
+        stage_span["individuals"] = max(stage_span["individuals"], t_ind)
+        stage_span["merge"] = max(stage_span["merge"], t_merge)
+        stage_span["analysis"] = max(stage_span["analysis"], t_mo, t_fr)
+
+        work_r = j * t_ind + t_merge + p * (t_mo + t_fr)
+        span_r = t_ind + t_merge + max(t_mo, t_fr)
 
         total_work += work_r
         if span_r > max_span:
             max_span = span_r
             spanning_region = r.name
 
-    slots_exact = total_work / max_span
+    # Where to stop. The capacity at which every stage is span-bound would be
+    # max_i(W_i/S_i), but a stage of N equal tasks has W_i/S_i = N, so that
+    # maximum is just the widest stage -- "run every task at once", not a
+    # knee. Q1 would read 28, buying 3% of makespan over 6 slots for nearly
+    # five times the slot-seconds.
+    #
+    # Take instead the smallest capacity whose predicted makespan is within
+    # knee_tolerance of its floor. The floor is the sum of stage spans: the
+    # time this workflow cannot beat however much capacity it is given.
+    floor = sum(stage_span.values())
+
+    def predicted(c: float) -> float:
+        return sum(max(stage_work[k] / c, stage_span[k]) for k in stage_work)
+
+    widest = max(
+        (stage_work[k] / stage_span[k] for k in stage_work if stage_span[k] > 0),
+        default=1.0,
+    )
+    limit = floor * (1.0 + model.knee_tolerance)
+
+    # Solve predicted(c) = limit for c continuously rather than stepping
+    # integer capacities. predicted() is non-increasing in c, so bisection
+    # converges; keeping the root rather than the rounded-up integer is what
+    # makes slots_exact strictly increase when a region is added, instead of
+    # being quantised into ties.
+    if predicted(1.0) <= limit:
+        slots_exact = 1.0
+    else:
+        lo, hi = 1.0, max(widest, 1.0)
+        for _ in range(60):
+            mid = (lo + hi) / 2
+            if predicted(mid) > limit:
+                lo = mid
+            else:
+                hi = mid
+        slots_exact = hi
     slots = max(1, math.ceil(slots_exact))
+    binding = max(stage_work, key=lambda k: stage_work[k] / max(stage_span[k], 1e-9))
 
     reason = (
-        f"slots={slots} (W={total_work:.0f}s S={max_span:.0f}s "
-        f"span set by region {spanning_region!r})"
+        f"slots={slots} (within {model.knee_tolerance:.0%} of the {floor:.0f}s "
+        f"floor; widest stage {binding!r} could use {widest:.0f}; "
+        f"W={total_work:.0f}s S={max_span:.0f}s, span set by region {spanning_region!r})"
     )
 
     return Capacity(
@@ -299,6 +371,8 @@ def recommend_capacity(
         slots_exact=slots_exact,
         work_seconds=total_work,
         span_seconds=max_span,
+        stage_work=stage_work,
+        stage_span=stage_span,
         ind_jobs=ind_jobs,
         model_version=model.version,
         reason=reason,

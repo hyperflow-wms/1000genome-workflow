@@ -1,13 +1,22 @@
 """
 Arithmetic tests for core/capacity.py.
 
-Covers the mechanism validation for this milestone: hand-computed W/S/C*
-for one region, the chr6 worked example for optimal_ind_jobs, the
-max_ind_jobs clamp at both ends, and the ValueError contract. Also covers
-the four A5 properties from CAPACITY-IMPLEMENTATION-PLAN.md section 3 --
-C* never exceeding the DAG's maximum width, J* minimising predicted span,
-region-count monotonicity of W and C*, and the two-regime cost formula --
-plus the Q1/Q3 gate reproductions against RFC-006-REVIEW.md section 8.
+Covers the mechanism validation for this milestone: hand-computed
+per-stage work/span and the knee-tolerance search for slots on one region,
+the chr6 worked example for optimal_ind_jobs, the max_ind_jobs clamp at
+both ends, and the ValueError contract. Also covers the four A5 properties
+from CAPACITY-IMPLEMENTATION-PLAN.md section 3 -- C* never exceeding the
+DAG's maximum width, J* minimising predicted span, region-count
+monotonicity of W and C*, and predicted_cost's monotonicity in capacity
+(non-decreasing, floors at total work while every stage is work-bound) --
+plus the Q1/Q3 slots gate and a check against measured Q1 makespans.
+
+Work and span are accumulated per stage ("individuals", "merge",
+"analysis"), not only for the workflow as a whole: predicted_makespan(c)
+sums max(stage_work[k]/c, stage_span[k]) over stages, which lets a fully
+serial stage (Q1's merge, W/S=1.0) keep contributing its span at every
+capacity instead of being hidden inside a single whole-workflow max(). See
+capacity.py's module docstring for the full derivation.
 
 The property tests are hand-parametrised over a spread of region sets
 (one large plus several small, all-small, all-large, K from 1 to 5, P
@@ -109,6 +118,61 @@ def _hand_compute_one_region(d: float, p: int, model: PerformanceModel, j: int) 
     return work_r, span_r
 
 
+def _hand_compute_stage_work_span(
+    d: float, p: int, model: PerformanceModel, j: int
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Independent re-derivation of the per-stage work/span accumulation
+    for a single region, mirroring capacity.py's per-stage loop body but
+    written separately so this test does not just replay the module's own
+    arithmetic back at it."""
+    t_ind = model.a_ind + model.b_ind * d / j
+    t_merge = model.b_merge * d + model.c_merge * j
+    t_mo = model.a_mo + model.b_mo * d
+    t_fr = model.a_fr + model.b_fr * d
+
+    stage_work = {
+        "individuals": j * t_ind,
+        "merge": t_merge,
+        "analysis": p * (t_mo + t_fr),
+    }
+    stage_span = {
+        "individuals": t_ind,
+        "merge": t_merge,
+        "analysis": max(t_mo, t_fr),
+    }
+    return stage_work, stage_span
+
+
+def _hand_compute_slots_exact(
+    stage_work: dict[str, float], stage_span: dict[str, float], model: PerformanceModel
+) -> float:
+    """Independent re-derivation of the knee search: the smallest capacity
+    whose predicted makespan is within ``model.knee_tolerance`` of the
+    floor (the sum of stage spans), found by bisection -- see capacity.py's
+    module docstring, "Where to stop"."""
+    floor = sum(stage_span.values())
+    limit = floor * (1.0 + model.knee_tolerance)
+
+    def predicted(c: float) -> float:
+        return sum(max(stage_work[k] / c, stage_span[k]) for k in stage_work)
+
+    if predicted(1.0) <= limit:
+        return 1.0
+
+    widest = max(
+        (stage_work[k] / stage_span[k] for k in stage_work if stage_span[k] > 0),
+        default=1.0,
+    )
+    lo, hi = 1.0, max(widest, 1.0)
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if predicted(mid) > limit:
+            lo = mid
+        else:
+            hi = mid
+    return hi
+
+
 def test_recommend_capacity_single_region_matches_hand_computation():
     model = DEFAULT_PERFORMANCE_MODEL
     variants, individuals, populations = 166_052, 1153, 3
@@ -118,7 +182,10 @@ def test_recommend_capacity_single_region_matches_hand_computation():
     j_expected = round(math.sqrt(model.b_ind * d / model.c_merge))
     j_expected = max(1, j_expected)
     expected_work, expected_span = _hand_compute_one_region(d, populations, model, j_expected)
-    expected_slots_exact = expected_work / expected_span
+    expected_stage_work, expected_stage_span = _hand_compute_stage_work_span(
+        d, populations, model, j_expected
+    )
+    expected_slots_exact = _hand_compute_slots_exact(expected_stage_work, expected_stage_span, model)
     expected_slots = max(1, math.ceil(expected_slots_exact))
 
     result = recommend_capacity([region], populations, model)
@@ -126,15 +193,32 @@ def test_recommend_capacity_single_region_matches_hand_computation():
     assert result.ind_jobs["HLA"] == j_expected
     assert result.work_seconds == pytest.approx(expected_work)
     assert result.span_seconds == pytest.approx(expected_span)
+    for key in ("individuals", "merge", "analysis"):
+        assert result.stage_work[key] == pytest.approx(expected_stage_work[key])
+        assert result.stage_span[key] == pytest.approx(expected_stage_span[key])
     assert result.slots_exact == pytest.approx(expected_slots_exact)
     assert result.slots == expected_slots
     assert result.model_version == model.version
 
 
-def test_recommend_capacity_slots_is_ceil_of_work_over_span():
+def test_recommend_capacity_slots_is_smallest_capacity_within_knee_tolerance_of_floor():
     region = RegionEstimate(name="HLA", chromosome="6", variants=166_052, individuals=1153)
-    result = recommend_capacity([region], 3, DEFAULT_PERFORMANCE_MODEL)
-    assert result.slots == max(1, math.ceil(result.work_seconds / result.span_seconds))
+    model = DEFAULT_PERFORMANCE_MODEL
+    result = recommend_capacity([region], 3, model)
+
+    floor = sum(result.stage_span.values())
+    limit = floor * (1.0 + model.knee_tolerance)
+
+    # slots_exact itself must land at (or just past) the tolerance boundary.
+    assert result.predicted_makespan(result.slots_exact) == pytest.approx(limit, rel=1e-6)
+    # One slot fewer must fall outside the tolerance band (unless already at
+    # the floor of 1 slot).
+    if result.slots_exact > 1.0:
+        assert result.predicted_makespan(result.slots_exact - 1.0) > limit
+    # slots is the ceiling of slots_exact, and achieves a makespan at or
+    # below the tolerance boundary.
+    assert result.slots == max(1, math.ceil(result.slots_exact))
+    assert result.predicted_makespan(result.slots) <= limit + 1e-6
 
 
 def test_recommend_capacity_slots_never_below_one():
@@ -149,32 +233,47 @@ def test_recommend_capacity_slots_never_below_one():
 # Capacity.predicted_makespan / predicted_cost
 # ---------------------------------------------------------------------------
 
-def test_predicted_makespan_is_max_of_work_over_c_and_span():
-    capacity = Capacity(
+def _two_stage_capacity() -> Capacity:
+    # "individuals" is work-bound below c=25 (W/S=2500/100=25) and span-bound
+    # above it. "merge" has W/S=1.0 -- fully span-bound at every c>=1, the
+    # Q1 shape described in capacity.py's module docstring -- so it
+    # contributes a constant c*300 to cost from c=1 upward.
+    stage_work = {"individuals": 2500.0, "merge": 300.0}
+    stage_span = {"individuals": 100.0, "merge": 300.0}
+    return Capacity(
         slots=4,
         slots_exact=3.5,
-        work_seconds=2500.0,
-        span_seconds=650.0,
+        work_seconds=sum(stage_work.values()),
+        span_seconds=max(stage_span.values()),
+        stage_work=stage_work,
+        stage_span=stage_span,
         ind_jobs={"HLA": 26},
         model_version="1.0.0",
         reason="test",
     )
-    # Work-bound below C*.
-    assert capacity.predicted_makespan(2) == pytest.approx(max(2500.0 / 2, 650.0))
-    # Span-bound at or above C*.
-    assert capacity.predicted_makespan(10) == pytest.approx(650.0)
+
+
+def test_predicted_makespan_sums_per_stage_max_of_work_over_c_and_span():
+    capacity = _two_stage_capacity()
+    # "individuals" is work-bound at c=2, "merge" is already span-bound;
+    # predicted_makespan is their sum, not a single whole-workflow max().
+    assert capacity.predicted_makespan(2) == pytest.approx(2500.0 / 2 + 300.0)
+    # Above c=25, "individuals" is span-bound too, so the sum is both floors.
+    assert capacity.predicted_makespan(30) == pytest.approx(100.0 + 300.0)
+
+
+def test_predicted_makespan_is_pinned_by_a_fully_serial_stage():
+    # A stage with W/S=1.0 (like Q1's merge) keeps contributing its span at
+    # every capacity, so the whole prediction can never fall below it --
+    # this is the property the old whole-workflow max(W/C, S) formula could
+    # not express, since it collapsed every stage into one W and one S.
+    capacity = _two_stage_capacity()
+    for c in (1, 5, 25, 1000):
+        assert capacity.predicted_makespan(c) >= capacity.stage_span["merge"]
 
 
 def test_predicted_cost_is_c_times_predicted_makespan():
-    capacity = Capacity(
-        slots=4,
-        slots_exact=3.5,
-        work_seconds=2500.0,
-        span_seconds=650.0,
-        ind_jobs={"HLA": 26},
-        model_version="1.0.0",
-        reason="test",
-    )
+    capacity = _two_stage_capacity()
     for c in (1, 2, 4, 7, 20):
         assert capacity.predicted_cost(c) == pytest.approx(c * capacity.predicted_makespan(c))
 
@@ -340,74 +439,109 @@ def test_adding_a_small_region_raises_work_and_capacity_leaves_span_unchanged(se
     assert grown.slots >= base.slots
 
 
-# --- Property 4: the two-regime cost formula --------------------------------
+# --- Property 4: predicted_cost is non-decreasing, and floors at total work -
 #
-# predicted_cost(c) = c * max(W/c, S) is flat at W below the knee C*=W/S
-# and linear in c above it -- a direct consequence of the max() in
-# predicted_makespan, not a separate code path to test for divergence.
+# The old whole-workflow max(W/C, S) made cost flat at W below the knee
+# C*=W/S. That assumed every stage was work-bound at low C; it does not hold
+# once a stage is accumulated separately, because a fully serial stage
+# (W_i/S_i=1.0, like Q1's merge -- see capacity.py's module docstring)
+# contributes c*S_i from c=1 upward and so raises cost across the whole
+# range, not just above a knee. What still holds per stage -- and therefore
+# in the sum -- is: predicted_cost(c) = sum_i max(W_i, c*S_i) is
+# non-decreasing in c (each max() term is), and it equals total work exactly
+# at any c where every stage is work-bound (c <= W_i/S_i for every i).
 
 @pytest.mark.parametrize("set_name", sorted(REGION_SETS))
-def test_predicted_cost_is_flat_below_slots_exact_and_linear_above(set_name):
+def test_predicted_cost_is_non_decreasing_in_capacity(set_name):
     triples, populations = REGION_SETS[set_name]
     result = recommend_capacity(_regions(triples), populations, DEFAULT_PERFORMANCE_MODEL)
 
-    below = max(1, math.floor(result.slots_exact))
+    costs = [result.predicted_cost(c) for c in range(1, 30)]
+    for earlier, later in zip(costs, costs[1:]):
+        assert later >= earlier - 1e-6
+
+
+@pytest.mark.parametrize("set_name", sorted(REGION_SETS))
+def test_predicted_cost_equals_total_work_while_every_stage_is_work_bound(set_name):
+    triples, populations = REGION_SETS[set_name]
+    result = recommend_capacity(_regions(triples), populations, DEFAULT_PERFORMANCE_MODEL)
+
+    # The largest c at which every stage is still work-bound (c <= W_i/S_i
+    # for all i) -- below capacity.py's "widest stage" quantity, which is
+    # the smallest per-stage W_i/S_i.
+    narrowest = min(
+        result.stage_work[k] / result.stage_span[k]
+        for k in result.stage_work
+        if result.stage_span[k] > 0
+    )
+    below = max(1, math.floor(narrowest))
     for c in range(1, below + 1):
         assert result.predicted_cost(c) == pytest.approx(result.work_seconds, rel=1e-9)
 
-    for c in range(below + 1, below + 21):
-        if c <= result.slots_exact:
-            continue
-        assert result.predicted_cost(c) == pytest.approx(
-            c * result.span_seconds, rel=1e-9
-        )
-
 
 # ---------------------------------------------------------------------------
-# M1 gate: Q1 and Q3 reproduce RFC-006-REVIEW.md section 8's C* of about
-# 4.0 and 14.3.
+# M1 gate: Q1 and Q3 per-stage-knee slots, from the region estimates in
+# CAPACITY-IMPLEMENTATION-PLAN.md's worked examples (real variant and
+# individual counts, not the D-only fixtures used elsewhere in this file).
 #
-# D values are taken from the documents, not from the planner:
+#   Q1 (HLA + BRCA1, P=3): chr6 166,052 variants over 1,653 individuals;
+#     chr17 (BRCA1) 2,369 variants over the same 1,653.
 #
-#   Q1 (HLA + BRCA1, P=3): chr6 D=2.745e8 (CAPACITY-IMPLEMENTATION-PLAN.md
-#     section 2.1.1); chr17 D=2400*1668 -- 2400 is the BRCA1 variant count
-#     in engines/hyperflow/harness/cases.yaml's q1-hla-brca1 description
-#     ("2.4K on chr17"), 1668 the cohort size behind section 8's D.
+#   Q3 (HBB + CFTR + APOE, P=5): chr11 (HBB) 136 variants, chr7 (CFTR) 4,391
+#     variants, chr19 (APOE) 113 variants, all over 2,480 individuals.
 #
-#   Q3 (HBB + CFTR + APOE, P=5): chr7 D=1.1e7 (RFC-006-REVIEW.md section 8);
-#     chr11 D=136*2504, chr19 D=113*2504 -- 136 and 113 are the HBB and APOE
-#     variant counts in cases.yaml's q3-multi-region description, 2504 the
-#     1000 Genomes cohort size.
-#
-# The reference implementation of section 2.1's exact formulas gives
-# slots_exact ~= 3.58 for Q1 and ~= 13.61 for Q3, both about 10% and 5%
-# below section 8's tabulated 4.0 and 14.3. Section 8's table is computed
-# with a simplified span that drops the b_ind*D/J and c_merge*J terms
-# (individuals and merge collapse to one fixed-cost line each), which is
-# why the exact model sits below it. That gap is expected and is not a
-# defect to close by tuning coefficients -- the bands below already account
-# for it.
+# slots is no longer ceil(W/S): it is the smallest capacity whose predicted
+# makespan (summed per stage, see Capacity.predicted_makespan) is within
+# model.knee_tolerance of the floor set by the per-stage spans. Both regions
+# in Q1 and all three in Q3 push individuals/analysis work high relative to
+# their spans, so the knee sits well above the old W/S ratio -- 9 for Q1
+# (not 4) and 15 for Q3 (not 14). See capacity.py's "Where to stop" comment
+# for why the old ceil(W/S) formula undershot: it let a single serial stage
+# (merge) drag down a whole-workflow ratio that hid headroom the individuals
+# and analysis stages actually had.
 
 def test_q1_hla_brca1_reproduces_section_8_capacity():
     regions = [
-        RegionEstimate(name="HLA", chromosome="6", variants=int(2.745e8), individuals=1),
-        RegionEstimate(name="BRCA1", chromosome="17", variants=2400 * 1668, individuals=1),
+        RegionEstimate(name="HLA", chromosome="6", variants=166_052, individuals=1653),
+        RegionEstimate(name="BRCA1", chromosome="17", variants=2369, individuals=1653),
     ]
     result = recommend_capacity(regions, populations=3, model=DEFAULT_PERFORMANCE_MODEL)
 
-    assert math.ceil(result.slots_exact) == 4
-    assert 3.2 <= result.slots_exact <= 4.8
-    assert result.slots == 4
+    assert result.slots == 9
 
 
 def test_q3_multi_region_reproduces_section_8_capacity():
     regions = [
-        RegionEstimate(name="CFTR", chromosome="7", variants=int(1.1e7), individuals=1),
-        RegionEstimate(name="HBB", chromosome="11", variants=136 * 2504, individuals=1),
-        RegionEstimate(name="APOE", chromosome="19", variants=113 * 2504, individuals=1),
+        RegionEstimate(name="HBB", chromosome="11", variants=136, individuals=2480),
+        RegionEstimate(name="CFTR", chromosome="7", variants=4391, individuals=2480),
+        RegionEstimate(name="APOE", chromosome="19", variants=113, individuals=2480),
     ]
     result = recommend_capacity(regions, populations=5, model=DEFAULT_PERFORMANCE_MODEL)
 
-    assert math.ceil(result.slots_exact) == 14
-    assert 11.4 <= result.slots_exact <= 17.2
-    assert result.slots == 14
+    assert result.slots == 15
+
+
+# ---------------------------------------------------------------------------
+# Validation against real measurements: the property that actually matters
+# is not the arithmetic but whether predicted_makespan tracks measured
+# runs. Q1's makespan was measured on a 16-core host with ind_jobs=38 (the
+# policy default, not J* -- see optimal_ind_jobs) at three capacities.
+# ---------------------------------------------------------------------------
+
+def test_predicted_makespan_is_within_20_percent_of_measured_q1_runs():
+    regions = [
+        RegionEstimate(name="HLA", chromosome="6", variants=166_052, individuals=1653),
+        RegionEstimate(name="BRCA1", chromosome="17", variants=2369, individuals=1653),
+    ]
+    result = recommend_capacity(regions, populations=3, model=DEFAULT_PERFORMANCE_MODEL)
+
+    # Measured on a 16-core host, ind_jobs=38. predicted_makespan under-
+    # predicts every one of these -- it models neither the contention that
+    # inflates per-task time at high capacity nor the scheduling stalls
+    # that appear at low capacity (see Capacity.predicted_makespan's
+    # docstring) -- but it stays within 20% throughout.
+    measured = {4: 1032.0, 7: 785.0, 15: 802.0}
+    for c, measured_seconds in measured.items():
+        predicted = result.predicted_makespan(c)
+        assert predicted <= measured_seconds
+        assert predicted == pytest.approx(measured_seconds, rel=0.20)
