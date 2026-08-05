@@ -360,10 +360,14 @@ def recommend_capacity(
     slots = max(1, math.ceil(slots_exact))
     binding = max(stage_work, key=lambda k: stage_work[k] / max(stage_span[k], 1e-9))
 
+    # One decimal on the two derived capacities: both are rounded up to reach
+    # slots, and at 0 decimals a widest of 1.14 renders as "1" beside a
+    # slots of 2, which reads as a contradiction rather than a ceiling.
     reason = (
-        f"slots={slots} (within {model.knee_tolerance:.0%} of the {floor:.0f}s "
-        f"floor; widest stage {binding!r} could use {widest:.0f}; "
-        f"W={total_work:.0f}s S={max_span:.0f}s, span set by region {spanning_region!r})"
+        f"slots={slots} (knee at {slots_exact:.1f}, within "
+        f"{model.knee_tolerance:.0%} of the {floor:.0f}s floor; widest stage "
+        f"{binding!r} could use {widest:.1f}; W={total_work:.0f}s "
+        f"S={max_span:.0f}s, span set by region {spanning_region!r})"
     )
 
     return Capacity(

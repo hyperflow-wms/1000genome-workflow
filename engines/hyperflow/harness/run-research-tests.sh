@@ -99,6 +99,20 @@ log_phase() {
     echo -e "${CYAN}  $1${NC}"
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}\n"
 }
+# Read the recommended capacity out of a plan. Empty when the plan predates the
+# capacity model, which the callers treat as "fall back to the old dial".
+plan_capacity_slots() {
+    [ -f "$1" ] || return 0
+    python3 -c "
+import json, sys
+try:
+    c = json.load(open(sys.argv[1])).get('capacity')
+except Exception:
+    c = None
+print(c['slots'] if c and c.get('slots') else '')
+" "$1" 2>/dev/null
+}
+
 log_test() {
     echo -e "\n${MAGENTA}┌─────────────────────────────────────────────────────────────────┐${NC}"
     echo -e "${MAGENTA}│  TEST: $1${NC}"
@@ -389,12 +403,18 @@ for TEST_ID in "${TEST_IDS[@]}"; do
             continue
         fi
 
-        # Same tool the full path uses, so both agree on the concurrency dial.
-        MAX_PARALLELISM_VALUE=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
-            --intent-json "$INTENT_JSON" \
-            --vcpus "${VCPUS:-$(nproc)}" \
-            | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
-        log_info "max_parallelism=$MAX_PARALLELISM_VALUE"
+        # Reuse the capacity the plan recommended, so a re-run allocates what
+        # the original run was sized for.
+        MAX_PARALLELISM_VALUE=$(plan_capacity_slots "$WORKFLOW_DIR/plan.json")
+        if [ -n "$MAX_PARALLELISM_VALUE" ]; then
+            log_info "max_parallelism=$MAX_PARALLELISM_VALUE (capacity from plan.json)"
+        else
+            MAX_PARALLELISM_VALUE=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
+                --intent-json "$INTENT_JSON" \
+                --vcpus "${VCPUS:-$(nproc)}" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
+            log_info "max_parallelism=$MAX_PARALLELISM_VALUE (plan predates the capacity model)"
+        fi
     else
         rm -rf "$WORKFLOW_DIR"
         mkdir -p "$WORKFLOW_DIR"
@@ -630,14 +650,27 @@ for TEST_ID in "${TEST_IDS[@]}"; do
     fi
 
     if [ -z "$MAX_PARALLELISM_VALUE" ]; then
-        # --parallelism/--ind-jobs runs don't name a vCPU count. Fall back to
-        # the same tool with the "aws" environment's default vCPUs
-        # (workflow_composer.core.environment's "aws" profile) rather than
-        # reintroducing a second, hand-picked constant.
-        FALLBACK_RESULT=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
-            --intent-json "$INTENT_JSON" \
-            --vcpus 8)
-        MAX_PARALLELISM_VALUE=$(echo "$FALLBACK_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
+        # How many slots to allocate is the plan's decision, derived from the
+        # workflow's own shape. Taking it from there is what makes the run
+        # execute at the capacity it was sized for; the hardcoded 8 vCPUs this
+        # replaces belonged to neither the workload nor the host, and produced
+        # the original Q1 run's mismatch -- a DAG sized for 48 declared vCPUs,
+        # executed 7-wide, on a 16-core machine.
+        MAX_PARALLELISM_VALUE=$(plan_capacity_slots "$WORKFLOW_DIR/plan.json")
+        if [ -n "$MAX_PARALLELISM_VALUE" ]; then
+            CAPACITY_REASON=$(python3 -c "
+import json, sys
+print(json.load(open(sys.argv[1]))['capacity']['reason'])
+" "$WORKFLOW_DIR/plan.json" 2>/dev/null)
+            log_info "Capacity: $CAPACITY_REASON"
+        else
+            # Plans written before the capacity model carry no recommendation.
+            FALLBACK_RESULT=$(python3 "$FRAMEWORK_PY" adaptive-parallelism \
+                --intent-json "$INTENT_JSON" \
+                --vcpus 8)
+            MAX_PARALLELISM_VALUE=$(echo "$FALLBACK_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['max_parallelism'])")
+            log_warning "Plan carries no capacity recommendation; using the legacy dial"
+        fi
     fi
 
     # Pass intent populations to generator
@@ -736,6 +769,15 @@ for p in json.load(sys.stdin)['problems']:
     export WORKFLOW_DIR
     export USER_ID=$(id -u)
     export USER_GID=$(id -g)
+
+    # The concurrency dial and the task count are separate decisions, but every
+    # flag that sets one also sets the other: --vcpus feeds both the clamp and
+    # this value. FORCE_MAX_PARALLELISM sets the dial alone, so a run can vary
+    # allocated capacity while holding ind_jobs fixed.
+    if [ -n "${FORCE_MAX_PARALLELISM:-}" ]; then
+        log_info "max_parallelism: ${MAX_PARALLELISM_VALUE} -> ${FORCE_MAX_PARALLELISM} (forced)"
+        MAX_PARALLELISM_VALUE="$FORCE_MAX_PARALLELISM"
+    fi
     export MAX_PARALLELISM=$MAX_PARALLELISM_VALUE
 
     if [ "$DEV_IMAGES" = true ]; then
