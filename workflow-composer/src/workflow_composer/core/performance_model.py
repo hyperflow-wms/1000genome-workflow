@@ -27,7 +27,7 @@ individuals) for each of the four stages that dominate wall time:
 ``sifting`` has no coefficients here. It costs about 1 second per region and
 runs concurrently with ``individuals``, so it contributes materially to
 neither the work sum nor the longest path -- see
-``CAPACITY-IMPLEMENTATION-PLAN.md`` section 2.1.
+``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 2.1.
 
 This module is deliberately parallel in structure to ``core/environment.py``:
 a frozen dataclass, a dict of named profiles, and a ``resolve`` classmethod
@@ -60,7 +60,7 @@ class PerformanceModel:
 
     Every coefficient pairs a fixed per-task term with a term proportional
     to ``D = V * I`` (variants times individuals), per stage -- see the
-    module docstring for what each one means and RFC-006-REVIEW.md section 8
+    module docstring for what each one means and docs/RFC-006-REVIEW.md section 8
     for how the shipped values were fitted.
     """
 
@@ -130,18 +130,18 @@ class PerformanceModel:
 # ---------------------------------------------------------------------------
 
 _PROFILES: dict[str, PerformanceModel] = {
-    # Fitted from the runs recorded in RFC-006-REVIEW.md section 8, on one
+    # Fitted from the runs recorded in docs/RFC-006-REVIEW.md section 8, on one
     # host, with one shared filesystem, at low concurrency. See that
     # section's Q1/Q3 table for the work and span predictions these
-    # coefficients reproduce, and CAPACITY-IMPLEMENTATION-PLAN.md section 6
+    # coefficients reproduce, and docs/CAPACITY-IMPLEMENTATION-PLAN.md section 6
     # for what would make them trustworthy rather than a first cut.
     "rfc-006-review": PerformanceModel(
         name="rfc-006-review",
         version="1.0.0",
         provenance=(
-            "Fitted from the runs recorded in RFC-006-REVIEW.md section 8 "
+            "Fitted from the runs recorded in docs/RFC-006-REVIEW.md section 8 "
             "on one host, one shared filesystem, at low concurrency. Not a "
-            "controlled calibration -- see CAPACITY-IMPLEMENTATION-PLAN.md "
+            "controlled calibration -- see docs/CAPACITY-IMPLEMENTATION-PLAN.md "
             "section 6."
         ),
         a_ind=8.0,

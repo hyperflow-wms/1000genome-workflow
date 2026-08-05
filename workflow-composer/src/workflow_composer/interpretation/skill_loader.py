@@ -14,7 +14,7 @@ parallelism guidance for whoever knows the target machine. It is gone:
 capacity is now computed deterministically from region estimates and
 calibrated coefficients (``core/capacity.py``), so there is no LLM-mediated
 decision left for that prose to inform. See
-``CAPACITY-IMPLEMENTATION-PLAN.md`` section 3.C for the rationale and
+``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 3.C for the rationale and
 ``docs/capacity-model.md`` for what replaced it as maintainer documentation.
 
 Callers historically addressed a document by a flat basename (``SKILL_DIR /

@@ -9,7 +9,7 @@ why the formula has the shape it has — read the source alongside it; this
 does not restate what the docstrings in `core/capacity.py` and
 `core/performance_model.py` already say precisely.
 
-Source: `CAPACITY-IMPLEMENTATION-PLAN.md` section 2, `RFC-006-REVIEW.md`
+Source: `docs/CAPACITY-IMPLEMENTATION-PLAN.md` section 2, `docs/RFC-006-REVIEW.md`
 section 8.
 
 ## The DAG shape
@@ -157,16 +157,16 @@ test tells you if you forget.
 
 ### Provenance
 
-Fitted from the runs recorded in `RFC-006-REVIEW.md` section 8: two
+Fitted from the runs recorded in `docs/RFC-006-REVIEW.md` section 8: two
 workloads (Q1, one dominant region; Q3, many small regions), on one host,
 with one shared filesystem, at low concurrency. Checked, not merely fitted:
 Q1 predicts `W = 2516s` against `2239s` measured and `S = 635s` against
 `~640s`; Q3 predicts `W = 1910s` against `1886s` and `S = 134s` against
-`~147s`. `CAPACITY-IMPLEMENTATION-PLAN.md` section 6 records what a proper
+`~147s`. `docs/CAPACITY-IMPLEMENTATION-PLAN.md` section 6 records what a proper
 calibration run (four Q1 configurations with per-task logs preserved, rather
 than the three that currently survive) would add: per-task variance, a
 second independent Q1 point, and a documented host/image/date per
-`RFC-006-REVIEW.md` section 4.2's format.
+`docs/RFC-006-REVIEW.md` section 4.2's format.
 
 ### What invalidates this table
 

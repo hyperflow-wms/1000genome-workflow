@@ -180,7 +180,7 @@ def test_interpreter_prompt_carries_domain_knowledge(monkeypatch, anchor, descri
 # details cannot change the interpreter's output -- they can only crowd the
 # vocabulary the interpretation actually depends on. There is no longer a
 # knowledge document that carries them into a prompt at all (capacity is
-# computed deterministically -- see CAPACITY-IMPLEMENTATION-PLAN.md section
+# computed deterministically -- see docs/CAPACITY-IMPLEMENTATION-PLAN.md section
 # 3.C and docs/capacity-model.md); this guards that they do not reappear by
 # some other route, such as domain knowledge growing a resource-sizing
 # section.

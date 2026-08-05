@@ -116,7 +116,7 @@ class CapacityRecommendation(BaseModel):
 
     ``ind_jobs`` here is per region, the ``J*`` values ``recommend_capacity``
     would choose for each region under the span trade-off in
-    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 2.1.1. This is deliberately
+    ``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 2.1.1. This is deliberately
     *not* what the workflow was actually generated with -- that stays
     ``parameters_used["ind_jobs"]``, the single global value
     ``resolve_parallelism``/``generate_workflow`` produced, until milestone

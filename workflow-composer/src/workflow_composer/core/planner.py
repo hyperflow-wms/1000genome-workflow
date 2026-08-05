@@ -192,7 +192,7 @@ def estimate_region_volumes(intent: ResearchIntent) -> list[RegionEstimate]:
 
     These are pre-extraction estimates and known to run high: measured at
     +6.4% on HLA and +17.6% on BRCA1 (see
-    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 7). That is the safe
+    ``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 7). That is the safe
     direction to be wrong in: section 2.2's cost asymmetry means
     over-estimating ``D`` (and so ``W`` and the recommended ``C*``) risks
     paying for idle slots, while under-estimating risks a longer makespan --
@@ -257,7 +257,7 @@ def _recommend_capacity_for_intent(intent: ResearchIntent) -> CapacityRecommenda
     ``DEFAULT_PERFORMANCE_MODEL``. Shared by ``plan_workflow`` and
     ``create_advisory_plan`` so both builders compute the identical
     recommendation for the same intent -- see
-    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 3, workstream B2.
+    ``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 3, workstream B2.
 
     Nothing here feeds ``resolve_parallelism``, ``generate_workflow``,
     ``ExecutionHints``, or ``parameters_used``: this is milestone M1, which

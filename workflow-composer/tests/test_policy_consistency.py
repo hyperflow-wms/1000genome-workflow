@@ -3,7 +3,7 @@ Test that the maintainer-facing capacity model document and the shipped
 ``PerformanceModel`` configuration agree on every coefficient.
 
 ``docs/capacity-model.md`` is prose for humans, not a knowledge document
-loaded into any prompt (see CAPACITY-IMPLEMENTATION-PLAN.md section 3.C).
+loaded into any prompt (see docs/CAPACITY-IMPLEMENTATION-PLAN.md section 3.C).
 Nothing enforces that its coefficient table matches
 ``DEFAULT_PERFORMANCE_MODEL`` except this test: it parses the markdown table
 rather than hardcoding a second copy of the numbers, so a coefficient change

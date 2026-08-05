@@ -4,8 +4,8 @@ Capacity planning: how many slots a workflow's own shape asks for.
 ``recommend_capacity`` turns a set of per-region variant estimates plus a
 population count into a deterministic recommendation, computed before any
 data is downloaded and before ``recommend_parallelism`` sizes a single task.
-See ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 2 and
-``RFC-006-REVIEW.md`` section 8 for the derivation this module implements;
+See ``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 2 and
+``docs/RFC-006-REVIEW.md`` section 8 for the derivation this module implements;
 what follows is the shape of the model, not a restatement of the coefficient
 table.
 
@@ -31,9 +31,13 @@ late does not lengthen any other region's own branch. So:
     S = max_r span_r        (wall time, assuming enough slots to run every
                               region's tasks without queuing on each other)
 
-``C* = max(1, ceil(W / S))`` is then the smallest capacity that achieves
-makespan ``S`` -- see "the two regimes" below for why smaller is better
-whenever it is achievable.
+``W`` and ``S`` are also accumulated *per stage*, and the recommendation is
+derived from those rather than from the whole-workflow ratio. ``W/S`` was
+the original rule and measurement falsified it: a stage that is serial --
+``individuals_merge``, whose ``W_i/S_i`` is 1.0 -- drags the ratio down and
+hides that another stage could use far more. Q1's global ratio is 6.3 while
+its individuals stage alone reaches 12.3, and the run at the capacity ``W/S``
+recommended took 1032s against 785s at 7 slots. See "sizing per stage" below.
 
 J* first, then W and S at J*
 -----------------------------
@@ -50,25 +54,41 @@ to ``J`` and setting the derivative to zero:
     =>  J* = sqrt(b_ind * D / c_merge)
 
 This term has no ``C`` in it, which is what makes the whole computation
-acyclic: ``J*`` per region, then ``W`` and ``S`` evaluated at ``J*``, then
-``C* = W/S``. See ``optimal_ind_jobs`` for the implementation and its
-docstring for the same derivation in code-adjacent form.
+acyclic: ``J*`` per region, then ``W_i`` and ``S_i`` per stage evaluated at
+``J*``, then the knee search below. See ``optimal_ind_jobs`` for the
+implementation and its docstring for the same derivation in code-adjacent
+form.
 
-The two regimes (section 2.2)
+Sizing per stage (section 2.1)
 ------------------------------
-With ``T(C) = max(W/C, S)``, cost ``= C * T(C)`` behaves differently on
-either side of ``C* = W/S``:
+Predicted makespan is ``sum_i max(W_i/C, S_i)`` over stages, not
+``max(W/C, S)`` over the workflow. Each stage crosses from work-bound to
+span-bound at its own capacity, and the whole-workflow form cannot express
+that: once any one stage dominates it is pinned at ``S`` and returns the
+same number for every capacity above it, while measured makespans over the
+same range differ by 30%.
 
-    C <= W/S   (work-bound)   T = W/C    cost = W          constant
-    C >  W/S   (span-bound)   T = S      cost = C*S         linear in C
+The capacity at which *every* stage is span-bound would be
+``max_i(W_i/S_i)``, but a stage of N equal tasks has ``W_i/S_i = N``, so
+that maximum is just the widest stage -- "run everything at once". For Q1 it
+reads 28, buying 3% of makespan over 6 slots for nearly five times the
+slot-seconds. The recommendation is instead the smallest capacity whose
+predicted makespan is within ``knee_tolerance`` of the floor
+``sum_i S_i``, solved continuously by bisection so that adding a region
+raises ``slots_exact`` rather than leaving it tied.
 
-Below the knee, adding slots only buys time, for free -- the total cost
-stays at ``W`` no matter how few slots are used, because fewer slots simply
-take proportionally longer. Above the knee, the makespan cannot improve
-(it is already at the floor ``S``), so every extra slot is paid for with
-nothing in return. ``C*`` is therefore simultaneously the *cheapest*
-capacity achieving the minimum makespan and the *largest* capacity that
-still costs only ``W``.
+Cost and the two regimes
+-------------------------
+Cost is ``C * makespan(C)``, equivalently ``sum_i max(W_i, C*S_i)``. A stage
+that is work-bound at ``C`` contributes ``W_i``, flat; a stage that is
+span-bound contributes ``C*S_i``, rising. So cost is constant only while
+*every* stage is work-bound. Q1's merge is span-bound from one slot upward,
+so its cost climbs across the whole range -- measured, 4,128 slot-seconds at
+4 slots against 5,495 at 7. Cheaper below the knee, but not free.
+
+What survives is the direction: under-provisioning trades time for money and
+degrades gracefully as ``W/C``; over-provisioning buys neither, and past the
+knee buys nothing at all.
 
 This asymmetry is the reason to round the recommendation down rather than
 up. The estimate is computed from pre-extraction variant counts, which the
@@ -85,11 +105,15 @@ than one full core per worker (the reference chart requests 0.5 vCPU per
 worker), so converting slots to a resource quota is a multiplication by
 that per-worker request, not an identity. That conversion is the
 consuming code's job, not this module's -- see
-``CAPACITY-IMPLEMENTATION-PLAN.md`` section 4.2.
+``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 4.2.
 
-Nothing in the composer consumes this module yet. It is a pure function of
-region estimates and a ``PerformanceModel``, with no side effects and no
-dependency on ``core.parallelism`` or ``core.planner``.
+``core.planner`` calls this and puts the result on ``WorkflowPlan.capacity``,
+and the integration harness allocates ``slots`` concurrent workers from it.
+Task sizing does not consume it: ``recommend_parallelism`` still chooses
+``ind_jobs`` independently, so ``J*`` here is advisory until that changes.
+This module remains a pure function of region estimates and a
+``PerformanceModel``, with no side effects and no dependency on
+``core.parallelism`` or ``core.planner``.
 """
 from __future__ import annotations
 
@@ -105,7 +129,7 @@ class RegionEstimate:
 
     ``variants`` and ``individuals`` are estimates available at plan time,
     before the region's VCF has been extracted -- see
-    ``CAPACITY-IMPLEMENTATION-PLAN.md`` section 7 for the measured error on
+    ``docs/CAPACITY-IMPLEMENTATION-PLAN.md`` section 7 for the measured error on
     those estimates (+6.4% on HLA, +17.6% on BRCA1).
     """
 

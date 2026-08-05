@@ -1,5 +1,5 @@
 """
-Tests for WorkflowPlan.capacity (CAPACITY-IMPLEMENTATION-PLAN.md section 3,
+Tests for WorkflowPlan.capacity (docs/CAPACITY-IMPLEMENTATION-PLAN.md section 3,
 workstreams B1/B2).
 
 Covers:

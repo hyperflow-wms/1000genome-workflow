@@ -106,7 +106,7 @@ def test_individuals_identical_across_entries(make_intent) -> None:
 
 def test_q1_hla_brca1_chromosomes_and_ordering() -> None:
     """The Q1 intent (HLA + BRCA1) gives two entries on chromosomes 6 and 17,
-    with the chr6 (HLA) entry the larger -- matching RFC-006-REVIEW.md
+    with the chr6 (HLA) entry the larger -- matching docs/RFC-006-REVIEW.md
     section 8's expectation that HLA dominates the Q1 span."""
     intent = _regions_intent()
     estimates = estimate_region_volumes(intent)

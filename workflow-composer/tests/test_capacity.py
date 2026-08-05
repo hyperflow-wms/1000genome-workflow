@@ -5,7 +5,7 @@ Covers the mechanism validation for this milestone: hand-computed
 per-stage work/span and the knee-tolerance search for slots on one region,
 the chr6 worked example for optimal_ind_jobs, the max_ind_jobs clamp at
 both ends, and the ValueError contract. Also covers the four A5 properties
-from CAPACITY-IMPLEMENTATION-PLAN.md section 3 -- C* never exceeding the
+from docs/CAPACITY-IMPLEMENTATION-PLAN.md section 3 -- C* never exceeding the
 DAG's maximum width, J* minimising predicted span, region-count
 monotonicity of W and C*, and predicted_cost's monotonicity in capacity
 (non-decreasing, floors at total work while every stage is work-bound) --
@@ -21,7 +21,7 @@ capacity.py's module docstring for the full derivation.
 The property tests are hand-parametrised over a spread of region sets
 (one large plus several small, all-small, all-large, K from 1 to 5, P
 from 1 to 7) rather than pulling in a property-testing dependency -- see
-CAPACITY-IMPLEMENTATION-PLAN.md section 3, workstream A5.
+docs/CAPACITY-IMPLEMENTATION-PLAN.md section 3, workstream A5.
 """
 from __future__ import annotations
 
@@ -308,7 +308,7 @@ def test_recommend_capacity_raises_on_non_positive_individuals():
 
 
 # ---------------------------------------------------------------------------
-# A5 property tests (CAPACITY-IMPLEMENTATION-PLAN.md section 3)
+# A5 property tests (docs/CAPACITY-IMPLEMENTATION-PLAN.md section 3)
 #
 # Region sets are expressed as (name, chromosome, D) triples with
 # individuals=1, so D itself is the region's data_volume -- this keeps the
@@ -409,7 +409,7 @@ def test_optimal_ind_jobs_minimises_span_over_a_wide_integer_range(set_name):
 # Holds when the added region's own span is below the current maximum.
 # A minimal region (D=1, J=1) has span ~= a_ind + c_merge + max(a_mo, a_fr)
 # -- about 114s with the shipped coefficients, the floor described in
-# RFC-006-REVIEW.md section 8 -- which is below every base set's max span
+# docs/RFC-006-REVIEW.md section 8 -- which is below every base set's max span
 # here, since each set contains at least one region of realistic genomic
 # size.
 
@@ -481,7 +481,7 @@ def test_predicted_cost_equals_total_work_while_every_stage_is_work_bound(set_na
 
 # ---------------------------------------------------------------------------
 # M1 gate: Q1 and Q3 per-stage-knee slots, from the region estimates in
-# CAPACITY-IMPLEMENTATION-PLAN.md's worked examples (real variant and
+# docs/CAPACITY-IMPLEMENTATION-PLAN.md's worked examples (real variant and
 # individual counts, not the D-only fixtures used elsewhere in this file).
 #
 #   Q1 (HLA + BRCA1, P=3): chr6 166,052 variants over 1,653 individuals;
