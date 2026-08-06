@@ -76,7 +76,7 @@ jobs:
           make -C worker-image image
           docker build --platform linux/amd64 \
             -f engines/nextflow/worker-nf.Dockerfile \
-            -t 1000genome-worker-nf:1.4 engines/nextflow/
+            -t 1000genome-worker-nf:1.5 engines/nextflow/
 
       - name: Install Nextflow
         run: |

@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import itertools
 import time
-import tarfile
-import shutil
 
+import archive
 
-def compress(output, input_dir):
-    with tarfile.open(output, "w:gz") as file:
-        file.add(input_dir, arcname=os.path.basename(input_dir))
 
 def readfile(file):
     with open(file, 'r') as f:
@@ -43,11 +38,6 @@ def processing(inputfile, columfile, c, counter, stop, total):
     # region with fewer variants than the header would process nothing at all
     # while still exiting 0 and writing its archive. See RFC-005.
     ending = stop if total == -1 else min(stop, total)
-
-    ### step 2
-    ## Giving a different directory name (chromosome no-counter) for each individuals job
-    ndir = 'chr{}n-{}/'.format(c, counter)
-    os.makedirs(ndir, exist_ok=True)
 
     print("== Processing {} from line {} to {}".format(unzipped, counter, stop), flush=True)
 
@@ -90,23 +80,19 @@ def processing(inputfile, columfile, c, counter, stop, total):
     print("== Streamed {} lines, filled {} individuals in {:0.2f} sec".format(
         n_lines, end_data, time.perf_counter() - tic_fill), flush=True)
 
-    for i in range(0, end_data):
-        name = columndata[i + start_data]
-        filename = "{}/chr{}.{}".format(ndir, c, name)
-        with open(filename, 'w') as f:
-            f.write(''.join(buffers[i]))
+    # The buffers already hold every byte of the output, so the archive is built
+    # straight from them. Staging one file per individual and tarring the
+    # directory cost three filesystem operations each, which dominates the stage
+    # on a shared network volume. See archive.py for the layout this preserves.
+    contents = {
+        "chr{}.{}".format(c, columndata[i + start_data]): ''.join(buffers[i])
+        for i in range(end_data)
+    }
 
     outputfile = "chr{}n-{}-{}.tar.gz".format(c, counter, stop)
     print("== Done. Zipping {} files into {}.".format(end_data, outputfile), flush=True)
 
-    # tar -zcf .. /$outputfile .
-    compress(outputfile, ndir)
-
-    # Cleaning temporary files
-    try:
-        shutil.rmtree(ndir)
-    except OSError as e:
-        print("Error: %s : %s" % (ndir, e.strerror), flush=True)
+    archive.write_archive(outputfile, contents)
 
     print("= Chromosome {} processed in {:0.2f} seconds.".format(c, time.perf_counter() - tic), flush=True)
 
