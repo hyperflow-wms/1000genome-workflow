@@ -1,0 +1,43 @@
+reading inidviduals
+time: 0.009043722995556891
+reading in rs with sift scores below NO-SIFT
+time: 0.002625374007038772
+reading in individual mutation files
+mutation index array for HG02604 : []
+total_len_mutations for HG02604 : 0
+total_mutations_list is [0, 1, 1, 1, 0, 1, 1, 1, 0, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 2, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 0, 0, 1, 1, 1, 3, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 2, 1, 0, 1, 0, 0, 2, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 2, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 2, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 2, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 2, 1, 0, 1, 0, 0, 1, 1, 2, 1, 0, 0, 1, 1, 1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 3, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1, 1] 
+time: 2.213172128016595
+writing total mutations list per individual to ./output_no_sift/total_mutations_individual7_sNO-SIFT_SAS.txt
+time: 0.025799469964113086
+writing map_variations to ./output_no_sift/map_variations7_sNO-SIFT_SAS.txt
+time: 0.0283966560382396
+cross matching mutations in individuals - half with half
+time: 0.3118432170012966
+cross matching mutations total individuals
+time: 0.5132604989921674
+cross matching mutations in individuals
+time: 0.002193064952734858
+writing mutation array  to ./output_no_sift/mutation_index_array7_sNO-SIFT_SAS.txt
+time: 3.1481506660347804
+writing pairs overlapping mutations to ./output_no_sift/individual_half_pairs_overlap_chr7_sNO-SIFT_SAS.txt
+time: 0.07559868897078559
+writing pairs overlapping mutations to ./output_no_sift/total_individual_pairs_overlap_chr7_sNO-SIFT_SAS.txt
+time: 0.14396637998288497
+writing pairs overlapping mutations to ./output_no_sift/100_individual_overlap_chr7_sNO-SIFT_SAS.txt
+time: 0.033376184990629554
+plotting cross matched number of individuals:242 
+time: 0.8072891060146503
+plotting cross matched number of individuals:484 
+time: 1.4918859140016139
+plotting cross matched number of individuals:1 
+time: 0.3564310219953768
+plotting colormap number of individuals: 484
+time: 0.49365570198278874
+histograms mutations_individuals groups by 26
+time: 0.00010792596731334925
+writing a list of 26 random individuals with the number mutations per indiv ./output_no_sift/random_mutations_individual7_sNO-SIFT_SAS
+time: 6.589499327004887
+cross matching pairs of variations
+time: 0.0005128560005687177
+writing gene pair list to ./output_no_sift/gene_pairs_count_chr7_sNO-SIFT_SAS.txt
+time: 0.053617361991200596

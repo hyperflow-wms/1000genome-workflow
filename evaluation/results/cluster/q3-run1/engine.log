@@ -1,0 +1,15 @@
+hfid: ocC3tcylt
+Wf id=1
+[hf] task started: individuals (ocC3tcylt:1:1:1)
+[hf] task started: sifting (ocC3tcylt:1:3:1)
+[hf] task started: individuals (ocC3tcylt:1:4:1)
+[hf] task started: sifting (ocC3tcylt:1:6:1)
+[hf] task started: individuals (ocC3tcylt:1:7:1)
+[hf] task started: individuals (ocC3tcylt:1:8:1)
+[hf] task started: sifting (ocC3tcylt:1:10:1)
+[hf] task finished: sifting (ocC3tcylt:1:6:1) exit=0 time=13.4s
+[hf] task finished: sifting (ocC3tcylt:1:3:1) exit=0 time=16.5s
+[hf] task failed: individuals (ocC3tcylt:1:4:1) exit=1 time=27.0s
+Error: job ocC3tcylt:1:4:1 exited with error code 1 , stopping workflow.
+Error details: job.name: individuals, job.args: ALL.chr19.apoe.vcf 19 0 113 113
+command terminated with exit code 1

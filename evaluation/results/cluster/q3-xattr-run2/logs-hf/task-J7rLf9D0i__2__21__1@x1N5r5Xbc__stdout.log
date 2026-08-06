@@ -1,0 +1,43 @@
+reading inidviduals
+time: 0.004749577987240627
+reading in rs with sift scores below NO-SIFT
+time: 0.0008452320034848526
+reading in individual mutation files
+mutation index array for NA19019 : []
+total_len_mutations for NA19019 : 0
+total_mutations_list is [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+time: 1.5240448510012357
+writing total mutations list per individual to ./output_no_sift/total_mutations_individual19_sNO-SIFT_AFR.txt
+time: 0.025749259992153384
+writing map_variations to ./output_no_sift/map_variations19_sNO-SIFT_AFR.txt
+time: 0.02103932900354266
+cross matching mutations in individuals - half with half
+time: 0.0702498439932242
+cross matching mutations total individuals
+time: 0.24716443799843546
+cross matching mutations in individuals
+time: 0.000730135987396352
+writing mutation array  to ./output_no_sift/mutation_index_array19_sNO-SIFT_AFR.txt
+time: 1.9159299720049603
+writing pairs overlapping mutations to ./output_no_sift/individual_half_pairs_overlap_chr19_sNO-SIFT_AFR.txt
+time: 0.05338378300075419
+writing pairs overlapping mutations to ./output_no_sift/total_individual_pairs_overlap_chr19_sNO-SIFT_AFR.txt
+time: 0.10250851001183037
+writing pairs overlapping mutations to ./output_no_sift/100_individual_overlap_chr19_sNO-SIFT_AFR.txt
+time: 0.020822197999223135
+plotting cross matched number of individuals:328 
+time: 0.32576209999388084
+plotting cross matched number of individuals:655 
+time: 0.5014811149885645
+plotting cross matched number of individuals:1 
+time: 0.17575280199525878
+plotting colormap number of individuals: 655
+time: 0.25395649900019635
+histograms mutations_individuals groups by 26
+time: 3.3482996514067054e-05
+writing a list of 26 random individuals with the number mutations per indiv ./output_no_sift/random_mutations_individual19_sNO-SIFT_AFR
+time: 3.3707780320110032
+cross matching pairs of variations
+time: 0.00018617200839798898
+writing gene pair list to ./output_no_sift/gene_pairs_count_chr19_sNO-SIFT_AFR.txt
+time: 0.021278846994391643

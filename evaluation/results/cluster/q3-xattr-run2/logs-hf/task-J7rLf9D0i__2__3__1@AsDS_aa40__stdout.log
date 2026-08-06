@@ -1,0 +1,5 @@
+= Taking columns from ALL.chr11.hbb.annotation.vcf
+== Filtering over 394 lines
+== Header found -> 258
+== Starting processing 0 lines
+= Line, id, ENSG id, SIFT, and phenotype printed to sifted.SIFT.chr11.txt in 0.02 seconds.

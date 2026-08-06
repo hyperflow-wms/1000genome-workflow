@@ -1,0 +1,5 @@
+= Taking columns from ALL.chr7.cftr.annotation.vcf
+== Filtering over 4649 lines
+== Header found -> 258
+== Starting processing 86 lines
+= Line, id, ENSG id, SIFT, and phenotype printed to sifted.SIFT.chr7.txt in 0.20 seconds.

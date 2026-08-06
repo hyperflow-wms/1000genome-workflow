@@ -1,0 +1,6 @@
+= Now processing chromosome: 7
+== Processing ALL.chr7.individuals.vcf from line 0 to 2196
+== Number of columns 2479
+== Streamed 2195 lines, filled 2479 individuals in 3.50 sec
+== Done. Zipping 2479 files into chr7n-0-2196.tar.gz.
+= Chromosome 7 processed in 51.40 seconds.

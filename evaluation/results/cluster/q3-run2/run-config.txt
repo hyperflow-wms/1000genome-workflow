@@ -1,0 +1,10 @@
+date_utc:  2026-08-06T12:10:36Z
+pod:       hyperflow-engine-6c4b46d86-plhmv
+worker:    hyperflowwms/1000genome-worker:1.4-je1.4.2
+cpuRequest:1
+quota:
+  (none)
+
+worker nodes:
+alice-k8s-datalake-workers-0   16
+alice-k8s-datalake-workers-1   16

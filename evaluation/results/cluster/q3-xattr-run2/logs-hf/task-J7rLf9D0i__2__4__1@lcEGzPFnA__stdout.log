@@ -1,0 +1,6 @@
+= Now processing chromosome: 19
+== Processing ALL.chr19.individuals.vcf from line 0 to 113
+== Number of columns 2479
+== Streamed 112 lines, filled 2479 individuals in 0.08 sec
+== Done. Zipping 2479 files into chr19n-0-113.tar.gz.
+= Chromosome 19 processed in 37.99 seconds.

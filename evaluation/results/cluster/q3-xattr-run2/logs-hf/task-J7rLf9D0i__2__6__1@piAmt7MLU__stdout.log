@@ -1,0 +1,5 @@
+= Taking columns from ALL.chr19.apoe.annotation.vcf
+== Filtering over 371 lines
+== Header found -> 258
+== Starting processing 0 lines
+= Line, id, ENSG id, SIFT, and phenotype printed to sifted.SIFT.chr19.txt in 0.06 seconds.

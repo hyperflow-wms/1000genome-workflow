@@ -1,0 +1,16 @@
+hfid: xFPi-i5fJ
+Wf id=3
+[hf] task started: individuals (xFPi-i5fJ:3:1:1)
+[hf] task started: sifting (xFPi-i5fJ:3:3:1)
+[hf] task started: individuals (xFPi-i5fJ:3:4:1)
+[hf] task started: sifting (xFPi-i5fJ:3:6:1)
+[hf] task started: individuals (xFPi-i5fJ:3:7:1)
+[hf] task started: individuals (xFPi-i5fJ:3:8:1)
+[hf] task started: sifting (xFPi-i5fJ:3:10:1)
+[hf] task finished: sifting (xFPi-i5fJ:3:10:1) exit=0 time=2.0s
+[hf] task finished: sifting (xFPi-i5fJ:3:3:1) exit=0 time=2.8s
+[hf] task finished: sifting (xFPi-i5fJ:3:6:1) exit=0 time=3.0s
+[hf] task failed: individuals (xFPi-i5fJ:3:8:1) exit=1 time=18.4s
+Error: job xFPi-i5fJ:3:8:1 exited with error code 1 , stopping workflow.
+Error details: job.name: individuals, job.args: ALL.chr7.cftr.vcf 7 2196 4392 4391
+command terminated with exit code 1

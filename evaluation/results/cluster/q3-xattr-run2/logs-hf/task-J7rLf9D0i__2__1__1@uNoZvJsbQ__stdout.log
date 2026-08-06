@@ -1,0 +1,6 @@
+= Now processing chromosome: 11
+== Processing ALL.chr11.individuals.vcf from line 0 to 136
+== Number of columns 2479
+== Streamed 135 lines, filled 2479 individuals in 0.11 sec
+== Done. Zipping 2479 files into chr11n-0-136.tar.gz.
+= Chromosome 11 processed in 43.93 seconds.

@@ -1,0 +1,62 @@
+hfid: 8NducriTG
+Wf id=1
+[hf] task started: individuals (8NducriTG:1:1:1)
+[hf] task started: sifting (8NducriTG:1:3:1)
+[hf] task started: individuals (8NducriTG:1:4:1)
+[hf] task started: sifting (8NducriTG:1:6:1)
+[hf] task started: individuals (8NducriTG:1:7:1)
+[hf] task started: individuals (8NducriTG:1:8:1)
+[hf] task started: sifting (8NducriTG:1:10:1)
+[hf] task finished: sifting (8NducriTG:1:6:1) exit=0 time=2.8s
+[hf] task finished: sifting (8NducriTG:1:3:1) exit=0 time=3.6s
+[hf] task finished: sifting (8NducriTG:1:10:1) exit=0 time=3.9s
+[hf] task finished: individuals (8NducriTG:1:1:1) exit=0 time=44.9s
+[hf] task started: individuals_merge (8NducriTG:1:2:1)
+[hf] task finished: individuals (8NducriTG:1:8:1) exit=0 time=45.6s
+[hf] task finished: individuals (8NducriTG:1:4:1) exit=0 time=54.7s
+[hf] task started: individuals_merge (8NducriTG:1:5:1)
+[hf] task finished: individuals (8NducriTG:1:7:1) exit=0 time=64.4s
+[hf] task started: individuals_merge (8NducriTG:1:9:1)
+[hf] task finished: individuals_merge (8NducriTG:1:5:1) exit=0 time=89.5s
+[hf] task started: mutation_overlap (8NducriTG:1:21:1)
+[hf] task started: frequency (8NducriTG:1:22:1)
+[hf] task started: mutation_overlap (8NducriTG:1:23:1)
+[hf] task started: frequency (8NducriTG:1:24:1)
+[hf] task started: mutation_overlap (8NducriTG:1:25:1)
+[hf] task started: frequency (8NducriTG:1:26:1)
+[hf] task started: mutation_overlap (8NducriTG:1:27:1)
+[hf] task started: frequency (8NducriTG:1:28:1)
+[hf] task started: mutation_overlap (8NducriTG:1:29:1)
+[hf] task started: frequency (8NducriTG:1:30:1)
+[hf] task finished: individuals_merge (8NducriTG:1:2:1) exit=0 time=103.4s
+[hf] task started: mutation_overlap (8NducriTG:1:11:1)
+[hf] task started: frequency (8NducriTG:1:12:1)
+[hf] task started: mutation_overlap (8NducriTG:1:13:1)
+[hf] task started: frequency (8NducriTG:1:14:1)
+[hf] task started: mutation_overlap (8NducriTG:1:15:1)
+[hf] task started: frequency (8NducriTG:1:16:1)
+[hf] task started: mutation_overlap (8NducriTG:1:17:1)
+[hf] task started: frequency (8NducriTG:1:18:1)
+[hf] task started: mutation_overlap (8NducriTG:1:19:1)
+[hf] task started: frequency (8NducriTG:1:20:1)
+[hf] task finished: mutation_overlap (8NducriTG:1:27:1) exit=0 time=70.1s
+[hf] task finished: mutation_overlap (8NducriTG:1:13:1) exit=0 time=87.6s
+[hf] task finished: mutation_overlap (8NducriTG:1:23:1) exit=0 time=106.3s
+[hf] task finished: mutation_overlap (8NducriTG:1:25:1) exit=0 time=129.1s
+[hf] task finished: mutation_overlap (8NducriTG:1:15:1) exit=0 time=127.4s
+[hf] task finished: mutation_overlap (8NducriTG:1:19:1) exit=0 time=137.0s
+[hf] task finished: individuals_merge (8NducriTG:1:9:1) exit=0 time=224.3s
+[hf] task started: mutation_overlap (8NducriTG:1:31:1)
+[hf] task started: frequency (8NducriTG:1:32:1)
+[hf] task started: mutation_overlap (8NducriTG:1:33:1)
+[hf] task started: frequency (8NducriTG:1:34:1)
+[hf] task started: mutation_overlap (8NducriTG:1:35:1)
+[hf] task started: frequency (8NducriTG:1:36:1)
+[hf] task started: mutation_overlap (8NducriTG:1:37:1)
+[hf] task started: frequency (8NducriTG:1:38:1)
+[hf] task started: mutation_overlap (8NducriTG:1:39:1)
+[hf] task started: frequency (8NducriTG:1:40:1)
+[hf] task failed: frequency (8NducriTG:1:32:1) exit=1 time=57.8s
+Error: job 8NducriTG:1:32:1 exited with error code 1 , stopping workflow.
+Error details: job.name: frequency, job.args: -c 7 -pop AFR
+command terminated with exit code 1

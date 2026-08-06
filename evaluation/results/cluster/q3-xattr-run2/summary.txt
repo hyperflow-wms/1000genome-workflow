@@ -1,0 +1,7 @@
+tasks logged: 32
+frequency               15      480.5      681.9
+individuals              4       49.0       54.4
+individuals_merge        3      159.3      235.7
+mutation_overlap        15      203.8      441.7
+sifting                  3        3.5        4.6
+stage                    n     mean_s      max_s

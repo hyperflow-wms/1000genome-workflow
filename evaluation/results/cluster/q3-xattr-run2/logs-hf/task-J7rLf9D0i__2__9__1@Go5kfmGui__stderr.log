@@ -1,0 +1,2 @@
+/1000genome/scripts/individuals_merge.py:17: DeprecationWarning: Python 3.14 will, by default, filter extracted tar archives and reject files or modify their metadata. Use the filter argument to control this behavior.
+  file.extractall(os.path.basename(output_dir))

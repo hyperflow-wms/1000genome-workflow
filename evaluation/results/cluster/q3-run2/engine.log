@@ -1,0 +1,16 @@
+hfid: GCmJycnKh
+Wf id=2
+[hf] task started: individuals (GCmJycnKh:2:1:1)
+[hf] task started: sifting (GCmJycnKh:2:3:1)
+[hf] task started: individuals (GCmJycnKh:2:4:1)
+[hf] task started: sifting (GCmJycnKh:2:6:1)
+[hf] task started: individuals (GCmJycnKh:2:7:1)
+[hf] task started: individuals (GCmJycnKh:2:8:1)
+[hf] task started: sifting (GCmJycnKh:2:10:1)
+[hf] task finished: sifting (GCmJycnKh:2:6:1) exit=0 time=2.4s
+[hf] task finished: sifting (GCmJycnKh:2:10:1) exit=0 time=2.3s
+[hf] task finished: sifting (GCmJycnKh:2:3:1) exit=0 time=5.6s
+[hf] task failed: individuals (GCmJycnKh:2:4:1) exit=1 time=14.5s
+Error: job GCmJycnKh:2:4:1 exited with error code 1 , stopping workflow.
+Error details: job.name: individuals, job.args: ALL.chr19.apoe.vcf 19 0 113 113
+command terminated with exit code 1

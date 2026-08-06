@@ -1,0 +1,43 @@
+reading inidviduals
+time: 0.005032291999668814
+reading in rs with sift scores below NO-SIFT
+time: 0.0014316250017145649
+reading in individual mutation files
+mutation index array for NA18557 : []
+total_len_mutations for NA18557 : 0
+total_mutations_list is [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+time: 1.4965462380059762
+writing total mutations list per individual to ./output_no_sift/total_mutations_individual11_sNO-SIFT_EAS.txt
+time: 0.11665652600640897
+writing map_variations to ./output_no_sift/map_variations11_sNO-SIFT_EAS.txt
+time: 0.005428819000371732
+cross matching mutations in individuals - half with half
+time: 0.04224602998874616
+cross matching mutations total individuals
+time: 0.14771862000634428
+cross matching mutations in individuals
+time: 0.0006243059906410053
+writing mutation array  to ./output_no_sift/mutation_index_array11_sNO-SIFT_EAS.txt
+time: 1.8290619190083817
+writing pairs overlapping mutations to ./output_no_sift/individual_half_pairs_overlap_chr11_sNO-SIFT_EAS.txt
+time: 0.026239726998028345
+writing pairs overlapping mutations to ./output_no_sift/total_individual_pairs_overlap_chr11_sNO-SIFT_EAS.txt
+time: 0.06788619700819254
+writing pairs overlapping mutations to ./output_no_sift/100_individual_overlap_chr11_sNO-SIFT_EAS.txt
+time: 0.019535750994691625
+plotting cross matched number of individuals:250 
+time: 0.29929308498685714
+plotting cross matched number of individuals:499 
+time: 0.4184322649962269
+plotting cross matched number of individuals:1 
+time: 0.1379663460102165
+plotting colormap number of individuals: 499
+time: 0.21996330900583416
+histograms mutations_individuals groups by 26
+time: 3.414700040593743e-05
+writing a list of 26 random individuals with the number mutations per indiv ./output_no_sift/random_mutations_individual11_sNO-SIFT_EAS
+time: 3.0254605790105416
+cross matching pairs of variations
+time: 0.00014278999879024923
+writing gene pair list to ./output_no_sift/gene_pairs_count_chr11_sNO-SIFT_EAS.txt
+time: 0.0061968959926161915

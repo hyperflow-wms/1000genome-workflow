@@ -1,0 +1,43 @@
+reading inidviduals
+time: 0.0034617189958225936
+reading in rs with sift scores below NO-SIFT
+time: 0.0005151330115040764
+reading in individual mutation files
+mutation index array for HG02252 : []
+total_len_mutations for HG02252 : 0
+total_mutations_list is [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+time: 0.9631059350067517
+writing total mutations list per individual to ./output_no_sift/total_mutations_individual19_sNO-SIFT_AMR.txt
+time: 0.026990992002538405
+writing map_variations to ./output_no_sift/map_variations19_sNO-SIFT_AMR.txt
+time: 0.025621554013923742
+cross matching mutations in individuals - half with half
+time: 0.020203047009999864
+cross matching mutations total individuals
+time: 0.06668109899328556
+cross matching mutations in individuals
+time: 0.0004291669902158901
+writing mutation array  to ./output_no_sift/mutation_index_array19_sNO-SIFT_AMR.txt
+time: 1.1286567240022123
+writing pairs overlapping mutations to ./output_no_sift/individual_half_pairs_overlap_chr19_sNO-SIFT_AMR.txt
+time: 0.030588662993977778
+writing pairs overlapping mutations to ./output_no_sift/total_individual_pairs_overlap_chr19_sNO-SIFT_AMR.txt
+time: 0.05614974799391348
+writing pairs overlapping mutations to ./output_no_sift/100_individual_overlap_chr19_sNO-SIFT_AMR.txt
+time: 0.019082844999502413
+plotting cross matched number of individuals:172 
+time: 0.24656051299825776
+plotting cross matched number of individuals:343 
+time: 0.316265603993088
+plotting cross matched number of individuals:1 
+time: 0.13162772900250275
+plotting colormap number of individuals: 343
+time: 0.1915511319966754
+histograms mutations_individuals groups by 26
+time: 3.366000601090491e-05
+writing a list of 26 random individuals with the number mutations per indiv ./output_no_sift/random_mutations_individual19_sNO-SIFT_AMR
+time: 2.1365160910063423
+cross matching pairs of variations
+time: 9.532499825581908e-05
+writing gene pair list to ./output_no_sift/gene_pairs_count_chr19_sNO-SIFT_AMR.txt
+time: 0.023905235997517593
