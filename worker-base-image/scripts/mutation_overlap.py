@@ -56,11 +56,17 @@ font = {'family':'serif',
 plt.rc('font', **font)
 
 
-# untar input data
+# Input data, read straight out of the archive. Extracting it would put every
+# task for this chromosome into one ./chr{N}n directory -- one task per
+# population here and another in frequency, ten of them at five populations --
+# where each extraction truncates and rewrites files the others are reading. A
+# reader that catches a file mid-rewrite sees a part-written line, which passes
+# silently into the results here and fails outright in frequency. See archive.py.
 import tarfile
-tar = tarfile.open(chrom + 'n.tar.gz')
-tar.extractall(path='./' + chrom + 'n')
-tar.close()
+
+import archive
+
+individuals = dict(archive.read_archive(chrom + 'n.tar.gz'))
 
 tic = time.perf_counter()
 
@@ -115,11 +121,7 @@ class ReadData :
         total_mutations={}  
         total_mutations_list =[]    
         for name in ids :
-            filename = data_dir + chrom + 'n/' + chrom + '.' + name
-            f = open(filename, 'r')
-            text = f.read()
-            f.close()
-            text = text.split()
+            text = ''.join(individuals[chrom + '.' + name]).split()
             sifted_mutations = list(set(rs_numbers).intersection(text))
             mutation_index_array.append(sifted_mutations)
             total_mutations[name]= len(sifted_mutations)
