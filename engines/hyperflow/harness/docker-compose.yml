@@ -32,7 +32,7 @@ services:
       - REDIS_URL=redis://redis:6379
 
       # HyperFlow configuration
-      - HF_VAR_WORKER_CONTAINER=${HF_VAR_WORKER_CONTAINER:-hyperflowwms/1000genome-worker:1.6-je1.4.2}
+      - HF_VAR_WORKER_CONTAINER=${HF_VAR_WORKER_CONTAINER:-hyperflowwms/1000genome-worker:1.7-je1.4.2}
       - HF_VAR_WORK_DIR=${WORKFLOW_DIR}
       - HF_VAR_HFLOW_IN_CONTAINER=true
       - HF_VAR_function=redisCommand

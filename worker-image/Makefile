@@ -1,6 +1,6 @@
 REPO_NAME = 1000genome-worker
 PREFIX = hyperflowwms
-VERSION = 1.6
+VERSION = 1.7
 # ?= so CI and Renovate can override the version from the environment
 HF_JOB_EXECUTOR_VERSION ?= 1.4.2
 TAG = $(VERSION)-je$(HF_JOB_EXECUTOR_VERSION)

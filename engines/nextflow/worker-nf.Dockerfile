@@ -6,7 +6,7 @@
 # Nextflow does not use. Both engines therefore run the same scripts from the
 # same layer, so "the science is identical" is a property of the image graph
 # rather than a claim about two copies staying in sync.
-FROM hyperflowwms/1000genome-worker-base:1.6
+FROM hyperflowwms/1000genome-worker-base:1.7
 
 # Nextflow requires bash in the container; the base is Alpine, which ships ash.
 RUN apk add --no-cache bash

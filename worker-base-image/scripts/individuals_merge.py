@@ -10,29 +10,18 @@ def merging(c, tar_files):
     print('= Merging chromosome {}...'.format(c))
     tic = time.perf_counter()
 
-    # Each input is read through memory and the result written straight back
-    # out. Extracting an input into a temporary directory and reading the files
-    # back cost three filesystem operations per individual per input, which
-    # dominates the stage on a shared network volume; it also needed a
-    # chromosome-specific staging directory to keep parallel merges apart, and
-    # with no directory there is nothing left to collide. See archive.py.
-    data = {}
-
-    for tar in tar_files:
-        tic_iter = time.perf_counter()
-        for name, lines in archive.read_archive(tar):
-            if name in data:
-                data[name] += lines
-            else:
-                data[name] = lines
-
-        print("Merged {} in {:0.2f} sec".format(tar, time.perf_counter()-tic_iter))
-
+    # The inputs are streamed in lockstep and the result written as it goes, so
+    # only one individual's merged content is ever held. Accumulating the whole
+    # merge first does not fit: chr6's fifteen inputs are 109MB compressed and
+    # several times that expanded, against the 1GiB a container gets here.
+    #
+    # This also needs no staging directory, so the chromosome-specific one that
+    # used to keep parallel merges apart is gone, and with it anything to
+    # collide over. See archive.py.
     outputfile = "chr{}n.tar.gz".format(c)
-    print("== Done. Zipping {} files into {}.".format(len(data), outputfile))
+    print("== Merging {} archives into {}.".format(len(tar_files), outputfile))
 
-    archive.write_archive(
-        outputfile, {name: ''.join(lines) for name, lines in data.items()})
+    archive.merge_archives(outputfile, tar_files)
 
     print("= Chromosome {} merged in {:0.2f} seconds.".format(
         c, time.perf_counter() - tic))
