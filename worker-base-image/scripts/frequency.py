@@ -66,8 +66,6 @@ import tarfile
 
 import archive
 
-individuals = dict(archive.read_archive(chrom + 'n.tar.gz'))
-
 
 class ReadData:
     def read_names(self, POP):
@@ -112,14 +110,21 @@ class ReadData:
     def read_individuals(self, ids, rs_numbers):
         print('reading in individual mutation files')
         tic = time.perf_counter()
-        mutation_index_array = []
-        for name in ids:
-            text = []
-            for item in individuals[chrom + '.' + name]:
-                item = item.split()
-                text.append(item[1])
-            sifted_mutations = list(set(rs_numbers).intersection(text))
-            mutation_index_array.append(sifted_mutations)
+
+        # One member at a time, keeping only what survives the intersection.
+        # Holding the whole archive is what a large region cannot afford: chr6's
+        # merged individuals expand to well over the 1GiB a container gets here,
+        # and every task of this stage was OOMKilled for it.
+        wanted = {'{}.{}'.format(chrom, name): i for i, name in enumerate(ids)}
+        rs = set(rs_numbers)
+        mutation_index_array = [None] * len(ids)
+
+        for member, lines in archive.read_archive(chrom + 'n.tar.gz'):
+            index = wanted.get(member)
+            if index is None:
+                continue
+            text = [item.split()[1] for item in lines]
+            mutation_index_array[index] = list(rs.intersection(text))
 
         print('time: %s' % (time.perf_counter() - tic))
         return mutation_index_array
