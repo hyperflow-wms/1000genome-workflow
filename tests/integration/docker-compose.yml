@@ -20,7 +20,7 @@ services:
 
   # HyperFlow workflow engine
   hyperflow:
-    image: ${HF_ENGINE_IMAGE:-hyperflowwms/hyperflow:v1.11.1}
+    image: ${HF_ENGINE_IMAGE:-hyperflowwms/hyperflow:v1.11.2}
     container_name: hyperflow-engine
     depends_on:
       redis:
